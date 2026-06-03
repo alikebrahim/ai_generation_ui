@@ -27,6 +27,7 @@ MODEL_HARDWARE = {
     "bytedance/seedance-2.0": "a100-80gb",
     "tencent/hunyuan3d-2": "l40s",
     "fishwowater/trellis2": "a100-80gb",
+    "tencent/hunyuan-3d-3.1": "cpu",  # Replicate shows CPU hardware
 }
 
 # Per-second video output pricing (where applicable)

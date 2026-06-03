@@ -28,10 +28,19 @@ def check_token() -> None:
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 ASSETS_DIR = PROJECT_ROOT / "assets"
+OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 
 # Ensure directories exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+
+# --- Output subdirectories ---
+OUTPUTS_VIDEOS_DIR = OUTPUTS_DIR / "videos"
+OUTPUTS_MODELS_3D_DIR = OUTPUTS_DIR / "models_3d"
+OUTPUTS_THUMBNAILS_DIR = OUTPUTS_DIR / "thumbnails"
+_OUTPUT_SUBDIRS = [OUTPUTS_VIDEOS_DIR, OUTPUTS_MODELS_3D_DIR, OUTPUTS_THUMBNAILS_DIR]
+for _d in _OUTPUT_SUBDIRS:
+    _d.mkdir(parents=True, exist_ok=True)
 
 # --- Database ---
 HISTORY_DB = DATA_DIR / "history.db"

@@ -18,7 +18,6 @@ class ValidationError(Exception):
 _VALIDATION_SKIP = frozenset({
     "_uploaded_image",
     "image",
-    "prompt",
     "progress_callback",
     "reference_images",
     "reference_videos",
@@ -26,16 +25,43 @@ _VALIDATION_SKIP = frozenset({
 })
 
 
+def _is_provided(value: object) -> bool:
+    """Return True when a parameter carries a meaningful user value."""
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return True
+
+
 def validate_params(model: ModelConfig, kwargs: dict) -> None:
     """Raise ValidationError if any parameter is invalid for this model.
 
-    Checks performed (driven by model.param_constraints):
+    Checks performed:
 
     - **Enum params**: value must be in the allowed set.
     - **Range params**: numeric value must be within min/max.
     - **Nullable params**: None is allowed; other params skip null check.
+    - **Mutual exclusion**: if model declares mutual_exclusion groups, only
+      one parameter in each group may have a non-empty / non-None value.
     """
     errors: list[str] = []
+
+    # ── Required-one-of checks ─────────────────────────────────────────
+    for group in getattr(model, "required_one_of", []):
+        if not any(_is_provided(kwargs.get(p)) for p in group):
+            group_label = " or ".join(repr(p) for p in group)
+            errors.append(f"One of {group_label} is required.")
+
+    # ── Mutual-exclusion checks ────────────────────────────────────────
+    for group in getattr(model, "mutual_exclusion", []):
+        provided = [p for p in group if _is_provided(kwargs.get(p))]
+        if len(provided) > 1:
+            labels = ", ".join(repr(p) for p in provided)
+            group_label = " or ".join(repr(p) for p in group)
+            errors.append(
+                f"Only one of {group_label} can be provided; got {labels}."
+            )
 
     for pname, value in kwargs.items():
         if pname in _VALIDATION_SKIP:
@@ -76,6 +102,18 @@ def validate_params(model: ModelConfig, kwargs: dict) -> None:
             if max_val is not None and value > max_val:
                 errors.append(
                     f"{pname}: {value} is above the maximum value of {max_val}"
+                )
+        elif isinstance(value, str) and value:
+            constraints = model.param_constraints.get(pname, {})
+            str_max = constraints.get("max")
+            if (
+                str_max is not None
+                and isinstance(str_max, int)
+                and len(value) > str_max
+            ):
+                errors.append(
+                    f"{pname}: text is {len(value)} characters; "
+                    f"maximum is {str_max} characters."
                 )
 
     if errors:

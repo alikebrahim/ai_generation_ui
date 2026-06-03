@@ -18,16 +18,18 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.3.1 — 3D Endpoint Compatibility Patch / Schema-Safe Beta**
+**Current version: v0.4.2 — Hunyuan Image Upload Patch**
 
-Why v0.3.1:
+Why v0.4.2:
 
 - v0.1.0 represented the first working Streamlit + Replicate scaffold.
 - v0.2.0 represented the post-review reliability/UX baseline: safer upload handling, Replicate output URL normalization, status polling, improved validation, cost display, and usable History filtering/links.
 - v0.3.0 added model-specific schema constraints, schema-safe controls, pre-submit validation, clearer media roles, and generation-mode history for personal use.
-- v0.3.1 fixes 3D model prediction creation for Replicate models that require the versioned prediction API and adds friendlier UI messaging for common Replicate/API failures.
-- v0.4.0 is focused on Replicate-side improvements: the newer Hunyuan 3D 3.1 model and durable output/history improvements. fal.ai development starts at v1.0.0 or later, not in v0.x.
-- This is still pre-1.0 because output/history persistence still relies on temporary Replicate URLs, live paid model QA is manual, and the UI still needs a plain-English polish pass for non-technical users.
+- v0.3.1 fixed 3D model prediction creation for Replicate models that require the versioned prediction API and added friendlier UI messaging for common Replicate/API failures.
+- v0.4.0 added Hunyuan 3D 3.1 plus local-output/history scaffolding.
+- v0.4.1 fixed the durable-history persistence bug, tightened Hunyuan 3D 3.1 prompt/image validation, and improved local-file History UX.
+- v0.4.2 fixes Hunyuan 3D 3.1 image uploads by sending explicit image MIME data URIs instead of extensionless provider file URLs.
+- This is still pre-1.0 because live paid model QA is manual, the UI still needs a plain-English polish pass for non-technical users, and generation safety/dry-run tooling is still planned.
 
 ---
 
@@ -173,7 +175,7 @@ These are valuable but should wait until the core product is stable:
 
 **Priority**: Immediate
 
-**Status**: Implemented / current patch release
+**Status**: Implemented / superseded by v0.4.0
 
 **Goal**: Fix 404 errors for Replicate 3D models that do not support the versionless model prediction endpoint.
 
@@ -203,7 +205,7 @@ Investigation found that `tencent/hunyuan3d-2` exists but its Replicate API page
 ### Follow-up for later milestones
 
 - Run a paid live image-to-3D smoke test only with explicit user authorization and expected cost.
-- Durable local output storage remains planned for v0.4.0.
+- Durable local output storage was implemented in v0.4.0 and patched in v0.4.1.
 
 ---
 
@@ -211,11 +213,32 @@ Investigation found that `tencent/hunyuan3d-2` exists but its Replicate API page
 
 **Priority**: Highest next feature
 
-**Status**: Planned
+**Status**: Implemented / superseded by v0.4.1
 
 **Goal**: Add the newer Replicate Hunyuan 3D 3.1 model safely and make successful generations reusable after provider delivery URLs expire. fal.ai implementation is deferred until v1.0.0 or later.
 
-### Hunyuan 3D 3.1 planned work
+### Implemented
+
+#### Hunyuan 3D 3.1
+
+- Added Replicate `tencent/hunyuan-3d-3.1` to model catalogue with all schema parameters exposed.
+- Generation modes: `text_to_3d` and `image_to_3d` with mutual-exclusivity guard.
+- Uses versionless Replicate API (`model=`) as required.
+
+#### Durable local output storage
+
+- New `download_output()` utility downloads provider URLs to `outputs/videos/` and `outputs/models_3d/`.
+- All 6 generation functions download outputs locally after success.
+- Database migration: `local_file_path`, `thumbnail_path`, `file_size_bytes` columns added.
+- Original provider URL preserved even if local download fails.
+
+#### History gallery UI
+
+- Gallery card view with status badges, model/mode labels, timestamp, cost, and 💾/☁️ availability indicators.
+- Table view moved to collapsible expander with an "Availability" column.
+- Result displays show local file path when saved.
+
+### Naming scheme
 
 Add Replicate model `tencent/hunyuan-3d-3.1` as a v0.4.0 3D model.
 
@@ -305,6 +328,58 @@ Examples:
 
 ---
 
+## v0.4.1 — Durable History Patch
+
+**Priority**: Immediate patch
+
+**Status**: Implemented / superseded by v0.4.2
+
+**Goal**: Fix the v0.4.0 release-readiness blockers found in local review.
+
+### Implemented
+
+- SQLite History now persists `local_file_path`, `thumbnail_path`, and `file_size_bytes` for new generations.
+- Hunyuan 3D 3.1 now requires exactly one input: text prompt or subject image.
+- Hunyuan 3D 3.1 prompt length is validated locally against the 1024-character schema limit.
+- Prompt + uploaded subject image is rejected before the app enters the generation status flow.
+- History checks whether saved local paths still exist and distinguishes:
+  - `💾 Local`
+  - `⚠️ Missing local file`
+  - `☁️ Temporary`
+- Local file actions no longer rely on browser-blocked `file://` links; small/medium files use Streamlit download buttons and large files show the local path.
+- Download filenames include a nanosecond suffix to avoid same-second overwrites.
+
+### Verification
+
+- Local compile and Ruff checks passed.
+- Non-paid probes verified DB persistence, Hunyuan validation, and download filename collision resistance.
+- No paid Replicate prediction was run.
+
+---
+
+## v0.4.2 — Hunyuan Image Upload Patch
+
+**Priority**: Immediate patch
+
+**Status**: Current
+
+**Goal**: Fix Hunyuan 3D 3.1 image-to-3D uploads where valid JPG files could reach the model as extensionless provider file URLs and be rejected as `Unsupported image format: .`.
+
+### Implemented
+
+- Hunyuan 3D 3.1 image inputs are converted to explicit `data:image/...;base64,...` URIs before the Replicate request.
+- Local byte sniffing recognizes JPG/JPEG, PNG, and WEBP even when a file-like upload has no reliable filename.
+- Hunyuan 3D 3.1 image uploads are checked against the model’s 6 MB image limit before a paid call.
+- History records uploaded-image metadata instead of storing the base64 data URI.
+
+### Verification
+
+- Confirmed the reported JPG is valid `image/jpeg` locally.
+- Non-paid probes verified real-file JPG conversion, nameless file-like JPG conversion, invalid-image rejection, Hunyuan request payload encoding, and History metadata safety.
+- No paid Replicate prediction was run.
+
+---
+
 ## v0.5.0 — Generation Safety, Dry-Run Payloads, and Schema Drift Checks
 
 **Priority**: High before v1.0
@@ -315,9 +390,14 @@ Examples:
 
 ### Planned work
 
+- Add a visible input-source selector for models with mutually exclusive inputs:
+  - Hunyuan 3D 3.1: choose either “Text description” or “Subject image” before filling the form.
+  - Similar future models: derive this UI from schema/config constraints such as exactly-one-of `prompt`/`image`.
+  - Hide, disable, or clearly mark the inactive input so users do not accidentally provide both text and image.
 - Add a “Preview request” or “Dry-run payload” expander before Generate:
   - model
   - generation mode
+  - selected input source
   - uploaded media roles
   - parameter values
   - estimated cost or “cost unknown”
@@ -339,6 +419,7 @@ Examples:
 - Default local checks run without network spending and without creating predictions.
 - Paid smoke checks require explicit opt-in and a clear cost/scope note.
 - Dry-run output is useful enough to debug model payload problems.
+- Models with exactly-one-of text/image constraints visually force or clearly guide a single input source before Generate.
 - Schema drift checks catch obvious local config vs live schema mismatches.
 
 ---
@@ -654,6 +735,8 @@ Post-1.0 work should expand creative power only after the core local app is depe
 |---|---|---:|---|
 | v0.3.1 | 3D endpoint compatibility patch | Immediate | Pre-1.0 patch |
 | v0.4.0 | Hunyuan 3D 3.1 + durable History | Highest | Must-have v1.0 |
+| v0.4.1 | Durable History patch | Immediate | Superseded by v0.4.2 |
+| v0.4.2 | Hunyuan image upload patch | Immediate | Current patch |
 | v0.5.0 | Generation safety, dry-run payloads, schema drift checks | High | Must-have v1.0 |
 | v0.6.0 | Plain-English UX + model selection polish | High | Must-have v1.0 |
 | v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |

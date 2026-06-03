@@ -45,7 +45,7 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Purpose**: Version history — what changed in each standard-versioned release.
 
 **Contains**:
-- Current version: v0.3.1 3D endpoint compatibility patch / schema-safe beta
+- Current version: v0.4.2 Hunyuan image upload patch
 - Summary of additions, changes, fixes, verification, and known limitations
 - Historical v0.3.0, v0.2.0, and v0.1.0 entries
 
@@ -60,12 +60,12 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Contains**:
 - 11 resolved decisions with rationale, alternatives considered, and selected option
 - Decision 1: Video models (Wan + Seedance)
-- Decision 2: 3D models (Hunyuan3D + TRELLIS)
+- Decision 2: 3D models (Hunyuan3D, Hunyuan 3D 3.1, TRELLIS)
 - Decision 3: UI layout (tabbed)
-- Decision 4: Output display (inline viewer + download, no autosave)
+- Decision 4: Output display (inline viewer + automatic local copy)
 - Decision 5: Parameter exposure (Balanced + Advanced)
 - Decision 6: Error handling (toast + inline)
-- Decision 7: File management (preview-only, no local storage)
+- Decision 7: File management (local output metadata and ignored generated files)
 - Decision 8: API token management (.env)
 - Decision 9: Cost tracking (static pricing table)
 - Decision 10: Package management (uv)
@@ -84,7 +84,7 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Contains**:
 - Project overview and architecture
 - Tech stack
-- File storage policy (no local output files in v0.2.0)
+- File storage policy (local output copies plus provider URLs)
 - Database schema
 - Parameter categories (Balanced vs Advanced)
 - Model identifiers
@@ -154,18 +154,18 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 
 ### 8. ROADMAP.md
 
-**Purpose**: Versioned roadmap — what comes next after v0.3.1.
+**Purpose**: Versioned roadmap — what comes next after v0.4.2.
 
 **Contains**:
-- Current version estimate: v0.3.1 3D endpoint compatibility patch / schema-safe beta
+- Current version estimate: v0.4.2 Hunyuan image upload patch
 - Pre-1.0 must-haves vs nice-to-haves
-- v0.4.0: provider-aware architecture, Hunyuan 3D 3.1, durable output storage + permanent History gallery
+- v0.4.0/v0.4.1/v0.4.2: Hunyuan 3D 3.1, durable output storage, History local-file fixes, and image upload encoding fixes
 - v0.5.0: generation safety, dry-run payloads, and schema drift checks
 - v0.6.0: plain-English UX + model selection polish
 - Post-1.0 exploration including masking/inpainting and local mask helpers
 - Priority ranking and v1.0.0 release criteria
 
-**Read when**: Planning the next version. Roadmap items after v0.3.1 are not implemented yet.
+**Read when**: Planning the next version. Roadmap items after v0.4.2 are not implemented yet.
 
 ---
 

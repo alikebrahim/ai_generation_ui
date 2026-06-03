@@ -48,6 +48,30 @@ format_timestamp = app_utils.format_timestamp
 friendly_error_message = app_utils.friendly_error_message
 uploaded_file_metadata = app_utils.uploaded_file_metadata
 
+
+def _mime_for_path(path: Path) -> str:
+    """Best-effort MIME type for Streamlit local download buttons."""
+    suffix = path.suffix.lower()
+    return {
+        ".mp4": "video/mp4",
+        ".webm": "video/webm",
+        ".mov": "video/quicktime",
+        ".glb": "model/gltf-binary",
+        ".gltf": "model/gltf+json",
+        ".obj": "text/plain",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(suffix, "application/octet-stream")
+
+
+def _safe_local_path(value: object) -> Path | None:
+    """Return an existing local path from history, or None if unavailable."""
+    if not value or not isinstance(value, str):
+        return None
+    path = Path(value)
+    return path if path.exists() and path.is_file() else None
+
 # ── Page config (must be first st call) ────────────────────────────
 
 st.set_page_config(
@@ -202,7 +226,16 @@ def _render_generation_form(model: ModelConfig) -> dict | None:
     st.subheader(f"Generate with {model.display_name}")
 
     if model.model_type == "3d":
-        st.caption("Current 3D models are Image-to-3D. Upload a clear subject image.")
+        if model.name == "hunyuan-3d-3.1":
+            st.caption(
+                "Hunyuan 3D 3.1 supports text-to-3D or image-to-3D. "
+                "Provide a text description or upload a subject image, not both."
+            )
+        else:
+            st.caption(
+                "Current 3D models are Image-to-3D. "
+                "Upload a clear subject image.",
+            )
     elif model.supports_image and not model.requires_image:
         st.caption("Use text only, or optionally add an image to guide the result.")
 
@@ -233,8 +266,15 @@ def _render_generation_form(model: ModelConfig) -> dict | None:
                     "text-to-video."
                 )
             elif model.model_type == "3d":
-                upload_label = "Subject image"
-                upload_help = "Upload a clear subject image for image-to-3D."
+                if model.name == "hunyuan-3d-3.1":
+                    upload_label = "Subject image (or use text prompt instead)"
+                    upload_help = (
+                        "Optional — use a subject image OR the text prompt, not both. "
+                        "Upload a clear subject image for best image-to-3D results."
+                    )
+                else:
+                    upload_label = "Subject image"
+                    upload_help = "Upload a clear subject image for image-to-3D."
             uploaded = st.file_uploader(
                 upload_label + ("" if model.requires_image else " (optional)"),
                 type=["png", "jpg", "jpeg", "webp"],
@@ -396,9 +436,16 @@ with tab_video:
                         )
                     if result.get("prediction_url"):
                         st.caption(f"Replicate prediction: {result['prediction_url']}")
-                    st.caption(
-                        "Output URLs are hosted by Replicate and expire after ~1 hour."
-                    )
+                    if result.get("local_file_path"):
+                        st.caption(
+                            f"✅ Saved locally — "
+                            f"`{result['local_file_path']}`"
+                        )
+                    else:
+                        st.caption(
+                            "Output URLs are hosted by Replicate and "
+                            "expire after ~1 hour."
+                        )
                 else:
                     status.update(label="Generation failed", state="error")
                     st.error(f"Error: {friendly_error_message(result['error'])}")
@@ -436,7 +483,12 @@ with tab_3d:
         # ── Validate parameters against live Replicate schema ─────
         try:
             from src.validation import validate_params
-            validate_params(model_3d, kwargs_3d)
+
+            validation_kwargs = dict(kwargs_3d)
+            uploaded_for_validation = validation_kwargs.pop("_uploaded_image", None)
+            if uploaded_for_validation is not None and model_3d.supports_image:
+                validation_kwargs["image"] = uploaded_for_validation
+            validate_params(model_3d, validation_kwargs)
         except Exception as exc:
             st.error(f"Invalid parameters:\n\n{exc}")
             st.stop()
@@ -471,6 +523,8 @@ with tab_3d:
                     result = tg.generate_hunyuan3d_2(**kwargs_3d)
                 elif model_3d.name == "trellis-2":
                     result = tg.generate_trellis_2(**kwargs_3d)
+                elif model_3d.name == "hunyuan-3d-3.1":
+                    result = tg.generate_hunyuan_3d_3_1(**kwargs_3d)
                 else:
                     st.error(f"Unknown model: {model_3d.name}")
                     result = None
@@ -519,9 +573,16 @@ with tab_3d:
                         )
                     if result.get("prediction_url"):
                         st.caption(f"Replicate prediction: {result['prediction_url']}")
-                    st.caption(
-                        "Output URLs are hosted by Replicate and expire after ~1 hour."
-                    )
+                    if result.get("local_file_path"):
+                        st.caption(
+                            f"✅ Saved locally — "
+                            f"`{result['local_file_path']}`"
+                        )
+                    else:
+                        st.caption(
+                            "Output URLs are hosted by Replicate and "
+                            "expire after ~1 hour."
+                        )
                 else:
                     status.update(label="Generation failed", state="error")
                     st.error(f"Error: {friendly_error_message(result['error'])}")
@@ -570,11 +631,8 @@ with tab_history:
                 with mc2:
                     st.metric("Avg Time", format_duration(avg_time or 0))
 
-    # ── Full history table ──
+    # ── Full history gallery ──
     st.subheader("Recent Generations")
-    st.caption(
-        "Replicate delivery URLs are temporary and usually expire after ~1 hour."
-    )
     rows = get_all_generations(limit=50)
 
     if rows:
@@ -597,9 +655,13 @@ with tab_history:
                 "Duration (s)",
                 "Mode",
                 "Status",
+                "Local File",
+                "Thumbnail",
+                "File Size (B)",
             ],
         )
 
+        # ── Filters ──
         model_filter = st.multiselect(
             "Filter by model",
             sorted(df["Model"].dropna().unique()),
@@ -617,40 +679,142 @@ with tab_history:
                 )
             ]
 
-        display = filtered[
-            [
-                "Timestamp",
-                "Model",
-                "Mode",
-                "Prompt",
-                "URL",
-                "Predict Time (s)",
-                "Est. Cost (USD)",
-                "Status",
-            ]
-        ].copy()
-        display["Mode"] = display["Mode"].fillna(filtered["Type"])
-        display["Timestamp"] = display["Timestamp"].apply(format_timestamp)
-        display["Predict Time (s)"] = display["Predict Time (s)"].apply(
-            lambda x: format_duration(x) if x else "—"
-        )
-        display["Est. Cost (USD)"] = display["Est. Cost (USD)"].apply(
-            lambda x: format_cost(x) if x else "—"
-        )
-        display["Output"] = display["URL"]
-        display = display.drop(columns=["URL"])
+        # ── Gallery cards ──
+        st.markdown("#### Gallery")
+        num_cols = min(4, len(filtered))
+        if num_cols > 0:
+            cards = st.columns(num_cols)
+            for i, (_, row) in enumerate(filtered.iterrows()):
+                with cards[i % num_cols]:
+                    local_path_value = row.get("Local File")
+                    local_path = _safe_local_path(local_path_value)
+                    has_local = local_path is not None
+                    has_missing_local = bool(local_path_value) and local_path is None
+                    url = row.get("URL", "")
+                    status_val = row.get("Status", "success")
+                    cost = row.get("Est. Cost (USD)", 0)
 
-        st.dataframe(
-            display,
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "Output": st.column_config.LinkColumn(
-                    "Output",
-                    display_text="Open",
-                    help="Temporary Replicate URL; may expire after about one hour.",
+                    # Status badge
+                    if status_val == "failed":
+                        st.markdown("**❌ Failed**")
+                    elif status_val == "cancelled":
+                        st.markdown("**⏹ Cancelled**")
+                    else:
+                        st.markdown("**✅ Success**")
+
+                    # Model + mode label
+                    st.markdown(
+                        f"**{row['Model']}**  "
+                        f"<br><small>{row.get('Mode', row['Type'])}</small>",
+                        unsafe_allow_html=True,
+                    )
+
+                    # Timestamp
+                    st.caption(format_timestamp(row["Timestamp"]))
+
+                    # Cost
+                    st.metric("Cost", format_cost(cost) if cost else "—",
+                              label_visibility="collapsed",
+                              help=f"Cost: {format_cost(cost) if cost else '—'}")
+
+                    # Local / temporary indicator
+                    if has_local:
+                        st.markdown("💾 **Saved locally**")
+                        st.caption(str(local_path))
+                    elif has_missing_local:
+                        st.markdown("⚠️ **Local file missing**")
+                        st.caption(str(local_path_value))
+                    else:
+                        st.markdown(
+                            "☁️ **Temporary link**",
+                            help="Output URL may expire after ~1 hour.",
+                        )
+
+                    # Open/download controls
+                    if has_local and local_path is not None:
+                        max_inline_download = 200 * 1024 * 1024
+                        if local_path.stat().st_size <= max_inline_download:
+                            st.download_button(
+                                "Download local file",
+                                data=local_path.read_bytes(),
+                                file_name=local_path.name,
+                                mime=_mime_for_path(local_path),
+                                use_container_width=True,
+                                key=f"download_{row['ID']}",
+                            )
+                        else:
+                            st.caption(
+                                "Large file — open it from the path above."
+                            )
+                    elif url:
+                        st.link_button(
+                            "Open temporary URL",
+                            url,
+                            use_container_width=True,
+                        )
+
+                    st.divider()
+
+        # ── Data table (collapsible) ──
+        with st.expander("Table view", expanded=False):
+            st.caption(
+                "Replicate delivery URLs are temporary and "
+                "usually expire after ~1 hour."
+            )
+
+            display = filtered[
+                [
+                    "Timestamp",
+                    "Model",
+                    "Mode",
+                    "Prompt",
+                    "URL",
+                    "Predict Time (s)",
+                    "Est. Cost (USD)",
+                    "Status",
+                    "Local File",
+                ]
+            ].copy()
+            display["Mode"] = display["Mode"].fillna(filtered["Type"])
+            display["Timestamp"] = display["Timestamp"].apply(format_timestamp)
+            display["Predict Time (s)"] = display["Predict Time (s)"].apply(
+                lambda x: format_duration(x) if x else "—"
+            )
+            display["Est. Cost (USD)"] = display["Est. Cost (USD)"].apply(
+                lambda x: format_cost(x) if x else "—"
+            )
+            display["Output"] = display["URL"]
+            display = display.drop(columns=["URL"])
+
+            # Local availability column
+            display["Available"] = display["Local File"].apply(
+                lambda p: (
+                    "💾 Local"
+                    if _safe_local_path(p)
+                    else "⚠️ Missing local file"
+                    if p
+                    else "☁️ Temporary"
                 )
-            },
-        )
+            )
+            display = display.drop(columns=["Local File"])
+
+            st.dataframe(
+                display,
+                width="stretch",
+                hide_index=True,
+                column_config={
+                    "Output": st.column_config.LinkColumn(
+                        "Output",
+                        display_text="Open",
+                        help="Temporary Replicate URL; "
+                             "may expire after about one hour.",
+                    ),
+                    "Available": st.column_config.TextColumn(
+                        "Availability",
+                        help="💾 = saved permanently on this machine; "
+                             "☁️ = temporary Replicate-hosted URL",
+                    ),
+                },
+            )
     else:
         st.info("No history available yet.")

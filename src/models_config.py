@@ -47,6 +47,10 @@ class ModelConfig:
     defaults: dict = field(default_factory=dict)
     # Per-parameter schema constraints (live-validated against Replicate OpenAPI)
     param_constraints: dict[str, ParamConstraint] = field(default_factory=dict)
+    # Groups of parameters that are mutually exclusive (at most one can be set)
+    mutual_exclusion: list[tuple[str, ...]] = field(default_factory=list)
+    # Groups where at least one parameter must be provided.
+    required_one_of: list[tuple[str, ...]] = field(default_factory=list)
 
 
 # ═══════════════════════════════════════════════
@@ -266,13 +270,50 @@ TRELLIS_2 = ModelConfig(
     },
 )
 
+HUNYUAN_3D_3_1 = ModelConfig(
+    name="hunyuan-3d-3.1",
+    display_name="Hunyuan 3D 3.1",
+    model_type="3d",
+    replicate_id="tencent/hunyuan-3d-3.1",
+    supports_text=True,
+    supports_image=True,
+    requires_text=False,  # Either prompt or image is sufficient
+    requires_image=False,  # Either prompt or image is sufficient
+    balanced_params=[
+        "prompt",
+        "image",
+        "generate_type",
+        "face_count",
+    ],
+    advanced_params=[
+        "enable_pbr",
+    ],
+    defaults={
+        "generate_type": "Normal",
+        "face_count": 500000,
+        "enable_pbr": False,
+    },
+    param_constraints={
+        "generate_type": {
+            "enum": ["Normal", "Geometry"],
+            "ui_type": "dropdown",
+        },
+        "face_count": {"min": 40000, "max": 1500000, "ui_type": "slider"},
+        "prompt": {"nullable": True, "max": 1024},
+        "image": {"nullable": True},
+    },
+    # Exactly one of prompt or image must be provided; both together is invalid.
+    mutual_exclusion=[("prompt", "image")],
+    required_one_of=[("prompt", "image")],
+)
+
 
 # ═══════════════════════════════════════════════
 #  COLLECTIONS
 # ═══════════════════════════════════════════════
 
 VIDEO_MODELS: list[ModelConfig] = [WAN_2_7_T2V, WAN_2_5_I2V, SEEDANCE_2_0]
-THREED_MODELS: list[ModelConfig] = [HUNYUAN3D_2, TRELLIS_2]
+THREED_MODELS: list[ModelConfig] = [HUNYUAN3D_2, TRELLIS_2, HUNYUAN_3D_3_1]
 ALL_MODELS: list[ModelConfig] = VIDEO_MODELS + THREED_MODELS
 
 _MODEL_BY_NAME: dict[str, ModelConfig] = {m.name: m for m in ALL_MODELS}

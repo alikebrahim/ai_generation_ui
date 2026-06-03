@@ -17,10 +17,11 @@ from typing import Any
 
 import replicate
 
+from .config import OUTPUTS_VIDEOS_DIR
 from .cost_tracker import record_generation
 from .models_config import SEEDANCE_2_0, WAN_2_5_I2V, WAN_2_7_T2V
 from .pricing import calculate_cost
-from .utils import output_to_url, uploaded_file_metadata
+from .utils import download_output, output_to_url, uploaded_file_metadata
 from .validation import validate_params
 
 ProgressCallback = Callable[[str, object], None]
@@ -104,6 +105,7 @@ def generate_wan_2_7_t2v(
             result["predict_time"],
             output_duration=duration,
         )
+        local = download_output(result["url"], OUTPUTS_VIDEOS_DIR, prefix="video")
         record_generation(
             model_name=model.name,
             model_type="video",
@@ -115,7 +117,11 @@ def generate_wan_2_7_t2v(
             estimated_cost=cost,
             output_duration=duration,
             generation_mode="text_to_video",
+            local_file_path=local["local_path"],
+            file_size_bytes=local["file_size_bytes"],
         )
+        result["local_file_path"] = local["local_path"]
+        result["file_size_bytes"] = local["file_size_bytes"]
         result["estimated_cost"] = cost
     return result
 
@@ -155,6 +161,7 @@ def generate_wan_2_5_i2v(
             result["predict_time"],
             output_duration=duration,
         )
+        local = download_output(result["url"], OUTPUTS_VIDEOS_DIR, prefix="video")
         record_generation(
             model_name=model.name,
             model_type="video",
@@ -167,7 +174,11 @@ def generate_wan_2_5_i2v(
             output_duration=duration,
             generation_mode="image_to_video",
             input_image_path=_input_image_history_value(image),
+            local_file_path=local["local_path"],
+            file_size_bytes=local["file_size_bytes"],
         )
+        result["local_file_path"] = local["local_path"]
+        result["file_size_bytes"] = local["file_size_bytes"]
         result["estimated_cost"] = cost
     return result
 
@@ -216,6 +227,7 @@ def generate_seedance_2_0(
             result["predict_time"],
             output_duration=duration,
         )
+        local = download_output(result["url"], OUTPUTS_VIDEOS_DIR, prefix="video")
         history_params = {
             k: v
             for k, v in input_params.items()
@@ -238,6 +250,10 @@ def generate_seedance_2_0(
             output_duration=duration,
             generation_mode="image_to_video" if image else "text_to_video",
             input_image_path=_input_image_history_value(image),
+            local_file_path=local["local_path"],
+            file_size_bytes=local["file_size_bytes"],
         )
+        result["local_file_path"] = local["local_path"]
+        result["file_size_bytes"] = local["file_size_bytes"]
         result["estimated_cost"] = cost
     return result

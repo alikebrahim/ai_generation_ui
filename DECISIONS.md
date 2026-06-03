@@ -27,7 +27,7 @@ All decisions have been made. This document records the final choices and ration
 | Model | Type | Notes |
 |---|---|---|
 | Hunyuan3D 2.0 | Image-to-3D in current Replicate schema | Existing image-driven mesh generation model; requires versioned Replicate prediction path. |
-| Hunyuan 3D 3.1 | Text-to-3D or Image-to-3D | Planned for v0.4.0; newer Tencent model with texture fidelity and geometry precision; Replicate schema accepts either prompt or image, not both. |
+| Hunyuan 3D 3.1 | Text-to-3D or Image-to-3D | Implemented in v0.4.0 and patched in v0.4.1/v0.4.2; newer Tencent model with texture fidelity and geometry precision; Replicate schema accepts exactly one of prompt or image, and image inputs are sent as explicit image data URIs to avoid extensionless upload URLs. |
 | TRELLIS 2 | Image-to-3D | PBR textures, up to 1536³, open-source; requires versioned Replicate prediction path. |
 
 **Rationale**: Hunyuan 3D 3.1 is the newer Hunyuan option and should be added in v0.4.0 because it expands 3D from image-only to text-or-image generation while staying within the hosted 3D scope. Hunyuan3D 2.0 and TRELLIS remain useful existing options. Text-to-3D is now planned specifically through verified provider schemas such as `tencent/hunyuan-3d-3.1`, not as a generic unsupported promise.
@@ -48,13 +48,14 @@ Clean separation, each tab self-contained, standard Streamlit pattern.
 
 ## Decision 4: Output Display
 
-**SELECTED: Option C — Inline viewer + download button (both video and 3D)**
+**SELECTED: Option C — Inline viewer + automatic local copy**
 
-- Video: `st.video(url)` inline player using Replicate output URL directly
-- 3D: `<model-viewer>` inline using Replicate output URL directly
-- Download button: triggers browser download from the Replicate URL
-- No local file is saved unless the user explicitly downloads
-- Outputs are ephemeral; Replicate URLs expire after ~1 hour
+- Video: `st.video(url)` inline player using the provider output URL directly.
+- 3D: `<model-viewer>` inline using the provider output URL directly.
+- Successful outputs are automatically saved under `outputs/videos/` or `outputs/models_3d/`.
+- History stores both the provider URL and local file metadata.
+- History distinguishes local files, missing local files, and temporary provider links.
+- Provider URLs remain useful for immediate preview, but may expire after ~1 hour.
 
 ---
 

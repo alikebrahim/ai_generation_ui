@@ -47,6 +47,12 @@ def init_db() -> None:
     existing_columns = {row[1] for row in cursor.fetchall()}
     if "generation_mode" not in existing_columns:
         conn.execute("ALTER TABLE generations ADD COLUMN generation_mode TEXT")
+    if "local_file_path" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN local_file_path TEXT")
+    if "thumbnail_path" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN thumbnail_path TEXT")
+    if "file_size_bytes" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN file_size_bytes INTEGER")
     conn.commit()
     conn.close()
 
@@ -64,6 +70,9 @@ def record_generation(
     output_duration: float | None = None,
     generation_mode: str | None = None,
     input_image_path: str | None = None,
+    local_file_path: str | None = None,
+    thumbnail_path: str | None = None,
+    file_size_bytes: int | None = None,
     status: str = "success",
 ) -> int:
     """Insert a generation record. Returns the new row id."""
@@ -76,8 +85,9 @@ def record_generation(
             model_name, model_type, prompt, input_image_path,
             parameters_json, replicate_url, predict_time_s,
             total_time_s, estimated_cost_usd, output_duration_s,
-            generation_mode, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            generation_mode, status, local_file_path, thumbnail_path,
+            file_size_bytes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             model_name,
@@ -92,9 +102,12 @@ def record_generation(
             output_duration,
             generation_mode,
             status,
+            local_file_path,
+            thumbnail_path,
+            file_size_bytes,
         ),
     )
-    generation_id = cursor.lastrowid
+    generation_id = cursor.lastrowid or 0
     conn.commit()
     conn.close()
     return generation_id
@@ -109,7 +122,8 @@ def get_all_generations(limit: int = 100) -> list[tuple]:
         SELECT
             id, model_name, model_type, timestamp, prompt, input_image_path,
             parameters_json, replicate_url, predict_time_s, total_time_s,
-            estimated_cost_usd, output_duration_s, generation_mode, status
+            estimated_cost_usd, output_duration_s, generation_mode, status,
+            local_file_path, thumbnail_path, file_size_bytes
         FROM generations
         ORDER BY timestamp DESC
         LIMIT ?

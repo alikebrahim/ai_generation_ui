@@ -455,7 +455,7 @@ History should keep provider job links separate from output links.
 | `face_count` | int, default `500000` | Range `40000`–`1500000`. Plain label: “Model detail / polygon count”. |
 | `generate_type` | enum, default `Normal` | `Normal` textured model or `Geometry` white/untextured model. |
 
-**Validation:** Require exactly one of prompt/image; enforce enum/range/length locally; explain that PBR is ignored in Geometry mode.
+**Validation/UI:** Require exactly one of prompt/image; enforce enum/range/length locally; explain that PBR is ignored in Geometry mode. The form should visually require an input-source choice (“Text description” vs “Subject image”), then hide, disable, or clearly mark the inactive input so users cannot accidentally submit both text and image.
 
 **History/UI:** Add `text_to_3d` and `image_to_3d` mode support; show the model as “newer Hunyuan option” in the 3D tab; keep Hunyuan3D 2.0 available unless deliberately deprecated.
 

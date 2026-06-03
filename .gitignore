@@ -38,3 +38,9 @@ Thumbs.db
 
 # Project-specific
 *.db  # Catch any stray SQLite files
+
+# Generated outputs (track .gitkeep only)
+outputs/videos/*
+outputs/models_3d/*
+outputs/thumbnails/*
+!outputs/**/.gitkeep

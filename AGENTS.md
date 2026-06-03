@@ -176,11 +176,15 @@ black = ">=24.0.0"           # Code formatter
   - Recent generations gallery
 
 ### File Storage
-- Outputs are NOT stored locally on the server
-- Providers currently return ephemeral URLs for preview (Replicate URLs expire after ~1 hour)
-- User downloads explicitly from the displayed provider/local output link
-- Only metadata is persisted today: prompt, params, cost, timestamp, provider output URL
-- No `outputs/` directory needed — removed from project structure
+- Successful provider outputs are saved locally after generation when possible.
+- Provider delivery URLs are still preserved for immediate preview/troubleshooting, but Replicate URLs may expire after ~1 hour.
+- Local output directories:
+  - `outputs/videos/` for video files and TRELLIS preview videos
+  - `outputs/models_3d/` for 3D model assets
+  - `outputs/thumbnails/` reserved for future thumbnail/preview derivatives
+- SQLite History persists provider URL plus local file metadata: `local_file_path`, `thumbnail_path`, and `file_size_bytes`.
+- Failed local downloads must not lose the original provider URL or history metadata.
+- Generated output files are local artifacts and should stay gitignored.
 
 ### Streamlit App Structure
 - Single-page app with tabs: Video | 3D | History
@@ -194,11 +198,12 @@ black = ">=24.0.0"           # Code formatter
   - Output display area (video player)
   - Download button for output file
   - Cost estimate display
-- **3D Tab**: Same structure with 3D viewer instead of video player; current models are image-to-3D
+- **3D Tab**: Same structure with 3D viewer instead of video player; current models include image-to-3D plus Hunyuan 3D 3.1 text-to-3D/image-to-3D
 - **History Tab**:
   - Summary stats (total spend, generations by model)
-  - Filterable table of past generations
-  - Links to re-open outputs
+  - Card view of recent generations with local/temporary/missing-local indicators
+  - Collapsible filterable table of past generations
+  - Local download buttons for existing local files when practical
 - Use `st.session_state` to persist form inputs during generation
 
 ### UI Components
@@ -258,7 +263,7 @@ black = ">=24.0.0"           # Code formatter
 - **3D generation**: 1 to 10 minutes typical
   - Poll every 10 seconds
   - Show spinner with status message
-- **File downloads**: Use link buttons for provider delivery URLs; future local storage may use `st.download_button()` or file-serving links
+- **File downloads**: Save successful provider outputs locally after generation; use Streamlit download buttons for local files when practical and preserve provider URLs as fallback.
 - **History queries**: Index SQLite database on model_name and timestamp for fast filtering
 
 ## Security
@@ -284,12 +289,12 @@ uv pip install -e ".[dev]"
 - Commit messages: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
 - One feature per branch
 - No `main` branch protection initially (solo dev)
-- `.gitignore` must include: `.env`, `.venv/`, `__pycache__/`, `*.pyc`, `data/`
+- `.gitignore` must include: `.env`, `.venv/`, `__pycache__/`, `*.pyc`, `data/`, `outputs/`
 
 ## Future Extensibility
 
 Design with these future additions in mind (but don't implement now):
-- Generation history/gallery view (PLANNED for initial release)
+- Rerun/remix from History
 - Side-by-side model comparison
 - Batch generation (multiple prompts)
 - ComfyUI integration for image preprocessing
@@ -318,7 +323,14 @@ CREATE TABLE generations (
     predict_time_seconds REAL,
     total_time_seconds REAL,
     estimated_cost_usd REAL,
-    status TEXT  -- 'success', 'failed', 'cancelled'
+    status TEXT,  -- 'success', 'failed', 'cancelled'
+    provider TEXT,
+    replicate_prediction_id TEXT,
+    replicate_prediction_url TEXT,
+    generation_mode TEXT,
+    local_file_path TEXT,
+    thumbnail_path TEXT,
+    file_size_bytes INTEGER
 );
 
 CREATE INDEX idx_model_name ON generations(model_name);
