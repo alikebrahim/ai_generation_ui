@@ -2,9 +2,58 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## v0.3.0 — Schema-Safe Controls / Personal Local Beta
+## Unreleased — Planning / Docs
+
+### Added
+
+- Added `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`, a provider-aware implementation plan for eventual v1.0.0+ expansion from Replicate-only to Replicate + fal.ai.
+- Kept v0.4.0 focused on Replicate-side work: the newer Replicate `tencent/hunyuan-3d-3.1` model and durable output/history improvements.
+- Documented Hunyuan 3D 3.1 schema details, endpoint mode, validation requirements, and UI/History expectations.
+- Documented NVIDIA Cosmos 3 Super fal.ai schema details, pricing, validation requirements, and agentic-generation cost warning as v1.0.0+ planning, not v0.x implementation work.
+
+### Verified without paid prediction
+
+- Fetched `tencent/hunyuan-3d-3.1` model metadata/schema from Replicate.
+- Confirmed latest version ID: `a2838628b41a2e0ee2eb19b3ea98a40d75f8d7639bf5a1ddd37ea299bb334854`.
+- Confirmed Replicate API page reports `usesVersionlessApi: true` for Hunyuan 3D 3.1.
+- Fetched fal.ai Cosmos 3 Super `llms.txt` and OpenAPI schema for v1.0.0+ planning without creating a paid request.
+
+---
+
+## v0.3.1 — 3D Endpoint Compatibility Patch
 
 **Status**: Current
+
+### Changed
+
+- 3D generation now resolves each model's current Replicate `latest_version.id` and creates predictions with the versioned API path.
+- Hunyuan3D 2.0 and TRELLIS 2 no longer rely on Replicate's versionless model prediction endpoint.
+- App-level Replicate/API errors now get friendlier messages for common 401, 404, 422, and network/timeout failures.
+
+### Fixed
+
+- Replaced deprecated Streamlit `use_container_width=True` usage with `width="stretch"`.
+- Verified `friendly_error_message` imports from `src.utils` in the local uv environment after the v0.3.1 error-message change.
+- Fixed Hunyuan3D 2.0 404 failures caused by calling `replicate.predictions.create(model=...)` for a model that reports `usesVersionlessApi: false`.
+- Reduced raw `ReplicateError` leakage in the Streamlit UI for common endpoint/schema/token issues.
+
+### Verification
+
+- Verified `tencent/hunyuan3d-2` and `fishwowater/trellis2` latest version IDs through Replicate's model API without creating paid predictions.
+- Ran a non-paid probe confirming 3D predictions use `version=` rather than `model=`.
+- Ran local compile and Ruff checks.
+
+### Known limitations
+
+- No paid live generation was run for this patch.
+- Output URLs still expire after about 1 hour unless the user downloads them.
+- Durable local output storage remains planned for v0.4.0.
+
+---
+
+## v0.3.0 — Schema-Safe Controls / Personal Local Beta
+
+**Status**: Superseded by v0.3.1
 
 ### Added
 

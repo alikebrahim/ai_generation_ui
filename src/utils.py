@@ -121,3 +121,32 @@ def estimate_cost_label(model_id: str, duration: float | None, calculator) -> st
     if duration is not None and duration > 0:
         return format_cost(calculator(model_id, 0, output_duration=duration))
     return "Cost shown after generation"
+
+
+def friendly_error_message(error: Exception | str) -> str:
+    """Translate common Replicate/API failures into actionable UI copy."""
+    text = str(error)
+    lower = text.lower()
+
+    if "status: 401" in lower or "unauthorized" in lower:
+        return (
+            "Replicate could not authenticate this request. Check that your "
+            "REPLICATE_API_TOKEN in .env is present and valid."
+        )
+    if "status: 404" in lower or "not found" in lower:
+        return (
+            "Replicate could not find the requested model endpoint or model "
+            "version. This can happen when a model requires a versioned API call "
+            "or when the model ID changed."
+        )
+    if "status: 422" in lower or "validation" in lower:
+        return (
+            "Replicate rejected one of the settings for this model. Review the "
+            "visible controls and try the recommended/default values."
+        )
+    if "timeout" in lower or "connection" in lower or "network" in lower:
+        return (
+            "The request could not reach Replicate reliably. Check the network "
+            "connection or try again in a few minutes."
+        )
+    return text

@@ -15,6 +15,7 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
     ├── DECISIONS.md             ← Why we chose what we chose
     ├── AGENTS.md                ← Technical context for AI agents working on this repo
     ├── IMPLEMENTATION_PLAN.md   ← Step-by-step build guide (pre-implementation blueprint)
+    ├── IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md ← v1.0.0+ Replicate + fal.ai provider plan
     ├── ITER_1_IMPLEMENTATION.md ← Historical as-built reference for v0.1/v0.2 baseline
     └── ROADMAP.md               ← Versioned plan toward v1.0.0
 ```
@@ -28,7 +29,7 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Purpose**: Project landing page — the first thing anyone reads.
 
 **Contains**:
-- What this project does (Streamlit UI for Replicate video & 3D generation)
+- What this project does (Streamlit UI for hosted video & 3D generation; Replicate now, fal.ai deferred to v1.0.0+)
 - Architecture diagram (ASCII)
 - Tech stack summary
 - Project directory structure
@@ -44,9 +45,9 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Purpose**: Version history — what changed in each standard-versioned release.
 
 **Contains**:
-- Current version: v0.2.0 local beta / capability-safe baseline
-- Summary of additions, changes, fixes, and known limitations
-- Historical v0.1.0 scaffold entry
+- Current version: v0.3.1 3D endpoint compatibility patch / schema-safe beta
+- Summary of additions, changes, fixes, verification, and known limitations
+- Historical v0.3.0, v0.2.0, and v0.1.0 entries
 
 **Read when**: You want to know what version the project is at or what changed recently.
 
@@ -57,7 +58,7 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Purpose**: Design decisions record — why we chose each approach.
 
 **Contains**:
-- 10 resolved decisions with rationale, alternatives considered, and selected option
+- 11 resolved decisions with rationale, alternatives considered, and selected option
 - Decision 1: Video models (Wan + Seedance)
 - Decision 2: 3D models (Hunyuan3D + TRELLIS)
 - Decision 3: UI layout (tabbed)
@@ -68,7 +69,9 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 - Decision 8: API token management (.env)
 - Decision 9: Cost tracking (static pricing table)
 - Decision 10: Package management (uv)
-- Final model list with Replicate IDs
+- Decision 11: Replicate prediction endpoint mode (versionless vs versioned)
+- Decision 12: Provider expansion through adapters
+- Final model list with provider/model IDs
 
 **Read when**: You're questioning why something is designed a certain way, or proposing a change that might conflict with a past decision.
 
@@ -113,7 +116,23 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 
 ---
 
-### 6. ITER_1_IMPLEMENTATION.md
+### 6. IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md
+
+**Purpose**: Implementation blueprint for v1.0.0+ expansion from Replicate-only to Replicate + fal.ai.
+
+**Contains**:
+- Provider-agnostic UI/provider-aware detail principles
+- Proposed provider adapter architecture
+- Provider-aware model config/history/result shapes
+- v1.0.0+ fal.ai credential/setup approach
+- UI/UX plan for provider model cards, filters, dry-run previews, errors, and History
+- Bite-sized implementation tasks and open questions
+
+**Read when**: Planning or implementing v1.0.0+ fal.ai support, provider-aware History, or provider model selection.
+
+---
+
+### 7. ITER_1_IMPLEMENTATION.md
 
 **Purpose**: Historical as-built documentation for the v0.1/v0.2 baseline.
 
@@ -133,19 +152,20 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 
 ---
 
-### 7. ROADMAP.md
+### 8. ROADMAP.md
 
-**Purpose**: Versioned roadmap — what comes next after v0.2.0.
+**Purpose**: Versioned roadmap — what comes next after v0.3.1.
 
 **Contains**:
-- Current version estimate: v0.2.0 local beta / capability-safe baseline
-- v0.3.0: model capability matrix + schema-driven UX
-- v0.4.0: durable output storage + permanent History preview
-- v0.5.0: automated tests + optional live Replicate smoke tests
-- v0.6.0+: model catalogue expansion and pricing refresh workflow
+- Current version estimate: v0.3.1 3D endpoint compatibility patch / schema-safe beta
+- Pre-1.0 must-haves vs nice-to-haves
+- v0.4.0: provider-aware architecture, Hunyuan 3D 3.1, durable output storage + permanent History gallery
+- v0.5.0: generation safety, dry-run payloads, and schema drift checks
+- v0.6.0: plain-English UX + model selection polish
+- Post-1.0 exploration including masking/inpainting and local mask helpers
 - Priority ranking and v1.0.0 release criteria
 
-**Read when**: Planning the next version. Roadmap items after v0.2.0 are not implemented yet.
+**Read when**: Planning the next version. Roadmap items after v0.3.1 are not implemented yet.
 
 ---
 
@@ -157,9 +177,9 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 | Run the app | README.md → Quick Start |
 | Check current version/history | CHANGELOG.md |
 | Know why a decision was made | DECISIONS.md |
-| Add a new model | AGENTS.md, then ITER_1_IMPLEMENTATION.md → models_config.py |
+| Add a new model | AGENTS.md, then ROADMAP.md / IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md → models_config.py |
 | Modify the UI | ITER_1_IMPLEMENTATION.md → app.py reference |
-| Add cost tracking for a new model | AGENTS.md → Cost Tracking, pricing.py |
+| Add cost tracking for a new model/provider | AGENTS.md → Cost Tracking, pricing.py → provider plan |
 | Plan the next version | ROADMAP.md |
 | Understand the as-built code | ITER_1_IMPLEMENTATION.md |
 | See the original plan | IMPLEMENTATION_PLAN.md |
@@ -173,11 +193,11 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 | `app.py` | Streamlit entry point |
 | `src/config.py` | .env loading, paths, token check |
 | `src/pricing.py` | Static hardware pricing table |
-| `src/models_config.py` | ModelConfig dataclasses for all 5 models |
+| `src/models_config.py` | ModelConfig dataclasses for current models; planned provider metadata/Hunyuan 3D 3.1 |
 | `src/cost_tracker.py` | SQLite init, insert, query, stats |
 | `src/utils.py` | format helpers, Replicate output URL normalization, safe serialization/upload metadata |
 | `src/video_gen.py` | generate_wan_2_7_t2v, generate_wan_2_5_i2v, generate_seedance_2_0 |
 | `src/threed_gen.py` | generate_hunyuan3d_2, generate_trellis_2 |
 | `pyproject.toml` | Dependencies and project config (uv) |
-| `.env.example` | Template for Replicate API token |
+| `.env.example` | Template for provider API tokens |
 | `.gitignore` | Git exclusions |

@@ -918,7 +918,7 @@ if generations:
     display_df["Predict Time"] = display_df["Predict Time"].apply(lambda x: f"{x:.1f}s")
     display_df["Estimated Cost"] = display_df["Estimated Cost"].apply(lambda x: f"${x:.2f}")
     
-    st.dataframe(display_df, use_container_width=True)
+    st.dataframe(display_df, width="stretch")
 else:
     st.info("No history available")
 ```

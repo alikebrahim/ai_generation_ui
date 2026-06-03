@@ -22,14 +22,15 @@ All decisions have been made. This document records the final choices and ration
 
 ## Decision 2: 3D Models
 
-**SELECTED: Hunyuan3D 2.0 (Option A) + Microsoft TRELLIS 2 (Option B)**
+**SELECTED: Hunyuan3D 2.0 + Hunyuan 3D 3.1 + Microsoft TRELLIS 2**
 
 | Model | Type | Notes |
 |---|---|---|
-| Hunyuan3D 2.0 | Image-to-3D in current Replicate schema | Best quality image-driven mesh generation |
-| TRELLIS 2 | Image-to-3D | PBR textures, up to 1536³, open-source |
+| Hunyuan3D 2.0 | Image-to-3D in current Replicate schema | Existing image-driven mesh generation model; requires versioned Replicate prediction path. |
+| Hunyuan 3D 3.1 | Text-to-3D or Image-to-3D | Planned for v0.4.0; newer Tencent model with texture fidelity and geometry precision; Replicate schema accepts either prompt or image, not both. |
+| TRELLIS 2 | Image-to-3D | PBR textures, up to 1536³, open-source; requires versioned Replicate prediction path. |
 
-**Rationale**: The current Replicate Hunyuan3D schema is image-only, so current 3D scope is Image-to-3D. TRELLIS 2 complements it with high-res PBR textured assets. Both accept Midjourney art or other clear subject images as input. Text-to-3D remains future scope unless a reliable Replicate text-capable model is added.
+**Rationale**: Hunyuan 3D 3.1 is the newer Hunyuan option and should be added in v0.4.0 because it expands 3D from image-only to text-or-image generation while staying within the hosted 3D scope. Hunyuan3D 2.0 and TRELLIS remain useful existing options. Text-to-3D is now planned specifically through verified provider schemas such as `tencent/hunyuan-3d-3.1`, not as a generic unsupported promise.
 
 **Not selected**: Tripo 2.5, Rodin
 
@@ -145,16 +146,46 @@ uv run streamlit run app.py # Run the app
 
 ---
 
+## Decision 11: Replicate Prediction Endpoint Mode
+
+**SELECTED: Use the endpoint mode required by each model**
+
+- Versionless-capable models can use `replicate.predictions.create(model=model_id, input=...)`.
+- Models that do not support versionless predictions must resolve `latest_version.id` and use `replicate.predictions.create(version=version_id, input=...)`.
+- Hunyuan3D 2.0 and TRELLIS 2 currently use the versioned path in the 3D generation wrapper.
+- Hunyuan 3D 3.1 (`tencent/hunyuan-3d-3.1`) is planned for v0.4.0 and Replicate's API page reports `usesVersionlessApi: true`, so it should use the versionless model prediction path.
+
+**Rationale**: Replicate model pages can exist while their versionless prediction endpoints return 404. Using each model's supported endpoint mode prevents avoidable paid-call failures and keeps model compatibility explicit.
+
+---
+
+## Decision 12: Provider Expansion
+
+**SELECTED: Add fal.ai through a provider adapter layer, not direct UI branches**
+
+- Current implementation remains Replicate-only.
+- fal.ai development starts at v1.0.0 or later; v0.x remains Replicate-only implementation work.
+- Provider should be visible in model cards, History, dry-run payloads, diagnostics, and errors, but model selection should remain workflow/use-case first.
+- Missing credentials for one provider should not block using the other provider.
+- NVIDIA Cosmos 3 Super Image to Video (`nvidia/cosmos-3-super/image-to-video`) is the first documented fal.ai candidate for v1.0.0+ work.
+- Additional fal.ai model IDs, schemas, output shapes, and pricing must be verified before adding real fal.ai models.
+
+**Rationale**: Provider expansion is useful, but the app is a personal creative UI rather than an API console. A thin provider layer keeps Replicate/fal.ai differences manageable while preserving plain-English UX.
+
+---
+
 ## Final Model List
 
-### Video Models (3)
-1. `wan-video/wan-2.7-t2v` — Text-to-Video
-2. `wan-video/wan-2.5-i2v-fast` — Image-to-Video
-3. `bytedance/seedance-2.0` — T2V + I2V (multi-reference)
+### Video Models (current + planned)
+1. `wan-video/wan-2.7-t2v` — Text-to-Video; current Replicate
+2. `wan-video/wan-2.5-i2v-fast` — Image-to-Video; current Replicate
+3. `bytedance/seedance-2.0` — T2V + I2V (multi-reference); current Replicate
+4. `nvidia/cosmos-3-super/image-to-video` — Image-to-Video; planned v1.0.0+ fal.ai pilot
 
-### 3D Models (2)
-4. `tencent/hunyuan3d-2` — Image-to-3D
-5. `fishwowater/trellis2` — Image-to-3D (PBR)
+### 3D Models (current + planned)
+4. `tencent/hunyuan3d-2` — Image-to-3D; current; Replicate versioned prediction path
+5. `fishwowater/trellis2` — Image-to-3D (PBR); current; Replicate versioned prediction path
+6. `tencent/hunyuan-3d-3.1` — Text-to-3D or Image-to-3D; planned for v0.4.0; Replicate versionless prediction path
 
 ---
 

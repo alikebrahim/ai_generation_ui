@@ -4,9 +4,9 @@ This roadmap is the source of truth for product direction. It separates what sho
 
 ## Product framing
 
-This is a personal local Streamlit UI for Replicate-powered video and 3D generation, not a production SaaS. The roadmap should prioritize:
+This is a personal local Streamlit UI for hosted video and 3D generation, currently Replicate-powered, with fal.ai development intentionally deferred until v1.0.0 or later, not a production SaaS. The roadmap should prioritize:
 
-- Avoiding invalid or wasteful paid Replicate calls.
+- Avoiding invalid or wasteful paid provider calls.
 - A clear, pleasant UI for the project owner and a non-technical household user.
 - Useful history and output persistence.
 - Honest cost/status messaging.
@@ -18,14 +18,16 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.3.0 — Personal Local Beta / Schema-Safe Controls**
+**Current version: v0.3.1 — 3D Endpoint Compatibility Patch / Schema-Safe Beta**
 
-Why v0.3.0:
+Why v0.3.1:
 
 - v0.1.0 represented the first working Streamlit + Replicate scaffold.
 - v0.2.0 represented the post-review reliability/UX baseline: safer upload handling, Replicate output URL normalization, status polling, improved validation, cost display, and usable History filtering/links.
-- v0.3.0 adds model-specific schema constraints, schema-safe controls, pre-submit validation, clearer media roles, and generation-mode history for personal use.
-- This is still pre-1.0 because output/history persistence still relies on temporary Replicate URLs, live paid model QA is manual, 3D/model endpoint behavior still needs smoke validation, and the UI still needs a plain-English polish pass for non-technical users.
+- v0.3.0 added model-specific schema constraints, schema-safe controls, pre-submit validation, clearer media roles, and generation-mode history for personal use.
+- v0.3.1 fixes 3D model prediction creation for Replicate models that require the versioned prediction API and adds friendlier UI messaging for common Replicate/API failures.
+- v0.4.0 is focused on Replicate-side improvements: the newer Hunyuan 3D 3.1 model and durable output/history improvements. fal.ai development starts at v1.0.0 or later, not in v0.x.
+- This is still pre-1.0 because output/history persistence still relies on temporary Replicate URLs, live paid model QA is manual, and the UI still needs a plain-English polish pass for non-technical users.
 
 ---
 
@@ -47,27 +49,32 @@ During 0.x development, breaking internal changes are allowed, but user-facing w
 
 These are required for the app to feel like a dependable personal tool:
 
-1. **Versioned/model endpoint safety**
-   - Avoid broken paid calls when Replicate models do not support versionless predictions.
-   - Track whether a model uses `model=` or `version=` prediction creation.
+1. **Provider + endpoint safety**
+   - Avoid broken paid calls when a provider endpoint, model ID, or version mode is wrong.
+   - Track the Replicate endpoint mode per model and keep metadata structured so a future provider can be added cleanly.
+   - For Replicate, track whether a model uses `model=`/versionless prediction creation or `version=` prediction creation.
    - Surface endpoint/model errors in plain English.
 
-2. **Durable local output storage**
+2. **Provider-aware model catalogue**
+   - Keep model selection workflow-first rather than provider-first.
+   - Include the newer Replicate `tencent/hunyuan-3d-3.1` model in v0.4.0 with all current schema parameters exposed.
+
+3. **Durable local output storage**
    - Preserve successful outputs after Replicate delivery URLs expire.
    - Store local file paths in History.
    - Make History useful as a permanent gallery, not just a temporary link table.
 
-3. **Plain-English UX polish**
+4. **Plain-English UX polish**
    - Explain model choices by outcome/use case, not only by model names.
    - Explain technical controls with tooltips and “leave this alone unless…” copy.
    - Make validation errors actionable for a non-technical user.
 
-4. **Generation safety and dry-run visibility**
+5. **Generation safety and dry-run visibility**
    - Show the request summary before paid generation.
    - Provide a non-paid dry-run payload preview for debugging.
    - Keep cost estimates honest: approximate or unknown is better than misleading precision.
 
-5. **Minimal live smoke validation**
+6. **Minimal live smoke validation**
    - Run live paid tests only with explicit user authorization and expected cost/scope.
    - Before v1.0, verify at least one successful generation for each supported workflow:
      - text-to-video
@@ -92,7 +99,7 @@ These are valuable but should wait until the core product is stable:
 - Local mask creation or segmentation helper, possibly using a local model such as SAM/SAM2 or another lightweight background/object segmentation option.
 - Batch generation.
 - Side-by-side output comparison.
-- More model providers/catalog expansion.
+- fal.ai provider implementation and additional provider/catalog expansion.
 - Advanced prompt builder/templates.
 - CSV/JSON export.
 - Per-model quirks database.
@@ -166,7 +173,7 @@ These are valuable but should wait until the core product is stable:
 
 **Priority**: Immediate
 
-**Status**: Implemented in working tree; include in next patch/version docs if releasing v0.3.1.
+**Status**: Implemented / current patch release
 
 **Goal**: Fix 404 errors for Replicate 3D models that do not support the versionless model prediction endpoint.
 
@@ -187,22 +194,71 @@ Investigation found that `tencent/hunyuan3d-2` exists but its Replicate API page
 - Cache the latest version lookup during the process.
 - Verify with non-paid probes and local checks.
 
-### Follow-up before declaring released
+### Release notes
 
-- Update `CHANGELOG.md`, `README.md`, and `pyproject.toml` if this becomes a formal v0.3.1 patch release.
-- Add friendlier handling for 404/model endpoint errors in the UI.
+- Package/docs version is updated to v0.3.1.
+- `CHANGELOG.md` records the endpoint compatibility fix and non-paid verification.
+- Common Replicate/API errors now get friendlier UI messages.
+
+### Follow-up for later milestones
+
+- Run a paid live image-to-3D smoke test only with explicit user authorization and expected cost.
+- Durable local output storage remains planned for v0.4.0.
 
 ---
 
-## v0.4.0 — Durable Output Storage + Permanent History Gallery
+## v0.4.0 — Hunyuan 3D 3.1 + Durable History
 
 **Priority**: Highest next feature
 
 **Status**: Planned
 
-**Goal**: Make successful generations reusable after Replicate URLs expire.
+**Goal**: Add the newer Replicate Hunyuan 3D 3.1 model safely and make successful generations reusable after provider delivery URLs expire. fal.ai implementation is deferred until v1.0.0 or later.
 
-### Planned work
+### Hunyuan 3D 3.1 planned work
+
+Add Replicate model `tencent/hunyuan-3d-3.1` as a v0.4.0 3D model.
+
+Verified non-paid model/page facts gathered 2026-06-03:
+
+- Replicate URL: `https://replicate.com/tencent/hunyuan-3d-3.1`
+- Model ID: `tencent/hunyuan-3d-3.1`
+- Description: “3D models with texture fidelity and geometry precision”
+- Latest version ID: `a2838628b41a2e0ee2eb19b3ea98a40d75f8d7639bf5a1ddd37ea299bb334854`
+- Replicate API page reports `usesVersionlessApi: true`, so this model should use the versionless path:
+  - `replicate.predictions.create(model="tencent/hunyuan-3d-3.1", input=...)`
+- Hardware shown by Replicate page/API metadata: `CPU`
+- Pricing shown by Replicate page: `$0.16 per unit` / about 62 units for $10; page also shows p50 price around `$0.012`. Treat as pricing-to-verify before showing a confident estimate.
+- Output schema: single URI string. Expect a downloadable 3D asset URL; normalize through the existing output URL normalization path.
+
+Expose all current schema parameters:
+
+| Parameter | Type | Default | Constraint | Plain-English label / guidance |
+|---|---|---:|---|---|
+| `prompt` | string, nullable | none | max 1024 chars; mutually exclusive with `image` | “Describe the 3D model” — use when generating from text instead of a subject image. |
+| `image` | URI string, nullable | none | jpg/png/jpeg/webp; 128–5000 px per side; max 6 MB; mutually exclusive with `prompt` | “Subject image” — use one clear object, simple background, no text, object >50% of frame. |
+| `enable_pbr` | boolean | `false` | ignored when `generate_type="Geometry"` | “Generate realistic materials” — adds PBR material/texture detail when using normal textured mode. |
+| `face_count` | integer | `500000` | min `40000`, max `1500000` | “Model detail / polygon count” — higher can improve detail but may be slower/heavier. |
+| `generate_type` | enum | `Normal` | `Normal` or `Geometry` | “Output style” — Normal generates a textured model; Geometry generates a white/untextured model. |
+
+Validation requirements:
+
+- Require exactly one of `prompt` or `image`.
+- Reject prompt + image together before creating a paid prediction.
+- Reject neither prompt nor image before creating a paid prediction.
+- Enforce prompt max length, image file type/size guidance, face count range, and enum values locally.
+- Show `enable_pbr` as disabled or explain it has no effect when `generate_type="Geometry"`.
+
+History/UI requirements:
+
+- Add generation modes for this model:
+  - `text_to_3d`
+  - `image_to_3d`
+- Show it in the 3D tab as the more advanced Hunyuan option.
+- Plain-English model card: “Newest Hunyuan 3D model; supports text or subject image; good for higher-fidelity geometry and texture.”
+- Keep old `tencent/hunyuan3d-2` available until user decides to remove or de-emphasize it.
+
+### Durable output/history planned work
 
 - Add optional local output storage:
 
@@ -213,13 +269,13 @@ outputs/
 └── thumbnails/
 ```
 
-- Download successful video/3D outputs from Replicate delivery URLs.
-- Store both original Replicate URL and local file path.
+- Download successful video/3D outputs from provider delivery URLs.
+- Store both original provider output URL and local file path.
 - Add database migration fields:
   - `local_file_path`
   - `thumbnail_path`
   - optional `file_size_bytes`
-- Preserve the original URL even if local download fails.
+- Preserve the original provider output URL even if local download fails.
 - Add a History gallery view with cards for recent generations.
 - Make temporary vs permanent output status obvious.
 - Add basic local cleanup/delete controls.
@@ -234,13 +290,17 @@ Examples:
 
 - `wan_2_7_t2v_text_to_video_20260603_143052.mp4`
 - `hunyuan3d_2_image_to_3d_20260603_145512.glb`
+- `hunyuan_3d_3_1_text_to_3d_20260603_150110.glb`
 - `trellis_2_image_to_3d_20260603_150423.glb`
 
 ### Acceptance criteria
 
-- A successful generation remains previewable after the original Replicate URL expires.
-- History clearly distinguishes local files from temporary Replicate URLs.
-- Failed local downloads do not lose the original Replicate URL or history metadata.
+- Hunyuan 3D 3.1 appears in the 3D tab with prompt/image modes and all schema parameters exposed with plain-English labels/help.
+- Hunyuan 3D 3.1 dry-run/payload path uses versionless Replicate model prediction mode, not the versioned path required by Hunyuan3D 2.0/TRELLIS.
+- A successful generation remains previewable after the original provider URL expires.
+- History clearly distinguishes local files from temporary provider URLs.
+- Failed local downloads do not lose the original provider URL or history metadata.
+- History stores endpoint/model metadata needed for current Replicate workflows and future provider expansion.
 - The History tab is useful as a personal gallery, not just a table.
 
 ---
@@ -267,9 +327,10 @@ Examples:
   - whether versionless API is supported
   - local config inputs vs live schema inputs
   - unknown/missing fields
-- Add optional live smoke commands gated by explicit environment variables:
+- Add optional Replicate live smoke commands gated by explicit environment variables:
   - `RUN_REPLICATE_SMOKE=1`
-  - `REPLICATE_API_TOKEN=...`
+  - provider API token set in `.env`
+- Add `RUN_FAL_SMOKE=1` only when v1.0.0+ fal.ai implementation begins.
 - Use shortest/cheapest settings for smoke checks.
 - Never run paid smoke checks by default.
 
@@ -321,7 +382,7 @@ Examples:
 
 - A non-technical user can understand the main controls without model jargon.
 - Advanced controls explain when to change them and when to leave them alone.
-- Model selection helps choose between Wan, Seedance, Hunyuan3D, and TRELLIS by desired outcome.
+- Model selection helps choose between Wan, Seedance, Hunyuan3D/Hunyuan 3D 3.1, and TRELLIS by desired outcome.
 - Browser/manual QA checks UI copy for clarity, not just functional correctness.
 
 ---
@@ -400,7 +461,9 @@ Add richer model metadata beyond simple `supports_text` / `supports_image` flags
 
 ```python
 capabilities = {
-    "modes": ["text_to_video", "image_to_video", "image_to_3d"],
+    "provider": "replicate",  # future providers such as fal.ai start at v1.0+
+    "provider_model_id": "tencent/hunyuan-3d-3.1",
+    "modes": ["text_to_video", "image_to_video", "text_to_3d", "image_to_3d"],
     "media_roles": ["start_frame", "subject_image", "reference_image"],
     "endpoint_mode": "versionless" | "versioned",
     "output_types": ["video", "glb", "preview_video"],
@@ -444,6 +507,29 @@ Use this metadata to drive:
 - Browser visual QA is complete for Video, 3D, and History tabs.
 - Lightweight local checks cover core utility, validation, pricing, history, output normalization, and endpoint-mode behavior.
 - README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation docs agree on scope, version, model IDs, storage behavior, and known limitations.
+
+### fal.ai development begins at v1.0.0
+
+No fal.ai implementation work is planned for v0.x. Starting at v1.0.0 or later, add fal.ai through the provider-adapter plan in `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`, not through direct branches in `app.py`.
+
+The first documented fal.ai candidate remains NVIDIA Cosmos 3 Super Image to Video:
+
+- fal.ai model page: `https://fal.ai/models/nvidia/cosmos-3-super/image-to-video`
+- Endpoint URL: `https://fal.run/nvidia/cosmos-3-super/image-to-video`
+- Model ID / endpoint ID: `nvidia/cosmos-3-super/image-to-video`
+- Category: image-to-video
+- Pricing: `$0.05` per second of generated video, rounded up. Agentic generation is billed for each candidate video generated.
+- OpenAPI schema URL: `https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=nvidia/cosmos-3-super/image-to-video`
+- Output schema: `video` object with downloadable URL plus returned `seed`.
+
+Acceptance criteria before any paid fal.ai call:
+
+- fal.ai credentials are optional and never block Replicate-only use.
+- Cosmos appears as a fal.ai image-to-video candidate with all schema parameters exposed through plain-English labels/help.
+- Cosmos cost estimate accounts for generated duration and warns that agentic generation can multiply candidate renders/spend.
+- Prompt and start-frame image are required before a paid fal.ai request.
+- Uploaded images are converted into a fal-accessible URL/request payload through a verified path.
+- Paid fal.ai smoke checks require explicit user authorization and expected cost/scope.
 
 ---
 
@@ -567,12 +653,12 @@ Post-1.0 work should expand creative power only after the core local app is depe
 | Milestone | Theme | Priority | Target |
 |---|---|---:|---|
 | v0.3.1 | 3D endpoint compatibility patch | Immediate | Pre-1.0 patch |
-| v0.4.0 | Durable output storage + permanent History gallery | Highest | Must-have v1.0 |
+| v0.4.0 | Hunyuan 3D 3.1 + durable History | Highest | Must-have v1.0 |
 | v0.5.0 | Generation safety, dry-run payloads, schema drift checks | High | Must-have v1.0 |
 | v0.6.0 | Plain-English UX + model selection polish | High | Must-have v1.0 |
 | v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |
 | v0.8.0 | History reuse and creative iteration | Medium | Nice-to-have v1.0 |
-| v0.9.0 | Model capability metadata hardening | Medium | Nice-to-have v1.0 / early post-1.0 |
+| v0.9.0 | Model capability metadata hardening | Medium | Prepares for v1.0+ provider work without implementing fal.ai |
 | v1.0.0 | Stable personal local release | Release | Release target |
 | v1.1 | Masking and inpainting exploration | High | Post-1.0 |
 | v1.2 | Model catalogue expansion | Medium | Post-1.0 |

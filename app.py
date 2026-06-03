@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import sys
+from importlib import reload
 from pathlib import Path
 from time import monotonic
 
@@ -16,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import streamlit as st
 
+from src import utils as app_utils
 from src.config import check_token
 from src.cost_tracker import (
     get_all_generations,
@@ -31,13 +33,20 @@ from src.models_config import (
     get_range_for_param,
 )
 from src.pricing import calculate_cost
-from src.utils import (
-    estimate_cost_label,
-    format_cost,
-    format_duration,
-    format_timestamp,
-    uploaded_file_metadata,
-)
+
+if not hasattr(app_utils, "friendly_error_message"):
+    # Streamlit reruns app.py in the same Python process. If src.utils was
+    # imported before a helper was added, the old module object can remain in
+    # sys.modules and make `from src.utils import friendly_error_message` fail
+    # until the server is restarted. Reload once so hot-reload recovers cleanly.
+    app_utils = reload(app_utils)
+
+estimate_cost_label = app_utils.estimate_cost_label
+format_cost = app_utils.format_cost
+format_duration = app_utils.format_duration
+format_timestamp = app_utils.format_timestamp
+friendly_error_message = app_utils.friendly_error_message
+uploaded_file_metadata = app_utils.uploaded_file_metadata
 
 # ── Page config (must be first st call) ────────────────────────────
 
@@ -234,7 +243,7 @@ def _render_generation_form(model: ModelConfig) -> dict | None:
             )
             kwargs["_uploaded_image"] = uploaded
             if uploaded is not None:
-                st.image(uploaded, caption="Input preview", use_container_width=True)
+                st.image(uploaded, caption="Input preview", width="stretch")
                 meta = uploaded_file_metadata(uploaded)
                 size_mb = (meta.get("size_bytes") or 0) / 1_000_000
                 st.caption(f"{meta.get('filename')} · {size_mb:.2f} MB")
@@ -392,14 +401,14 @@ with tab_video:
                     )
                 else:
                     status.update(label="Generation failed", state="error")
-                    st.error(f"Error: {result['error']}")
+                    st.error(f"Error: {friendly_error_message(result['error'])}")
                     if result.get("prediction_url"):
                         st.caption(f"Replicate prediction: {result['prediction_url']}")
                     st.toast("Generation failed ❌")
 
             except Exception as exc:
                 status.update(label="Generation error", state="error")
-                st.error(f"Unexpected error: {exc}")
+                st.error(f"Unexpected error: {friendly_error_message(exc)}")
                 st.toast("Error during generation")
 
 
@@ -515,14 +524,14 @@ with tab_3d:
                     )
                 else:
                     status.update(label="Generation failed", state="error")
-                    st.error(f"Error: {result['error']}")
+                    st.error(f"Error: {friendly_error_message(result['error'])}")
                     if result.get("prediction_url"):
                         st.caption(f"Replicate prediction: {result['prediction_url']}")
                     st.toast("Generation failed ❌")
 
             except Exception as exc:
                 status.update(label="Generation error", state="error")
-                st.error(f"Unexpected error: {exc}")
+                st.error(f"Unexpected error: {friendly_error_message(exc)}")
                 st.toast("Error during generation")
 
 
@@ -633,7 +642,7 @@ with tab_history:
 
         st.dataframe(
             display,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             column_config={
                 "Output": st.column_config.LinkColumn(

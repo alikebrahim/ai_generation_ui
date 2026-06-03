@@ -14,8 +14,8 @@ This document defines conventions, defaults, and constraints for this project. F
 
 **IN SCOPE:**
 - Video generation: Text-to-Video (T2V), Image-to-Video (I2V)
-- 3D generation: Image-to-3D (I23D); Text-to-3D (T23D) is future scope unless a reliable Replicate text-capable model is added
-- Replicate API integration only
+- 3D generation: Image-to-3D (I23D); Text-to-3D (T23D) is planned when a reliable hosted provider/model schema is verified, starting with Replicate `tencent/hunyuan-3d-3.1` in v0.4.0
+- Replicate API integration today; fal.ai provider integration is planned for v1.0.0 or later
 - Streamlit-based web interface
 - Cost tracking and generation history
 
@@ -23,17 +23,17 @@ This document defines conventions, defaults, and constraints for this project. F
 - Image generation (handled by ComfyUI workflows separately)
 - Audio generation
 - Video-to-video transformations (future consideration)
-- Local model inference (all generation via Replicate API)
+- Local model inference (all generation via hosted providers such as Replicate/fal.ai)
 
 ## Project Nature and Quality Bar
 
-This is a personal local web UI for Replicate inference, not a production SaaS
+This is a personal local web UI for hosted video/3D inference, currently Replicate-powered with fal.ai deferred until v1.0.0 or later, not a production SaaS
 product. Optimize for a robust, pleasant local experience rather than enterprise
 process.
 
 Prioritize:
 - Clear Streamlit UI/UX for personal generation workflows
-- Avoiding obviously invalid or wasteful paid Replicate calls
+- Avoiding obviously invalid or wasteful paid provider calls
 - Plain-English explanations of model choices and parameters
 - Useful generation history and honest cost/status messaging
 - Simple, maintainable code and docs that future agents can understand
@@ -81,7 +81,7 @@ Prefer lightweight, non-paid verification:
 - Targeted Python probes for validation, pricing, history, and output parsing
 - Manual Streamlit/browser QA for UI changes when feasible
 
-Never create a paid Replicate prediction unless the user explicitly authorizes
+Never create a paid Replicate or fal.ai prediction unless the user explicitly authorizes
 the scope and expected cost. For normal development/review, use dry-run payload
 inspection and local validation probes instead of live predictions.
 
@@ -125,6 +125,7 @@ agree.
 ```toml
 streamlit = ">=1.58.0"       # Web UI framework
 replicate = ">=1.0.7"        # Replicate API client
+# fal.ai dependency/client will be added when v1.0.0+ fal.ai provider support is implemented
 python-dotenv = ">=1.2.2"    # Environment variable management
 pillow = ">=10.0.0"          # Image processing
 requests = ">=2.31.0"        # HTTP client for downloads
@@ -141,17 +142,22 @@ black = ">=24.0.0"           # Code formatter
 - `.env.example` for template
 - Load via `python-dotenv` at app startup
 - Never hardcode API tokens in code
+- Provider credentials should be optional per provider: missing fal.ai credentials must not block Replicate-only use, and missing Replicate credentials must not block future fal.ai-only use.
 
 ## Architecture Decisions
 
-### API Layer
-- Use `replicate` Python package (official client)
-- One module per generation type: `src/video_gen.py`, `src/threed_gen.py`
-- Cost tracking module: `src/cost_tracker.py`
-- Each model gets its own function with typed parameters
-- API calls are async-friendly but start synchronous for simplicity
+### API / Provider Layer
+- Current implementation uses the `replicate` Python package (official client).
+- v1.0.0+ provider expansion adds fal.ai through a provider adapter layer; do not scatter provider-specific branches throughout `app.py`.
+- Keep a single model catalogue in `src/models_config.py` with provider metadata for each model.
+- Suggested future provider modules: `src/providers/base.py`, `src/providers/replicate.py`, `src/providers/fal.py`.
+- One workflow wrapper per generation type can remain (`src/video_gen.py`, `src/threed_gen.py`) but should call provider adapters rather than knowing every API detail.
+- Cost tracking module: `src/cost_tracker.py`.
+- Each model/provider pair should have typed parameters or validated payload construction.
+- API calls are async-friendly but start synchronous for simplicity.
 
 ### Cost Tracking & History
+- Provider should be stored per generation (`replicate` or `fal`) so History can filter and troubleshoot by provider.
 - Replicate provides `metrics` field in prediction responses with:
   - `predict_time`: Duration in seconds
   - `total_time`: Total time including queue
@@ -161,7 +167,8 @@ black = ">=24.0.0"           # Code formatter
   - Model name, timestamp, prompt
   - Input parameters (resolution, duration, etc.)
   - Generation time, cost estimate
-  - Output file path
+  - Output file path or provider delivery URL
+  - Provider job/request ID and provider job URL when available
 - Display stats in "History" tab:
   - Total spend per model
   - Total spend overall
@@ -170,9 +177,9 @@ black = ">=24.0.0"           # Code formatter
 
 ### File Storage
 - Outputs are NOT stored locally on the server
-- Replicate provides ephemeral URLs for preview (expire after ~1 hour)
-- User downloads explicitly from the displayed Replicate/local output link
-- Only metadata is persisted: prompt, params, cost, timestamp, replicate_url
+- Providers currently return ephemeral URLs for preview (Replicate URLs expire after ~1 hour)
+- User downloads explicitly from the displayed provider/local output link
+- Only metadata is persisted today: prompt, params, cost, timestamp, provider output URL
 - No `outputs/` directory needed — removed from project structure
 
 ### Streamlit App Structure
@@ -212,9 +219,10 @@ black = ">=24.0.0"           # Code formatter
 - Ruff for linting (configured in pyproject.toml)
 
 ### Configuration
-- API token via `.env` file (loaded with python-dotenv)
-- No hardcoded model versions — use `latest` alias or fetch version list
-- Model configurations in `src/models_config.py` (dataclasses mapping model names to their Replicate identifiers, capability flags, parameter groups, and defaults)
+- API tokens via `.env` file (loaded with python-dotenv)
+- Do not require all provider tokens at startup; unavailable providers should be hidden or disabled with clear setup copy.
+- No hardcoded Replicate model versions — use `latest` alias or fetch version list where appropriate.
+- Model configurations in `src/models_config.py` should map model names to provider identifiers, capability flags, parameter groups, endpoint metadata, and defaults.
 
 ## Naming Conventions
 
@@ -225,7 +233,7 @@ black = ">=24.0.0"           # Code formatter
 
 ## Error Handling Strategy
 
-1. **API errors**: Catch `replicate.exceptions.ReplicateError`, show friendly message
+1. **API errors**: Catch provider-specific errors (`replicate.exceptions.ReplicateError`, fal.ai errors), show friendly message
 2. **Network errors**: Retry up to 3 times with exponential backoff for transient failures
 3. **Invalid inputs**: Validate before API call, show `st.error()` immediately
 4. **File errors**: Ensure output directory exists, catch write permission errors
@@ -239,23 +247,23 @@ black = ">=24.0.0"           # Code formatter
   - configured lint
   - targeted Python probes for validation, pricing, history, and output normalization
   - manual Streamlit/browser QA when UI changes are made and a token/runtime is available
-- Live Replicate generation checks are manual and opt-in because they may cost money.
+- Live Replicate/fal.ai generation checks are manual and opt-in because they may cost money.
 - Do not add pytest/CI unless the user explicitly asks or the project scope changes.
 
 ## Performance Guidelines
 
 - **Video generation**: 30 seconds to 5 minutes typical
-  - Poll Replicate API every 5 seconds
+  - Poll provider API every 5 seconds
   - Show progress bar with estimated time
 - **3D generation**: 1 to 10 minutes typical
   - Poll every 10 seconds
   - Show spinner with status message
-- **File downloads**: Use link buttons for Replicate delivery URLs; future local storage may use `st.download_button()` or file-serving links
+- **File downloads**: Use link buttons for provider delivery URLs; future local storage may use `st.download_button()` or file-serving links
 - **History queries**: Index SQLite database on model_name and timestamp for fast filtering
 
 ## Security
 
-- Never log or display the Replicate API token
+- Never log or display provider API tokens
 - `.env` file must be in `.gitignore`
 - Validate file uploads (size, type) before processing
 - Sanitize user prompts (basic length limit, no code injection)
