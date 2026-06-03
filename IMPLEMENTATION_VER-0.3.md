@@ -1,7 +1,7 @@
 # v0.3.0 Implementation — Model Capability Matrix + Schema-Driven UX
 
-> **For Hermes:** Use subagent-driven-development skill to implement each phase.
-> Each task is bite-sized (2-5 min). TDD where possible. Commit after each task.
+> **Project note:** This is a personal Replicate inference UI. Prefer small,
+> verifiable implementation steps and useful manual QA over formal process.
 
 **Goal:** Prevent all known invalid Replicate API calls by adding per-model parameter
 constraints, updating UI controls to show only schema-valid options, and adding
@@ -479,18 +479,20 @@ if kwargs is not None:
 
 ---
 
-## Phase 4: Tests
+## Phase 4: Lightweight Verification
 
-### Task 4.1: Add model schema conformance tests
+### Task 4.1: Run local validation probes
 
-**Objective:** Ensure every model's param_constraints match the live schema defaults.
+**Objective:** Confirm model constraints and cost edge cases without a paid Replicate call.
 
-**Files:**
-- Create: `tests/test_model_constraints.py`
+**Files:** None required
 
-**Implementation:** See test file for inline tests.
-
-**Step 5:** Commit: `test: add model constraint conformance tests`
+**Verification examples:**
+- Wan 2.7 rejects duration `1`, resolution `480p`, and aspect ratio `adaptive`
+- Wan 2.5 rejects duration values other than `5` or `10`
+- Hunyuan3D rejects octree values outside `[256, 384, 512]`
+- TRELLIS 2 rejects old pipeline values like `512_fast`
+- Seedance duration `-1` displays unknown/post-generation cost rather than a negative estimate
 
 ---
 
@@ -528,9 +530,9 @@ if kwargs is not None:
 
 | Phase | Tasks | Status |
 |-------|-------|--------|
-| 1: Data Layer | 1.1–1.6 (ModelConfig + constraints for all 5 models) | Pending |
-| 2: UI Layer | 2.1–2.4 (Schema-driven widgets) | Pending |
-| 3: Validation | 3.1–3.2 (Pre-submit validation) | Pending |
-| 4: Tests | 4.1 (Constraint conformance tests) | Pending |
-| 5: Docs | 5.1 (ROADMAP update) | Pending |
-| 6: QA | 6.1 (Browser verification) | Pending |
+| 1: Data Layer | 1.1–1.6 (ModelConfig + constraints for all 5 models) | Implemented |
+| 2: UI Layer | 2.1–2.4 (Schema-driven widgets) | Implemented |
+| 3: Validation | 3.1–3.2 (Pre-submit validation) | Implemented |
+| 4: Lightweight Verification | 4.1 (Local validation/cost probes) | Implemented |
+| 5: Docs | 5.1 (ROADMAP/README/CHANGELOG/version updates) | Implemented |
+| 6: QA | 6.1 (Browser controls checklist) | Manual / pending live-token run |

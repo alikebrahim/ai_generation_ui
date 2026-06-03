@@ -1,37 +1,107 @@
 # ROADMAP.md — Versioned Product Roadmap
 
-This document replaces the old rev/iter roadmap with standard semantic-version planning.
+This roadmap is the source of truth for product direction. It separates what should be done before v1.0 from ideas that are valuable but should wait until the core personal workflow is stable.
 
-## Current Version Estimate
+## Product framing
 
-**Current version: v0.2.0 — Local Beta / Capability-Safe Baseline**
+This is a personal local Streamlit UI for Replicate-powered video and 3D generation, not a production SaaS. The roadmap should prioritize:
 
-Why v0.2.0:
-- v0.1.0 represents the first working Streamlit + Replicate scaffold.
-- v0.2.0 represents the post-review reliability/UX baseline: safer upload handling,
-  Replicate output URL normalization, status polling, improved validation, cost display,
-  and usable History filtering/links.
-- This is still pre-1.0 because not every supported model has been live-tested with paid
-  Replicate calls, browser visual QA was not completed in an environment with Chrome,
-  and output/history persistence still relies on temporary Replicate URLs.
+- Avoiding invalid or wasteful paid Replicate calls.
+- A clear, pleasant UI for the project owner and a non-technical household user.
+- Useful history and output persistence.
+- Honest cost/status messaging.
+- Simple maintainable code and docs.
 
-## Versioning Policy
-
-This project uses SemVer-style versioning while pre-1.0:
-
-- **0.x minor bumps**: meaningful product capability changes or UX architecture changes.
-- **0.x patch bumps**: bug fixes, docs corrections, small UI polish, pricing table updates.
-- **1.0.0**: stable local product baseline after live model smoke tests, browser QA,
-  durable output/history behavior, and documented model capability validation.
-
-During 0.x development, breaking internal changes are allowed, but user-facing workflows
-should still be documented in this roadmap and README.
+Do not add enterprise release process, CI/CD, auth, Docker, or heavy local inference stacks unless explicitly requested later.
 
 ---
 
-## v0.2.0 — Current Baseline
+## Current version estimate
 
-**Status**: Current
+**Current version: v0.3.0 — Personal Local Beta / Schema-Safe Controls**
+
+Why v0.3.0:
+
+- v0.1.0 represented the first working Streamlit + Replicate scaffold.
+- v0.2.0 represented the post-review reliability/UX baseline: safer upload handling, Replicate output URL normalization, status polling, improved validation, cost display, and usable History filtering/links.
+- v0.3.0 adds model-specific schema constraints, schema-safe controls, pre-submit validation, clearer media roles, and generation-mode history for personal use.
+- This is still pre-1.0 because output/history persistence still relies on temporary Replicate URLs, live paid model QA is manual, 3D/model endpoint behavior still needs smoke validation, and the UI still needs a plain-English polish pass for non-technical users.
+
+---
+
+## Versioning policy
+
+This project uses lightweight SemVer-style versioning while pre-1.0:
+
+- **0.x patch bumps**: bug fixes, docs corrections, small UI polish, pricing updates.
+- **0.x minor bumps**: meaningful product capability changes or UX architecture changes.
+- **1.0.0**: comfortable personal baseline after persistent outputs/history, clear non-technical UX, dry-run/safety tooling, and at least one authorized live smoke generation for each supported workflow.
+
+During 0.x development, breaking internal changes are allowed, but user-facing workflows should remain documented in this roadmap and README.
+
+---
+
+## Pre-1.0 priority tiers
+
+### Must have before v1.0
+
+These are required for the app to feel like a dependable personal tool:
+
+1. **Versioned/model endpoint safety**
+   - Avoid broken paid calls when Replicate models do not support versionless predictions.
+   - Track whether a model uses `model=` or `version=` prediction creation.
+   - Surface endpoint/model errors in plain English.
+
+2. **Durable local output storage**
+   - Preserve successful outputs after Replicate delivery URLs expire.
+   - Store local file paths in History.
+   - Make History useful as a permanent gallery, not just a temporary link table.
+
+3. **Plain-English UX polish**
+   - Explain model choices by outcome/use case, not only by model names.
+   - Explain technical controls with tooltips and “leave this alone unless…” copy.
+   - Make validation errors actionable for a non-technical user.
+
+4. **Generation safety and dry-run visibility**
+   - Show the request summary before paid generation.
+   - Provide a non-paid dry-run payload preview for debugging.
+   - Keep cost estimates honest: approximate or unknown is better than misleading precision.
+
+5. **Minimal live smoke validation**
+   - Run live paid tests only with explicit user authorization and expected cost/scope.
+   - Before v1.0, verify at least one successful generation for each supported workflow:
+     - text-to-video
+     - image-to-video
+     - image-to-3D
+
+### Nice to have before v1.0 if time allows
+
+These improve the experience but should not block v1.0 if the must-haves are complete:
+
+- Rerun/remix from History.
+- Favorites or simple notes in History.
+- Better loading-stage copy and “taking longer than usual” messaging.
+- A small model/schema diagnostics panel for development use.
+- Basic prompt helper examples or starter prompts.
+
+### Post-1.0 exploration
+
+These are valuable but should wait until the core product is stable:
+
+- Masking/inpainting workflows for models that support masks.
+- Local mask creation or segmentation helper, possibly using a local model such as SAM/SAM2 or another lightweight background/object segmentation option.
+- Batch generation.
+- Side-by-side output comparison.
+- More model providers/catalog expansion.
+- Advanced prompt builder/templates.
+- CSV/JSON export.
+- Per-model quirks database.
+
+---
+
+## v0.2.0 — Previous Baseline
+
+**Status**: Superseded by v0.3.0
 
 ### Implemented
 
@@ -50,229 +120,377 @@ should still be documented in this roadmap and README.
 - Safe serialization of uploaded files into history metadata.
 - Basic model requirement flags: `requires_text`, `requires_image`.
 
-### Known limitations
+### Known limitations carried forward
 
-- No live paid generation smoke test has been run for all models.
-- No completed browser visual QA in the current agent environment.
 - History links expire when Replicate delivery URLs expire, usually after about 1 hour.
-- Wan 2.7 T2V currently uses generic video controls that can expose invalid Replicate
-  values, including duration `1`, resolution `480p`, and aspect ratio `adaptive`.
-- Model capabilities are still manually encoded and not rich enough for all Seedance-style
-  multimodal combinations.
+- No live paid generation smoke test has been run for every model/workflow.
+- Browser visual QA is still manual.
+- Model capabilities are manually encoded and need richer media-role metadata.
 - Advanced multi-file/reference-media controls are intentionally not fully exposed yet.
 
 ---
 
-## v0.2.1 — Wan 2.7 T2V Validation Patch
+## v0.3.0 — Model Constraints + Schema-Safe Controls
 
 **Status**: Implemented
 
-**Priority**: Immediate (merged into v0.3.0 implementation)
+**Goal**: Prevent invalid paid generations and make implemented model inputs clearer.
 
-**Goal**: Prevent known invalid Wan 2.7 T2V requests before any paid Replicate
-prediction is created.
+### Implemented
 
-### Triggering issue
-
-Browser/API debugging found that the app's generic video controls do not match the live
-Replicate schema for `wan-video/wan-2.7-t2v`.
-
-Confirmed live schema constraints:
-
-- `duration`: minimum `2`, maximum `15`
-- `resolution`: only `720p` or `1080p`
-- `aspect_ratio`: only `16:9`, `9:16`, `1:1`, `4:3`, `3:4`
-
-Current invalid UI values to remove or block for Wan 2.7 T2V:
-
-- duration `1`
-- resolution `480p`
-- aspect ratio `adaptive`
-
-### Planned work
-
-- Add model-specific parameter constraints for Wan 2.7 T2V in `src/models_config.py` or
-  an equivalent validation layer.
-- Update `app.py` controls so Wan 2.7 T2V only offers schema-valid values:
-  - duration slider starts at `2`
-  - resolution options are `720p`, `1080p`
-  - aspect ratio options include `3:4` and exclude `adaptive`
-- Add pre-submit validation that blocks invalid Wan 2.7 T2V payloads before calling
-  `replicate.predictions.create()`.
-- Surface validation failures as friendly `st.error()` messages instead of Replicate
-  422 errors.
-
-### Acceptance criteria
-
-- Wan 2.7 T2V cannot submit duration `1`, resolution `480p`, or aspect ratio `adaptive`.
-- Valid default Wan 2.7 T2V settings remain unchanged: `5s`, `1080p`, `16:9`.
-- Invalid payload tests run without network access or paid Replicate calls.
-- Manual browser QA confirms the Wan 2.7 controls match the accepted schema.
-
----
-
-## v0.3.0 — Model Capability Matrix + Schema-Driven UX
-
-**Priority**: Highest
-
-**Status**: Implemented
-
-**Goal**: Prevent invalid paid generations and make model input roles obvious.
-
-Key deliverables:
-- `ParamConstraint` struct + `param_constraints` field on every `ModelConfig`
-- All 5 models have live-schema-validated constraints for enums, ranges, and nullable
-- App widgets (duration, resolution, aspect_ratio, pipeline_type, numeric params)
-  now use per-model constraints instead of generic hardcoded options
-- Pre-submit parameter validation in `src/validation.py` blocks invalid payloads
-  before any Replicate API call
-- Bricked old pipeline_type values: `512_fast` → `512`, `2048_quality` → `1536_cascade`
-- Wan 2.5 I2V duration changed from slider to dropdown [5, 10] matching live schema
-
-### Why this comes next
-
-The biggest remaining product risk is model semantic drift. Replicate model schemas can
-change, and models like Seedance have richer input semantics than simple `supports_image`
-or `requires_image` flags. The app should know whether an image is a start frame, end
-frame, reference image, mask, or unsupported input before the user spends money.
-
-### Planned work
-
-- Add structured capability metadata to each model config, for example:
-
-```python
-capabilities = {
-    "modes": ["text_to_video", "image_to_video"],
-    "image_roles": ["first_frame", "last_frame", "reference"],
-    "audio_roles": ["generate_audio", "reference_audio"],
-    "video_roles": ["reference_video"],
-    "supports_masks": False,
-    "conditional_requirements": [
-        {"if": "last_frame_image", "requires": "image"},
-    ],
-    "mutually_exclusive": [
-        ["reference_images", "image"],
-        ["reference_images", "last_frame_image"],
-    ],
-}
-```
-
-- Replace generic image upload copy with role-specific controls:
-  - Start frame
-  - End frame
-  - Reference image(s)
-  - Reference video
-  - Reference audio
-  - Mask, only when confirmed supported by the exact Replicate schema
-- Add validation before paid calls:
-  - Model-specific parameter ranges/enums match the live Replicate schema.
-  - Last-frame image requires a start-frame image.
-  - Reference media cannot be combined with mutually-exclusive first/last-frame fields.
-  - Resolution/aspect ratio warnings when ignored by image-driven modes.
-- Store generation mode in history:
+- `ParamConstraint` struct + `param_constraints` field on every `ModelConfig`.
+- Live-schema-validated constraints for enums, ranges, and nullable inputs.
+- Per-model controls for duration, resolution, aspect ratio, pipeline type, and numeric advanced settings.
+- Pre-submit parameter validation in `src/validation.py` before any Replicate prediction call.
+- Safer media role labels such as “start frame image” and “subject image”.
+- Generation mode stored in History:
   - `text_to_video`
   - `image_to_video`
   - `image_to_3d`
-  - future: `video_extend`, `video_edit`, `masked_edit`
-- Add a schema verification script that records the exact Replicate input schemas used by
-  the app.
-- Add regression tests for model validation rules.
+- Old invalid TRELLIS pipeline values replaced with current schema values.
+- Wan 2.5 I2V duration changed to fixed choices `[5, 10]` matching the live schema.
 
-### Current capability notes to preserve
+### Current model capability notes
 
 | Model | Current App Mode | Capability Notes |
 |---|---|---|
 | `wan-video/wan-2.7-t2v` | Text-to-video | Text prompt required. Image not supported in current app. |
 | `wan-video/wan-2.5-i2v-fast` | Image-to-video | Image + prompt required. |
-| `bytedance/seedance-2.0` | Text-to-video / image-to-video | Image is optional and can act as first-frame input. Future UI should expose last-frame and reference media only after exact schema verification. Mask support is not confirmed. |
+| `bytedance/seedance-2.0` | Text-to-video / image-to-video | Image is optional and can act as first-frame input. Future UI should expose last-frame/reference media only after exact schema verification. |
 | `tencent/hunyuan3d-2` | Image-to-3D | Treat as image-only for this Replicate deployment. |
 | `fishwowater/trellis2` | Image-to-3D | Current implementation target. Do not confuse with older `firtoz/trellis`. |
 
-### Acceptance criteria
+---
 
-- UI labels make input role clear; no generic ambiguous “image” field for multimodal models.
-- Invalid combinations are blocked before creating a Replicate prediction.
-- Tests cover the validation rules for every implemented model.
-- Docs include a model capability matrix matching `src/models_config.py`.
+## v0.3.1 — 3D Endpoint Compatibility Patch
+
+**Priority**: Immediate
+
+**Status**: Implemented in working tree; include in next patch/version docs if releasing v0.3.1.
+
+**Goal**: Fix 404 errors for Replicate 3D models that do not support the versionless model prediction endpoint.
+
+### Triggering issue
+
+Hunyuan3D 2.0 returned:
+
+```text
+Unexpected error: ReplicateError Details: status: 404 detail: The requested resource could not be found
+```
+
+Investigation found that `tencent/hunyuan3d-2` exists but its Replicate API page reports `usesVersionlessApi: false`. It must be called through a versioned prediction request.
+
+### Implemented fix
+
+- Resolve the current `latest_version.id` for 3D models.
+- Call `replicate.predictions.create(version=version_id, input=input_params)` instead of `replicate.predictions.create(model=model_id, input=input_params)` for the 3D path.
+- Cache the latest version lookup during the process.
+- Verify with non-paid probes and local checks.
+
+### Follow-up before declaring released
+
+- Update `CHANGELOG.md`, `README.md`, and `pyproject.toml` if this becomes a formal v0.3.1 patch release.
+- Add friendlier handling for 404/model endpoint errors in the UI.
 
 ---
 
-## v0.4.0 — Durable Output Storage + Permanent History Preview
+## v0.4.0 — Durable Output Storage + Permanent History Gallery
 
-**Priority**: High
+**Priority**: Highest next feature
 
-**Goal**: Make successful outputs persist after Replicate URLs expire.
+**Status**: Planned
+
+**Goal**: Make successful generations reusable after Replicate URLs expire.
 
 ### Planned work
 
-- Add optional server-side output storage:
+- Add optional local output storage:
 
 ```text
 outputs/
 ├── videos/
-└── models_3d/
+├── models_3d/
+└── thumbnails/
 ```
 
-- Save generated outputs from Replicate delivery URLs after successful predictions.
-- Preserve current no-autosave behavior as a configurable option if desired.
-- Update History to reference local files for permanent re-viewing.
-- Add video thumbnails/gallery previews.
-- Add file cleanup from History UI.
-- Add database migration:
-  - Keep `replicate_url`.
-  - Add `local_file_path`.
-  - Add `thumbnail_path` where useful.
+- Download successful video/3D outputs from Replicate delivery URLs.
+- Store both original Replicate URL and local file path.
+- Add database migration fields:
+  - `local_file_path`
+  - `thumbnail_path`
+  - optional `file_size_bytes`
+- Preserve the original URL even if local download fails.
+- Add a History gallery view with cards for recent generations.
+- Make temporary vs permanent output status obvious.
+- Add basic local cleanup/delete controls.
 
 ### Naming scheme
 
-`{model_name}_{type}_{datetime}.{ext}`
+```text
+{model_name}_{mode}_{datetime}.{ext}
+```
 
 Examples:
-- `wan_2_7_t2v_video_20260603_143052.mp4`
-- `hunyuan3d_2_threed_20260603_145512.glb`
-- `trellis_2_threed_20260603_150423.glb`
+
+- `wan_2_7_t2v_text_to_video_20260603_143052.mp4`
+- `hunyuan3d_2_image_to_3d_20260603_145512.glb`
+- `trellis_2_image_to_3d_20260603_150423.glb`
 
 ### Acceptance criteria
 
 - A successful generation remains previewable after the original Replicate URL expires.
-- History clearly distinguishes temporary Replicate URLs from permanent local files.
-- Failed downloads do not lose the original Replicate URL or history metadata.
+- History clearly distinguishes local files from temporary Replicate URLs.
+- Failed local downloads do not lose the original Replicate URL or history metadata.
+- The History tab is useful as a personal gallery, not just a table.
 
 ---
 
-## v0.5.0 — Automated Tests + Optional Live Replicate Smoke Tests
+## v0.5.0 — Generation Safety, Dry-Run Payloads, and Schema Drift Checks
 
-**Priority**: High
+**Priority**: High before v1.0
 
-**Goal**: Make local development safe and make paid API testing explicit.
+**Status**: Planned
+
+**Goal**: Make paid calls safer and make model/schema problems easy to diagnose without spending money.
 
 ### Planned work
 
-- Add unit tests for:
-  - `output_to_url()`
-  - `sanitize_parameters()`
-  - model requirement/capability validation
-  - cost calculation
-  - history recording
-- Add optional live smoke tests gated by environment variables:
+- Add a “Preview request” or “Dry-run payload” expander before Generate:
+  - model
+  - generation mode
+  - uploaded media roles
+  - parameter values
+  - estimated cost or “cost unknown”
+- Add a copyable payload summary for debugging.
+- Add a small non-paid schema/model diagnostics command or dev panel:
+  - current latest version ID
+  - whether versionless API is supported
+  - local config inputs vs live schema inputs
+  - unknown/missing fields
+- Add optional live smoke commands gated by explicit environment variables:
   - `RUN_REPLICATE_SMOKE=1`
   - `REPLICATE_API_TOKEN=...`
-- Use cheapest/shortest settings for live smoke tests.
-- Never run paid tests by default.
-- Add a dry-run payload validator that prints the Replicate input payload without creating
-  a prediction.
+- Use shortest/cheapest settings for smoke checks.
+- Never run paid smoke checks by default.
 
 ### Acceptance criteria
 
-- Default test suite runs without network and without spending money.
-- Paid smoke tests require explicit opt-in.
-- README documents the exact commands and expected cost envelope.
+- Default local checks run without network spending and without creating predictions.
+- Paid smoke checks require explicit opt-in and a clear cost/scope note.
+- Dry-run output is useful enough to debug model payload problems.
+- Schema drift checks catch obvious local config vs live schema mismatches.
 
 ---
 
-## v0.6.0 — Expand Model Catalogue
+## v0.6.0 — Plain-English UX + Model Selection Polish
 
-**Priority**: Medium
+**Priority**: High before v1.0
+
+**Status**: Planned
+
+**Goal**: Make the app comfortable for a non-technical household user who wants to generate videos or 3D models without understanding model/API terminology.
+
+### Planned work
+
+- Replace bare model dropdown copy with model descriptions/cards or a richer selector:
+  - best for
+  - needs
+  - output type
+  - speed/cost expectation where known
+  - recommended use case
+- Add clear labels, help text, captions, or tooltips for model parameters:
+  - Seed: “reuse this number to get a more repeatable result; leave random if unsure”
+  - Duration: “how long the video should be”
+  - Resolution: “image sharpness; higher is usually slower/more expensive”
+  - Aspect ratio: “wide, square, or vertical framing”
+  - Guidance scale: “how strongly the model follows the prompt”
+  - Steps: “more steps can improve detail but take longer”
+  - Pipeline/quality mode: “speed vs quality preset”
+  - Texture size / mesh resolution / polygon budget: plain-English 3D quality trade-offs
+- Add recommended-defaults copy for advanced settings.
+- Keep technical/API parameter names out of the main UI when possible.
+- Consider an explicit Simple / Advanced UI mode if the existing expander is not enough.
+- Improve validation errors so they explain how to fix the issue.
+- Add better empty states and upload guidance, especially for image-to-3D:
+  - one clear centered subject
+  - simple background
+  - good lighting
+  - avoid multiple objects or tiny/cropped subjects
+
+### Acceptance criteria
+
+- A non-technical user can understand the main controls without model jargon.
+- Advanced controls explain when to change them and when to leave them alone.
+- Model selection helps choose between Wan, Seedance, Hunyuan3D, and TRELLIS by desired outcome.
+- Browser/manual QA checks UI copy for clarity, not just functional correctness.
+
+---
+
+## v0.7.0 — Better Errors, Progress, and Recovery
+
+**Priority**: Medium before v1.0
+
+**Status**: Planned
+
+**Goal**: Turn technical failures and long waits into actionable user-facing messages.
+
+### Planned work
+
+- Translate common Replicate/API errors:
+  - 401: token missing or invalid
+  - 404: model endpoint/version mismatch or model ID problem
+  - 422: invalid setting; identify the relevant control where possible
+  - network/timeout: connection or Replicate availability issue
+  - prediction failed: show model error and prediction URL
+- Show prediction URL during generation, not only after completion/failure.
+- Improve loading-stage copy:
+  - uploading image
+  - queued by Replicate
+  - generating
+  - finalizing output
+- Add “this is taking longer than usual” copy after model-specific thresholds.
+- Investigate cancel support only if Replicate exposes it cleanly and it is simple.
+
+### Acceptance criteria
+
+- Common errors are understandable without reading Python/HTTP exception details.
+- The user always knows whether a job is waiting, running, done, or failed.
+- Failed jobs preserve useful debugging information.
+
+---
+
+## v0.8.0 — History Reuse and Creative Iteration
+
+**Priority**: Nice to have before v1.0; can move post-1.0 if needed
+
+**Status**: Planned
+
+**Goal**: Make iterative creative workflows faster once durable History exists.
+
+### Planned work
+
+- Add “use these settings again” from History.
+- Add copy prompt / copy seed / copy settings actions.
+- Add simple favorites.
+- Add optional notes per generation.
+- Add prompt examples or starter chips for common workflows.
+- Consider lightweight presets:
+  - video: fast draft / balanced / higher quality
+  - 3D: fast preview / balanced / detailed model
+
+### Acceptance criteria
+
+- A good prior result can be reused without manually re-entering prompt/settings.
+- History helps compare and continue creative experiments.
+- The feature remains lightweight and local; no account/user system.
+
+---
+
+## v0.9.0 — Model Capability Metadata Hardening
+
+**Priority**: Medium before v1.0 if time allows; otherwise first post-v1.0 cleanup
+
+**Status**: Planned
+
+**Goal**: Make model input/output roles explicit enough to support future expansion safely.
+
+### Planned work
+
+Add richer model metadata beyond simple `supports_text` / `supports_image` flags:
+
+```python
+capabilities = {
+    "modes": ["text_to_video", "image_to_video", "image_to_3d"],
+    "media_roles": ["start_frame", "subject_image", "reference_image"],
+    "endpoint_mode": "versionless" | "versioned",
+    "output_types": ["video", "glb", "preview_video"],
+    "conditional_requirements": [],
+    "mutually_exclusive": [],
+}
+```
+
+Use this metadata to drive:
+
+- UI labels.
+- validation.
+- History mode labels.
+- future masking/reference-media support.
+- dry-run payload display.
+
+### Acceptance criteria
+
+- Adding a model no longer requires guessing media roles from generic image/audio flags.
+- Future reference-media and mask fields have an obvious metadata home.
+- Local validation remains schema-safe before paid calls.
+
+---
+
+## v1.0.0 — Stable Personal Local Release
+
+**Priority**: Release target
+
+**Status**: Planned
+
+### Release criteria
+
+- Durable output storage and permanent History/gallery behavior are implemented or explicitly documented as out of scope.
+- Plain-English UX pass is complete for main controls, advanced controls, model selection, and common errors.
+- Dry-run payload preview or equivalent request summary is available before paid generation.
+- All implemented models have verified schema constraints and endpoint mode handling.
+- At least one user-authorized live successful smoke generation has been run for each supported workflow:
+  - text-to-video
+  - image-to-video
+  - image-to-3D
+- Browser visual QA is complete for Video, 3D, and History tabs.
+- Lightweight local checks cover core utility, validation, pricing, history, output normalization, and endpoint-mode behavior.
+- README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation docs agree on scope, version, model IDs, storage behavior, and known limitations.
+
+---
+
+# Post-1.0 roadmap
+
+Post-1.0 work should expand creative power only after the core local app is dependable.
+
+## v1.1 — Masking and Inpainting Exploration
+
+**Priority**: High post-1.0 exploration
+
+**Goal**: Explore mask-based workflows for models that support inpainting or region-specific edits.
+
+### Ideas to evaluate
+
+- Identify Replicate video/image/3D-adjacent models that accept mask inputs.
+- Add model metadata for mask support:
+  - required mask format
+  - image dimensions/alignment requirements
+  - whether mask is binary, grayscale, alpha, or model-specific
+  - whether mask is combined with start/reference image roles
+- Explore local mask creation helpers:
+  - local segmentation model such as SAM/SAM2 or a lightweight background/object segmentation option
+  - simple brush-based mask editor if feasible in Streamlit
+  - background removal as a simpler first step
+- Keep local mask tooling optional and lightweight; do not turn the project into a local inference stack unless the workflow proves useful.
+- Consider storing masks alongside generation history for reproducibility.
+
+### Open questions
+
+- Which supported/future Replicate models actually accept masks with useful inpainting behavior?
+- Is a local SAM/SAM2-style helper fast and simple enough on the target machine?
+- Is Streamlit adequate for mask drawing/editing, or should mask creation be done by uploading external mask files first?
+- Should mask generation be a separate utility tab or embedded only when a selected model supports masks?
+
+### Acceptance criteria for moving from exploration to implementation
+
+- At least one target model has verified mask input schema and useful output behavior.
+- A non-paid dry-run can validate image+mask payload shape.
+- Any local masking helper is optional, documented, and does not make normal generation harder.
+- The UI explains masks in plain English: “paint the area you want the model to change.”
+
+---
+
+## v1.2 — Model Catalogue Expansion
+
+**Priority**: Medium post-1.0
 
 **Goal**: Add more models only after capability/schema handling and persistence are solid.
 
@@ -293,26 +511,48 @@ Examples:
 
 ### Acceptance criteria
 
-- Every new model has capability metadata, validation tests, pricing, and docs.
-- No model is added based on marketing claims alone; implementation follows the exact
-  Replicate schema for the deployed model ID.
+- Every new model has capability metadata, validation, pricing notes, endpoint-mode handling, and docs.
+- No model is added based on marketing claims alone; implementation follows the exact schema for the deployed model ID.
+- Cost and limitations are clear before users spend money.
 
 ---
 
-## v0.7.0 — Pricing Refresh Workflow
+## v1.3 — Comparison, Batch, and Export Tools
 
-**Priority**: Low
+**Priority**: Medium/low post-1.0
 
-**Goal**: Keep static pricing useful without adding runtime pricing dependencies.
+**Goal**: Support heavier creative workflows without cluttering the simple default UI.
+
+### Candidate features
+
+- Side-by-side comparison from History.
+- Batch generation with explicit total-cost confirmation.
+- Prompt/settings templates.
+- CSV/JSON export for generation metadata.
+- Per-model quirks/notes database.
+
+### Guardrails
+
+- Keep batch generation opt-in with clear total expected cost.
+- Keep comparison/export tools out of the simple generation path.
+- Do not add multi-user/account concepts.
+
+---
+
+## v1.4 — Pricing Refresh Workflow
+
+**Priority**: Low post-1.0
+
+**Goal**: Keep static pricing useful without adding brittle runtime dependencies.
 
 ### Planned work
 
-- Add a quarterly/manual pricing refresh workflow:
+- Add a manual pricing refresh workflow:
   1. Fetch current hardware pricing from Replicate pricing docs or API if available.
   2. Fetch or verify hardware assignments per model.
   3. Update `src/pricing.py`.
   4. Log old price → new price for audit.
-- Consider a cron job only if automation is reliable.
+- Consider automation only if a reliable API is available.
 
 ### Considerations
 
@@ -322,29 +562,19 @@ Examples:
 
 ---
 
-## v1.0.0 — Stable Local Release
+## Priority summary
 
-**Priority**: Release target
-
-### Release criteria
-
-- All implemented models have verified capability metadata.
-- At least one live successful smoke generation has been run for each supported workflow.
-- Browser visual QA is complete for Video, 3D, and History tabs.
-- Durable output/history behavior is implemented or explicitly documented as out of scope.
-- Tests cover core utility, validation, pricing, and history behavior.
-- README, DECISIONS, AGENTS, and ROADMAP agree on scope, version, model IDs, and storage behavior.
-
----
-
-## Priority Summary
-
-| Version | Theme | Priority | Depends On |
+| Milestone | Theme | Priority | Target |
 |---|---|---:|---|
-| v0.2.1 | Wan 2.7 T2V validation patch | Immediate | v0.2.0 |
-| v0.3.0 | Model capability matrix + schema-driven UX | Highest | v0.2.0 |
-| v0.4.0 | Durable output storage + permanent History preview | High | v0.2.0 |
-| v0.5.0 | Automated tests + optional live smoke tests | High | v0.3.0 |
-| v0.6.0 | Expand model catalogue | Medium | v0.3.0, preferably v0.4.0 |
-| v0.7.0 | Pricing refresh workflow | Low | None |
-| v1.0.0 | Stable local release | Release | v0.3.0–v0.5.0, storage decision |
+| v0.3.1 | 3D endpoint compatibility patch | Immediate | Pre-1.0 patch |
+| v0.4.0 | Durable output storage + permanent History gallery | Highest | Must-have v1.0 |
+| v0.5.0 | Generation safety, dry-run payloads, schema drift checks | High | Must-have v1.0 |
+| v0.6.0 | Plain-English UX + model selection polish | High | Must-have v1.0 |
+| v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |
+| v0.8.0 | History reuse and creative iteration | Medium | Nice-to-have v1.0 |
+| v0.9.0 | Model capability metadata hardening | Medium | Nice-to-have v1.0 / early post-1.0 |
+| v1.0.0 | Stable personal local release | Release | Release target |
+| v1.1 | Masking and inpainting exploration | High | Post-1.0 |
+| v1.2 | Model catalogue expansion | Medium | Post-1.0 |
+| v1.3 | Comparison, batch, and export tools | Medium/low | Post-1.0 |
+| v1.4 | Pricing refresh workflow | Low | Post-1.0 |

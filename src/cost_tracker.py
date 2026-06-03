@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS generations (
     total_time_s        REAL,
     estimated_cost_usd  REAL,
     output_duration_s   REAL,
+    generation_mode     TEXT,
     status              TEXT    DEFAULT 'success'
 );
 
@@ -39,9 +40,13 @@ CREATE INDEX IF NOT EXISTS idx_timestamp   ON generations(timestamp);
 
 
 def init_db() -> None:
-    """Create database tables if they don't exist."""
+    """Create database tables if they don't exist and apply tiny migrations."""
     conn = sqlite3.connect(str(HISTORY_DB))
     conn.executescript(SCHEMA_SQL)
+    cursor = conn.execute("PRAGMA table_info(generations)")
+    existing_columns = {row[1] for row in cursor.fetchall()}
+    if "generation_mode" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN generation_mode TEXT")
     conn.commit()
     conn.close()
 
@@ -57,10 +62,12 @@ def record_generation(
     total_time: float = 0.0,
     estimated_cost: float = 0.0,
     output_duration: float | None = None,
+    generation_mode: str | None = None,
     input_image_path: str | None = None,
     status: str = "success",
 ) -> int:
     """Insert a generation record. Returns the new row id."""
+    init_db()
     conn = sqlite3.connect(str(HISTORY_DB))
     cursor = conn.cursor()
     cursor.execute(
@@ -68,8 +75,9 @@ def record_generation(
         INSERT INTO generations (
             model_name, model_type, prompt, input_image_path,
             parameters_json, replicate_url, predict_time_s,
-            total_time_s, estimated_cost_usd, output_duration_s, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            total_time_s, estimated_cost_usd, output_duration_s,
+            generation_mode, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             model_name,
@@ -82,6 +90,7 @@ def record_generation(
             total_time,
             estimated_cost,
             output_duration,
+            generation_mode,
             status,
         ),
     )
@@ -96,7 +105,15 @@ def get_all_generations(limit: int = 100) -> list[tuple]:
     conn = sqlite3.connect(str(HISTORY_DB))
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM generations ORDER BY timestamp DESC LIMIT ?",
+        """
+        SELECT
+            id, model_name, model_type, timestamp, prompt, input_image_path,
+            parameters_json, replicate_url, predict_time_s, total_time_s,
+            estimated_cost_usd, output_duration_s, generation_mode, status
+        FROM generations
+        ORDER BY timestamp DESC
+        LIMIT ?
+        """,
         (limit,),
     )
     rows = cursor.fetchall()

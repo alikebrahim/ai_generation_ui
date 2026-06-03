@@ -20,9 +20,18 @@ import replicate
 from .cost_tracker import record_generation
 from .models_config import SEEDANCE_2_0, WAN_2_5_I2V, WAN_2_7_T2V
 from .pricing import calculate_cost
-from .utils import output_to_url
+from .utils import output_to_url, uploaded_file_metadata
+from .validation import validate_params
 
 ProgressCallback = Callable[[str, object], None]
+
+
+def _input_image_history_value(image: Any) -> str | None:
+    """Return a safe history value for image input without serializing bytes."""
+    if isinstance(image, str):
+        return image if image.startswith(("http", "data:")) else None
+    meta = uploaded_file_metadata(image)
+    return meta.get("filename") if meta else None
 
 
 def _run_prediction(
@@ -87,6 +96,7 @@ def generate_wan_2_7_t2v(
     if audio:
         input_params["audio"] = audio
 
+    validate_params(model, input_params)
     result = _run_prediction(model.replicate_id, input_params, progress_callback)
     if result["success"]:
         cost = calculate_cost(
@@ -104,6 +114,7 @@ def generate_wan_2_7_t2v(
             total_time=result["total_time"],
             estimated_cost=cost,
             output_duration=duration,
+            generation_mode="text_to_video",
         )
         result["estimated_cost"] = cost
     return result
@@ -136,6 +147,7 @@ def generate_wan_2_5_i2v(
     if audio:
         input_params["audio"] = audio
 
+    validate_params(model, input_params)
     result = _run_prediction(model.replicate_id, input_params, progress_callback)
     if result["success"]:
         cost = calculate_cost(
@@ -153,6 +165,8 @@ def generate_wan_2_5_i2v(
             total_time=result["total_time"],
             estimated_cost=cost,
             output_duration=duration,
+            generation_mode="image_to_video",
+            input_image_path=_input_image_history_value(image),
         )
         result["estimated_cost"] = cost
     return result
@@ -194,6 +208,7 @@ def generate_seedance_2_0(
     if reference_audios:
         input_params["reference_audios"] = reference_audios
 
+    validate_params(model, input_params)
     result = _run_prediction(model.replicate_id, input_params, progress_callback)
     if result["success"]:
         cost = calculate_cost(
@@ -221,6 +236,8 @@ def generate_seedance_2_0(
             total_time=result["total_time"],
             estimated_cost=cost,
             output_duration=duration,
+            generation_mode="image_to_video" if image else "text_to_video",
+            input_image_path=_input_image_history_value(image),
         )
         result["estimated_cost"] = cost
     return result

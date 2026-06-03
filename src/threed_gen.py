@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from functools import lru_cache
 from typing import Any
 
 import replicate
@@ -16,8 +17,20 @@ from .cost_tracker import record_generation
 from .models_config import HUNYUAN3D_2, TRELLIS_2
 from .pricing import calculate_cost
 from .utils import output_to_url, uploaded_file_metadata
+from .validation import validate_params
 
 ProgressCallback = Callable[[str, object], None]
+
+
+@lru_cache(maxsize=16)
+def _latest_version_id(model_id: str) -> str:
+    """Return the current latest Replicate version ID for a model slug."""
+    model = replicate.models.get(model_id)
+    latest_version = getattr(model, "latest_version", None)
+    version_id = getattr(latest_version, "id", None)
+    if not version_id:
+        raise ValueError(f"No latest Replicate version found for {model_id!r}")
+    return version_id
 
 
 def _run_prediction(
@@ -27,7 +40,8 @@ def _run_prediction(
     poll_interval: int = 10,
 ) -> dict:
     """Create a Replicate prediction, poll, and return normalized output."""
-    prediction = replicate.predictions.create(model=model_id, input=input_params)
+    version_id = _latest_version_id(model_id)
+    prediction = replicate.predictions.create(version=version_id, input=input_params)
     if progress_callback:
         progress_callback("created", prediction)
 
@@ -87,6 +101,7 @@ def generate_hunyuan3d_2(
         "remove_background": remove_background,
     }
 
+    validate_params(model, input_params)
     result = _run_prediction(model.replicate_id, input_params, progress_callback)
     if result["success"]:
         mesh_url = output_to_url(result["output"].get("mesh", result["output"]))
@@ -100,6 +115,7 @@ def generate_hunyuan3d_2(
             predict_time=result["predict_time"],
             total_time=result["total_time"],
             estimated_cost=cost,
+            generation_mode="image_to_3d",
             input_image_path=_input_image_history_value(image),
         )
         result["mesh_url"] = mesh_url
@@ -141,6 +157,7 @@ def generate_trellis_2(
         "tex_slat_guidance_strength": tex_slat_guidance_strength,
     }
 
+    validate_params(model, input_params)
     result = _run_prediction(model.replicate_id, input_params, progress_callback)
     if result["success"]:
         output = result["output"]
@@ -156,6 +173,7 @@ def generate_trellis_2(
             predict_time=result["predict_time"],
             total_time=result["total_time"],
             estimated_cost=cost,
+            generation_mode="image_to_3d",
             input_image_path=_input_image_history_value(image),
         )
         result["model_url"] = model_url

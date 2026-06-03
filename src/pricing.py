@@ -1,8 +1,8 @@
 """Static pricing table for Replicate hardware and models.
 
-Source: https://replicate.com/pricing (as of mid-2025).
-Prices are USD per second of compute time.
-Quarterly updates planned — see ROADMAP.md Future Plan 2.
+Source: static snapshot; refresh manually when prices matter.
+Prices are USD per second of compute time or output duration depending on model.
+Quarterly/manual refresh is tracked in ROADMAP.md v0.7.0.
 """
 
 # Hardware pricing ($ / second of compute)
@@ -54,7 +54,10 @@ def calculate_cost(
     For video models that charge by output duration, uses that rate.
     Otherwise falls back to compute-time × hardware-rate.
     """
-    if model_id in PER_SECOND_OUTPUT_PRICING and output_duration:
+    if (
+        model_id in PER_SECOND_OUTPUT_PRICING
+        and output_duration is not None
+        and output_duration > 0
+    ):
         return output_duration * PER_SECOND_OUTPUT_PRICING[model_id]
-    else:
-        return predict_time * get_hardware_price(model_id)
+    return predict_time * get_hardware_price(model_id)

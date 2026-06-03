@@ -2,7 +2,7 @@
 
 A Streamlit-based interface for video and 3D generation using Replicate API.
 
-**Current version**: v0.2.0 — local beta / capability-safe baseline.
+**Current version**: v0.3.0 — personal local beta / schema-safe controls.
 
 ## Purpose
 
@@ -70,7 +70,7 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
 
 ```bash
 # Clone or navigate to project
-cd /home/tima/ai_generation_ui
+cd ai_generation_ui
 
 # Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -97,7 +97,7 @@ cp .env.example .env
 # Make sure your virtual environment is active (see above)
 # If starting a new terminal session:
 #   source .venv/bin/activate
-cd /home/tima/ai_generation_ui
+cd ai_generation_ui
 source .venv/bin/activate
 
 # Run Streamlit
@@ -140,10 +140,14 @@ The app loads this automatically using python-dotenv.
 
 ## Status
 
-**v0.2.0 local beta.** Core UI, generation wrappers, cost/history tracking,
-safer upload handling, Replicate output normalization, and polling UX are implemented.
+**v0.3.0 personal local beta.** Core UI, generation wrappers, cost/history
+tracking, safer upload handling, Replicate output normalization, polling UX,
+schema-driven controls, and pre-submit validation are implemented.
 
-Still pre-1.0 because live paid generation smoke tests, browser visual QA, durable
-output storage, and richer schema-driven model capability validation are not complete yet.
+This is intentionally a personal-use app rather than a production product. The
+focus is a robust local UI/UX that avoids obvious invalid Replicate calls and
+keeps useful generation history. It remains pre-1.0 because output URLs are still
+temporary, browser/live model QA is manual, and durable output storage is not yet
+implemented.
 
 See `ITER_1_IMPLEMENTATION.md` for the as-built reference and `ROADMAP.md` for the versioned plan toward v1.0.0.

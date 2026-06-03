@@ -171,6 +171,7 @@ SEEDANCE_2_0 = ModelConfig(
             "ui_type": "dropdown",
         },
         "seed": {"nullable": True},
+        "image": {"nullable": True},
     },
 )
 

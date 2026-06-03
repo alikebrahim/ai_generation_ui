@@ -1,7 +1,7 @@
 """AI Generation Studio — Streamlit app for Replicate-powered video & 3D generation.
 
 Usage:
-    cd /home/tima/ai_generation_ui
+    cd ai_generation_ui
     uv run streamlit run app.py
 """
 
@@ -23,8 +23,13 @@ from src.cost_tracker import (
     get_total_stats,
     init_db,
 )
-from src.models_config import THREED_MODELS, VIDEO_MODELS, ModelConfig
-from src.models_config import get_options_for_param, get_range_for_param, is_param_nullable
+from src.models_config import (
+    THREED_MODELS,
+    VIDEO_MODELS,
+    ModelConfig,
+    get_options_for_param,
+    get_range_for_param,
+)
 from src.pricing import calculate_cost
 from src.utils import (
     estimate_cost_label,
@@ -149,6 +154,12 @@ def _render_param_widget(model: ModelConfig, param_name: str, advanced: bool = F
     if isinstance(default, list):
         st.caption(f"{_friendly_label(param_name)}: coming in a future UI pass")
         return None
+    enum_opts = get_options_for_param(model, param_name)
+    if enum_opts:
+        idx = enum_opts.index(default) if default in enum_opts else 0
+        return st.selectbox(
+            _friendly_label(param_name), options=enum_opts, index=idx, key=key_prefix,
+        )
     if isinstance(default, bool):
         return st.checkbox(_friendly_label(param_name), value=default, key=key_prefix)
     if isinstance(default, float):
@@ -202,11 +213,24 @@ def _render_generation_form(model: ModelConfig) -> dict | None:
 
     with col_right:
         if model.supports_image:
+            upload_label = "Upload Image"
+            upload_help = (
+                "Replicate accepts local file uploads. Keep files under 100 MB."
+            )
+            if model.name == "seedance-2.0":
+                upload_label = "Start frame image"
+                upload_help = (
+                    "Optional first frame for image-to-video; leave empty for "
+                    "text-to-video."
+                )
+            elif model.model_type == "3d":
+                upload_label = "Subject image"
+                upload_help = "Upload a clear subject image for image-to-3D."
             uploaded = st.file_uploader(
-                "Upload Image" + ("" if model.requires_image else " (optional)"),
+                upload_label + ("" if model.requires_image else " (optional)"),
                 type=["png", "jpg", "jpeg", "webp"],
                 key=f"img_{model.name}",
-                help="Replicate accepts local file uploads. Keep files under 100 MB.",
+                help=upload_help,
             )
             kwargs["_uploaded_image"] = uploaded
             if uploaded is not None:
@@ -562,6 +586,7 @@ with tab_history:
                 "Total Time (s)",
                 "Est. Cost (USD)",
                 "Duration (s)",
+                "Mode",
                 "Status",
             ],
         )
@@ -578,14 +603,16 @@ with tab_history:
         filtered = df[df["Model"].isin(model_filter)] if model_filter else df
         if search:
             filtered = filtered[
-                filtered["Prompt"].fillna("").str.contains(search, case=False)
+                filtered["Prompt"].fillna("").str.contains(
+                    search, case=False, regex=False,
+                )
             ]
 
         display = filtered[
             [
                 "Timestamp",
                 "Model",
-                "Type",
+                "Mode",
                 "Prompt",
                 "URL",
                 "Predict Time (s)",
@@ -593,6 +620,7 @@ with tab_history:
                 "Status",
             ]
         ].copy()
+        display["Mode"] = display["Mode"].fillna(filtered["Type"])
         display["Timestamp"] = display["Timestamp"].apply(format_timestamp)
         display["Predict Time (s)"] = display["Predict Time (s)"].apply(
             lambda x: format_duration(x) if x else "—"

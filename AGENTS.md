@@ -25,6 +25,95 @@ This document defines conventions, defaults, and constraints for this project. F
 - Video-to-video transformations (future consideration)
 - Local model inference (all generation via Replicate API)
 
+## Project Nature and Quality Bar
+
+This is a personal local web UI for Replicate inference, not a production SaaS
+product. Optimize for a robust, pleasant local experience rather than enterprise
+process.
+
+Prioritize:
+- Clear Streamlit UI/UX for personal generation workflows
+- Avoiding obviously invalid or wasteful paid Replicate calls
+- Plain-English explanations of model choices and parameters
+- Useful generation history and honest cost/status messaging
+- Simple, maintainable code and docs that future agents can understand
+
+Do not over-optimize for:
+- Enterprise-grade release engineering or CI/CD
+- Exhaustive formal automated test suites
+- Docker/deployment infrastructure
+- Multi-user auth/user-management systems
+- Local model inference stacks unless explicitly requested
+
+A change is good enough when the UI behavior is clear, invalid paid calls are
+blocked where practical, cost/history displays are not misleading, relevant docs
+match the current behavior, and lightweight local verification passes.
+
+## Intended Users and Plain-English UX
+
+The eventual users include the project owner and his wife. Assume at least one
+user is not comfortable with technical model-parameter terms.
+
+For UI changes:
+- Prefer labels and help text that explain what a control does in plain English.
+- Keep raw model/API parameter names out of the main UI when a friendly label is
+  available.
+- Use tooltips/subtexts for model terms such as seed, guidance, steps, duration,
+  aspect ratio, resolution, octree resolution, texture size, and pipeline type.
+- Explain trade-offs practically: speed vs quality, cost impact, predictability,
+  and when a setting can be left alone.
+- Keep advanced controls collapsed unless they are commonly useful.
+- Prefer “leave this alone unless…” guidance for advanced numeric settings.
+- Use media role labels such as “start frame”, “subject image”, or “reference
+  image” instead of generic “image” when the role is known.
+
+Plain-language UX polish should be completed before v1.0.0.
+
+## Personal-Project Verification
+
+Formal automated tests are not required by default for this personal project.
+Do not add pytest, CI, or a tests/ directory unless the user explicitly asks or
+the project grows enough to justify it.
+
+Prefer lightweight, non-paid verification:
+- `python -m compileall -q app.py src`
+- `uv run ruff check .` when ruff is configured
+- Targeted Python probes for validation, pricing, history, and output parsing
+- Manual Streamlit/browser QA for UI changes when feasible
+
+Never create a paid Replicate prediction unless the user explicitly authorizes
+the scope and expected cost. For normal development/review, use dry-run payload
+inspection and local validation probes instead of live predictions.
+
+## Documentation Consistency
+
+Only update docs that materially changed. But when declaring a version or
+milestone complete, update all relevant version docs together:
+
+- `pyproject.toml`: project version
+- `README.md`: current version, status, quick-start accuracy, and current scope
+- `CHANGELOG.md`: entry for the completed version
+- `ROADMAP.md`: completed milestone status and future milestone wording
+- `IMPLEMENTATION_VER-*.md`: implementation status table / completion notes
+- `DECISIONS.md`: only if an architectural or product decision changed
+- `AGENTS.md`: only if project operating conventions changed
+
+Do not leave docs in a mixed state where one file says “current”, another says
+“planned”, and another says “pending”. Prefer one source of truth for detailed
+requirements and link to it rather than duplicating long specs across many docs.
+
+## Versioning Policy
+
+Use lightweight pre-1.0 versioning as a personal planning aid:
+
+- Patch versions: small fixes, UI polish, docs corrections, pricing updates
+- Minor versions: meaningful UX, model-support, validation, history, or storage
+  improvements
+- v1.0.0: a comfortable personal baseline, not a public production guarantee
+
+A version is complete when implemented behavior, local verification, and docs
+agree.
+
 ## Tooling & Dependencies
 
 ### Package Management
@@ -142,12 +231,16 @@ black = ">=24.0.0"           # Code formatter
 4. **File errors**: Ensure output directory exists, catch write permission errors
 5. **Cost calculation**: If metrics missing, show "Cost unknown" rather than crashing
 
-## Testing Approach
+## Verification Approach
 
-- Manual testing during development (no formal test suite initially)
-- Test each model end-to-end: prompt → generate → display → download
-- Verify error paths: invalid token, network timeout, invalid input
-- Test cost tracking: verify costs are recorded and displayed correctly
+- No formal automated test suite is required by default.
+- Prefer lightweight non-paid checks:
+  - compile/import checks
+  - configured lint
+  - targeted Python probes for validation, pricing, history, and output normalization
+  - manual Streamlit/browser QA when UI changes are made and a token/runtime is available
+- Live Replicate generation checks are manual and opt-in because they may cost money.
+- Do not add pytest/CI unless the user explicitly asks or the project scope changes.
 
 ## Performance Guidelines
 

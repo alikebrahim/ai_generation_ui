@@ -9,6 +9,8 @@ from typing import Any
 
 def format_cost(cost: float) -> str:
     """Format a dollar amount for display. e.g. 0.42 → '$0.42'."""
+    if cost < 0:
+        return "Cost unknown"
     if cost < 0.01:
         return "< $0.01"
     return f"${cost:.2f}"
@@ -116,6 +118,6 @@ def uploaded_file_metadata(uploaded: Any) -> dict[str, Any]:
 
 def estimate_cost_label(model_id: str, duration: float | None, calculator) -> str:
     """Best-effort pre-generation cost label for the current form."""
-    if duration:
+    if duration is not None and duration > 0:
         return format_cost(calculator(model_id, 0, output_duration=duration))
     return "Cost shown after generation"
