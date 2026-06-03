@@ -8,9 +8,23 @@ Each ModelConfig captures:
 """
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, TypedDict
 
 ModelType = Literal["video", "3d"]
+
+
+class ParamConstraint(TypedDict, total=False):
+    """Validated per-parameter constraint from live Replicate schema.
+
+    All values in this project's model configs were verified against the live
+    Replicate OpenAPI schema (model.latest_version.openapi_schema) on 2026-06-03.
+    """
+
+    min: int | float
+    max: int | float
+    enum: list[str | int | float]
+    ui_type: str  # "slider", "dropdown", "number", "checkbox"
+    nullable: bool
 
 
 @dataclass
@@ -31,6 +45,8 @@ class ModelConfig:
     advanced_params: list[str] = field(default_factory=list)
     # Default values per parameter
     defaults: dict = field(default_factory=dict)
+    # Per-parameter schema constraints (live-validated against Replicate OpenAPI)
+    param_constraints: dict[str, ParamConstraint] = field(default_factory=dict)
 
 
 # ═══════════════════════════════════════════════
@@ -65,6 +81,15 @@ WAN_2_7_T2V = ModelConfig(
         "enable_prompt_expansion": True,
         "negative_prompt": "",
     },
+    param_constraints={
+        "duration": {"min": 2, "max": 15, "ui_type": "slider"},
+        "resolution": {"enum": ["720p", "1080p"], "ui_type": "dropdown"},
+        "aspect_ratio": {
+            "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+            "ui_type": "dropdown",
+        },
+        "seed": {"nullable": True},
+    },
 )
 
 WAN_2_5_I2V = ModelConfig(
@@ -94,6 +119,11 @@ WAN_2_5_I2V = ModelConfig(
         "seed": -1,
         "enable_prompt_expansion": True,
         "negative_prompt": "",
+    },
+    param_constraints={
+        "duration": {"enum": [5, 10], "ui_type": "dropdown"},
+        "resolution": {"enum": ["720p", "1080p"], "ui_type": "dropdown"},
+        "seed": {"nullable": True},
     },
 )
 
@@ -130,6 +160,18 @@ SEEDANCE_2_0 = ModelConfig(
         "reference_videos": [],
         "reference_audios": [],
     },
+    param_constraints={
+        "duration": {"min": -1, "max": 15, "ui_type": "slider"},
+        "resolution": {"enum": ["480p", "720p", "1080p"], "ui_type": "dropdown"},
+        "aspect_ratio": {
+            "enum": [
+                "16:9", "4:3", "1:1", "3:4", "9:16",
+                "21:9", "9:21", "adaptive",
+            ],
+            "ui_type": "dropdown",
+        },
+        "seed": {"nullable": True},
+    },
 )
 
 
@@ -161,6 +203,11 @@ HUNYUAN3D_2 = ModelConfig(
         "guidance_scale": 5.5,
         "octree_resolution": 256,
         "remove_background": True,
+    },
+    param_constraints={
+        "steps": {"min": 20, "max": 50, "ui_type": "number"},
+        "guidance_scale": {"min": 1.0, "max": 20.0, "ui_type": "number"},
+        "octree_resolution": {"enum": [256, 384, 512], "ui_type": "dropdown"},
     },
 )
 
@@ -203,6 +250,19 @@ TRELLIS_2 = ModelConfig(
         "shape_slat_guidance_strength": 7.5,
         "tex_slat_guidance_strength": 1.0,
     },
+    param_constraints={
+        "pipeline_type": {
+            "enum": ["512", "1024", "1024_cascade", "1536_cascade"],
+            "ui_type": "dropdown",
+        },
+        "texture_size": {"min": 1024, "max": 8192, "ui_type": "number"},
+        "decimation_target": {"min": 100000, "max": 2000000, "ui_type": "number"},
+        "sparse_structure_steps": {"min": 1, "max": 50, "ui_type": "number"},
+        "shape_slat_steps": {"min": 1, "max": 50, "ui_type": "number"},
+        "tex_slat_steps": {"min": 1, "max": 50, "ui_type": "number"},
+        "shape_slat_guidance_strength": {"min": 0.0, "max": 15.0, "ui_type": "number"},
+        "tex_slat_guidance_strength": {"min": 0.0, "max": 15.0, "ui_type": "number"},
+    },
 )
 
 
@@ -230,3 +290,27 @@ def get_model_by_replicate_id(replicate_id: str) -> ModelConfig:
     if replicate_id not in _MODEL_BY_ID:
         raise ValueError(f"Unknown model ID: {replicate_id!r}")
     return _MODEL_BY_ID[replicate_id]
+
+
+# ── Constraint query helpers (used by app.py validation & widget renderers) ──
+
+
+def get_options_for_param(model: ModelConfig, param_name: str) -> list | None:
+    """Return enum options if defined in model constraints, else None."""
+    c = model.param_constraints.get(param_name, {})
+    enum = c.get("enum")
+    return list(enum) if enum else None
+
+
+def get_range_for_param(
+    model: ModelConfig, param_name: str,
+) -> tuple[int | float | None, int | float | None]:
+    """Return (min, max) for a numeric parameter, or (None, None)."""
+    c = model.param_constraints.get(param_name, {})
+    return (c.get("min"), c.get("max"))
+
+
+def is_param_nullable(model: ModelConfig, param_name: str) -> bool:
+    """Return True if the parameter accepts null/None."""
+    c = model.param_constraints.get(param_name, {})
+    return c.get("nullable", False)

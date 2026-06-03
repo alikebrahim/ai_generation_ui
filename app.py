@@ -24,6 +24,7 @@ from src.cost_tracker import (
     init_db,
 )
 from src.models_config import THREED_MODELS, VIDEO_MODELS, ModelConfig
+from src.models_config import get_options_for_param, get_range_for_param, is_param_nullable
 from src.pricing import calculate_cost
 from src.utils import (
     estimate_cost_label,
@@ -86,13 +87,26 @@ def _render_param_widget(model: ModelConfig, param_name: str, advanced: bool = F
     if param_name == "image" or param_name == "prompt":
         return None
     if param_name == "duration":
+        enum_opts = get_options_for_param(model, param_name)
+        min_val, max_val = get_range_for_param(model, param_name)
+
+        if enum_opts:
+            # Model with fixed duration options (e.g. Wan 2.5 I2V: only 5s or 10s)
+            int_opts = sorted(enum_opts)
+            dur_default = default if isinstance(default, int) else int_opts[0]
+            idx = int_opts.index(dur_default) if dur_default in int_opts else 0
+            return st.selectbox(
+                "Duration (s)", options=int_opts, index=idx, key=key_prefix,
+            )
+
+        # Slider with model-specific range
+        dur_min = int(min_val) if min_val is not None else 1
+        dur_max = int(max_val) if max_val is not None else 15
+        dur_default = default if isinstance(default, int) else 5
+        dur_default = max(dur_min, min(dur_max, dur_default))
         return st.slider(
-            "Duration (s)",
-            1,
-            15,
-            value=default if isinstance(default, int) else 5,
-            step=1,
-            key=key_prefix,
+            "Duration (s)", dur_min, dur_max,
+            value=dur_default, step=1, key=key_prefix,
         )
     if param_name == "seed":
         seed_default = default if isinstance(default, int) else -1
@@ -106,22 +120,30 @@ def _render_param_widget(model: ModelConfig, param_name: str, advanced: bool = F
             return None if val < 0 else val
         return st.number_input("Seed", value=seed_default, step=1, key=key_prefix)
     if param_name == "aspect_ratio":
-        options = ["16:9", "9:16", "1:1", "4:3", "adaptive"]
+        options = get_options_for_param(model, param_name) or [
+            "16:9", "9:16", "1:1", "4:3", "adaptive",
+        ]
         idx = options.index(default) if default in options else 0
         return st.selectbox("Aspect Ratio", options=options, index=idx, key=key_prefix)
     if param_name == "resolution":
-        options = ["480p", "720p", "1080p"]
+        options = get_options_for_param(model, param_name) or [
+            "480p", "720p", "1080p",
+        ]
         idx = options.index(default) if default in options else 1
         return st.selectbox("Resolution", options=options, index=idx, key=key_prefix)
     if param_name == "pipeline_type":
+        options = get_options_for_param(model, param_name) or [
+            "512", "1024", "1024_cascade", "1536_cascade",
+        ]
+        idx = options.index(default) if default in options else 1
         return st.selectbox(
             "Quality pipeline",
-            options=["512_fast", "1024_cascade", "2048_quality"],
-            index=1,
+            options=options,
+            index=idx,
             key=key_prefix,
             help=(
-                "Fast is cheaper; cascade is balanced; "
-                "quality is slowest/highest detail."
+                "512 is fastest/cheapest; 1024_cascade is balanced; "
+                "1536_cascade is highest quality."
             ),
         )
     if isinstance(default, list):
@@ -130,16 +152,22 @@ def _render_param_widget(model: ModelConfig, param_name: str, advanced: bool = F
     if isinstance(default, bool):
         return st.checkbox(_friendly_label(param_name), value=default, key=key_prefix)
     if isinstance(default, float):
+        min_val, max_val = get_range_for_param(model, param_name)
         return st.number_input(
             _friendly_label(param_name),
             value=default,
+            min_value=float(min_val) if min_val is not None else None,
+            max_value=float(max_val) if max_val is not None else None,
             key=key_prefix,
         )
     if isinstance(default, int):
+        min_val, max_val = get_range_for_param(model, param_name)
         return st.number_input(
             _friendly_label(param_name),
             value=default,
             step=1,
+            min_value=int(min_val) if min_val is not None else None,
+            max_value=int(max_val) if max_val is not None else None,
             key=key_prefix,
         )
     return st.text_input(
@@ -268,6 +296,14 @@ with tab_video:
     kwargs = _render_generation_form(model)
 
     if kwargs is not None:
+        # ── Validate parameters against live Replicate schema ─────
+        try:
+            from src.validation import validate_params
+            validate_params(model, kwargs)
+        except Exception as exc:
+            st.error(f"Invalid parameters:\n\n{exc}")
+            st.stop()
+
         with st.status(
             f"Generating with {model.display_name}…",
             expanded=True,
@@ -364,6 +400,14 @@ with tab_3d:
     kwargs_3d = _render_generation_form(model_3d)
 
     if kwargs_3d is not None:
+        # ── Validate parameters against live Replicate schema ─────
+        try:
+            from src.validation import validate_params
+            validate_params(model_3d, kwargs_3d)
+        except Exception as exc:
+            st.error(f"Invalid parameters:\n\n{exc}")
+            st.stop()
+
         with st.status(
             f"Generating with {model_3d.display_name}…",
             expanded=True,

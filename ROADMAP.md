@@ -55,9 +55,59 @@ should still be documented in this roadmap and README.
 - No live paid generation smoke test has been run for all models.
 - No completed browser visual QA in the current agent environment.
 - History links expire when Replicate delivery URLs expire, usually after about 1 hour.
+- Wan 2.7 T2V currently uses generic video controls that can expose invalid Replicate
+  values, including duration `1`, resolution `480p`, and aspect ratio `adaptive`.
 - Model capabilities are still manually encoded and not rich enough for all Seedance-style
   multimodal combinations.
 - Advanced multi-file/reference-media controls are intentionally not fully exposed yet.
+
+---
+
+## v0.2.1 — Wan 2.7 T2V Validation Patch
+
+**Status**: Implemented
+
+**Priority**: Immediate (merged into v0.3.0 implementation)
+
+**Goal**: Prevent known invalid Wan 2.7 T2V requests before any paid Replicate
+prediction is created.
+
+### Triggering issue
+
+Browser/API debugging found that the app's generic video controls do not match the live
+Replicate schema for `wan-video/wan-2.7-t2v`.
+
+Confirmed live schema constraints:
+
+- `duration`: minimum `2`, maximum `15`
+- `resolution`: only `720p` or `1080p`
+- `aspect_ratio`: only `16:9`, `9:16`, `1:1`, `4:3`, `3:4`
+
+Current invalid UI values to remove or block for Wan 2.7 T2V:
+
+- duration `1`
+- resolution `480p`
+- aspect ratio `adaptive`
+
+### Planned work
+
+- Add model-specific parameter constraints for Wan 2.7 T2V in `src/models_config.py` or
+  an equivalent validation layer.
+- Update `app.py` controls so Wan 2.7 T2V only offers schema-valid values:
+  - duration slider starts at `2`
+  - resolution options are `720p`, `1080p`
+  - aspect ratio options include `3:4` and exclude `adaptive`
+- Add pre-submit validation that blocks invalid Wan 2.7 T2V payloads before calling
+  `replicate.predictions.create()`.
+- Surface validation failures as friendly `st.error()` messages instead of Replicate
+  422 errors.
+
+### Acceptance criteria
+
+- Wan 2.7 T2V cannot submit duration `1`, resolution `480p`, or aspect ratio `adaptive`.
+- Valid default Wan 2.7 T2V settings remain unchanged: `5s`, `1080p`, `16:9`.
+- Invalid payload tests run without network access or paid Replicate calls.
+- Manual browser QA confirms the Wan 2.7 controls match the accepted schema.
 
 ---
 
@@ -65,7 +115,19 @@ should still be documented in this roadmap and README.
 
 **Priority**: Highest
 
+**Status**: Implemented
+
 **Goal**: Prevent invalid paid generations and make model input roles obvious.
+
+Key deliverables:
+- `ParamConstraint` struct + `param_constraints` field on every `ModelConfig`
+- All 5 models have live-schema-validated constraints for enums, ranges, and nullable
+- App widgets (duration, resolution, aspect_ratio, pipeline_type, numeric params)
+  now use per-model constraints instead of generic hardcoded options
+- Pre-submit parameter validation in `src/validation.py` blocks invalid payloads
+  before any Replicate API call
+- Bricked old pipeline_type values: `512_fast` → `512`, `2048_quality` → `1536_cascade`
+- Wan 2.5 I2V duration changed from slider to dropdown [5, 10] matching live schema
 
 ### Why this comes next
 
@@ -103,6 +165,7 @@ capabilities = {
   - Reference audio
   - Mask, only when confirmed supported by the exact Replicate schema
 - Add validation before paid calls:
+  - Model-specific parameter ranges/enums match the live Replicate schema.
   - Last-frame image requires a start-frame image.
   - Reference media cannot be combined with mutually-exclusive first/last-frame fields.
   - Resolution/aspect ratio warnings when ignored by image-driven modes.
@@ -278,6 +341,7 @@ Examples:
 
 | Version | Theme | Priority | Depends On |
 |---|---|---:|---|
+| v0.2.1 | Wan 2.7 T2V validation patch | Immediate | v0.2.0 |
 | v0.3.0 | Model capability matrix + schema-driven UX | Highest | v0.2.0 |
 | v0.4.0 | Durable output storage + permanent History preview | High | v0.2.0 |
 | v0.5.0 | Automated tests + optional live smoke tests | High | v0.3.0 |

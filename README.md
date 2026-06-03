@@ -75,9 +75,16 @@ cd /home/tima/ai_generation_ui
 # Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Create virtual environment and install dependencies
+# Create virtual environment
 uv venv
-uv pip install -e .
+
+# Activate it
+source .venv/bin/activate
+
+# Install the project and its dependencies (editable mode)
+#   uv pip install -e .          — runtime deps only
+#   uv pip install -e ".[dev]"   — runtime + dev deps (ruff, black)
+uv pip install -e ".[dev]"
 
 # Set up environment variables
 cp .env.example .env
@@ -87,7 +94,10 @@ cp .env.example .env
 ### Running the App
 
 ```bash
-# Activate virtual environment
+# Make sure your virtual environment is active (see above)
+# If starting a new terminal session:
+#   source .venv/bin/activate
+cd /home/tima/ai_generation_ui
 source .venv/bin/activate
 
 # Run Streamlit

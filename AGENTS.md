@@ -2,6 +2,14 @@
 
 This document defines conventions, defaults, and constraints for this project. Follow these when implementing or modifying code.
 
+## Authorization Rule
+
+**No changes to project files may be made without explicit user authorization.** This means:
+- Do not modify, create, or delete any file in this project unless the user has directly asked for it.
+- If a conversation drift suggests a change might be useful, ask before acting.
+- This overrides any tool's inclination to auto-fix or self-correct project files (e.g. auto-creating missing directories, auto-installing dependencies, auto-updating configs).
+- Routine operational commands that do not alter project state (e.g. reading files, checking syntax, inspecting logs) are always fine.
+
 ## Project Scope
 
 **IN SCOPE:**
