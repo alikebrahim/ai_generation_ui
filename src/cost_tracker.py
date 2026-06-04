@@ -28,11 +28,20 @@ CREATE TABLE IF NOT EXISTS generations (
     estimated_cost_usd  REAL,
     output_duration_s   REAL,
     generation_mode     TEXT,
-    status              TEXT    DEFAULT 'success'
+    status              TEXT    DEFAULT 'success',
+    local_file_path     TEXT,
+    thumbnail_path      TEXT,
+    file_size_bytes     INTEGER,
+    provider            TEXT    DEFAULT 'replicate',
+    provider_model_id   TEXT,
+    provider_job_id     TEXT,
+    provider_job_url    TEXT,
+    output_assets_json  TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_model_name ON generations(model_name);
 CREATE INDEX IF NOT EXISTS idx_timestamp   ON generations(timestamp);
+CREATE INDEX IF NOT EXISTS idx_provider    ON generations(provider);
 """
 
 
@@ -53,6 +62,19 @@ def init_db() -> None:
         conn.execute("ALTER TABLE generations ADD COLUMN thumbnail_path TEXT")
     if "file_size_bytes" not in existing_columns:
         conn.execute("ALTER TABLE generations ADD COLUMN file_size_bytes INTEGER")
+    if "provider" not in existing_columns:
+        conn.execute(
+            "ALTER TABLE generations ADD COLUMN provider TEXT DEFAULT 'replicate'"
+        )
+    if "provider_model_id" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN provider_model_id TEXT")
+    if "provider_job_id" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN provider_job_id TEXT")
+    if "provider_job_url" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN provider_job_url TEXT")
+    if "output_assets_json" not in existing_columns:
+        conn.execute("ALTER TABLE generations ADD COLUMN output_assets_json TEXT")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_provider ON generations(provider)")
     conn.commit()
     conn.close()
 
@@ -74,6 +96,11 @@ def record_generation(
     thumbnail_path: str | None = None,
     file_size_bytes: int | None = None,
     status: str = "success",
+    provider: str = "replicate",
+    provider_model_id: str | None = None,
+    provider_job_id: str | None = None,
+    provider_job_url: str | None = None,
+    output_assets_json: str | None = None,
 ) -> int:
     """Insert a generation record. Returns the new row id."""
     init_db()
@@ -86,8 +113,9 @@ def record_generation(
             parameters_json, replicate_url, predict_time_s,
             total_time_s, estimated_cost_usd, output_duration_s,
             generation_mode, status, local_file_path, thumbnail_path,
-            file_size_bytes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            file_size_bytes, provider, provider_model_id, provider_job_id,
+            provider_job_url, output_assets_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             model_name,
@@ -105,6 +133,11 @@ def record_generation(
             local_file_path,
             thumbnail_path,
             file_size_bytes,
+            provider,
+            provider_model_id,
+            provider_job_id,
+            provider_job_url,
+            output_assets_json,
         ),
     )
     generation_id = cursor.lastrowid or 0
@@ -123,9 +156,11 @@ def get_all_generations(limit: int = 100) -> list[tuple]:
             id, model_name, model_type, timestamp, prompt, input_image_path,
             parameters_json, replicate_url, predict_time_s, total_time_s,
             estimated_cost_usd, output_duration_s, generation_mode, status,
-            local_file_path, thumbnail_path, file_size_bytes
+            local_file_path, thumbnail_path, file_size_bytes,
+            provider, provider_model_id, provider_job_id, provider_job_url,
+            output_assets_json
         FROM generations
-        ORDER BY timestamp DESC
+        ORDER BY timestamp DESC, id DESC
         LIMIT ?
         """,
         (limit,),
@@ -133,6 +168,18 @@ def get_all_generations(limit: int = 100) -> list[tuple]:
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+
+def update_generation_thumbnail(generation_id: int, thumbnail_path: str) -> None:
+    """Persist a generated thumbnail path for an existing History row."""
+    init_db()
+    conn = sqlite3.connect(str(HISTORY_DB))
+    conn.execute(
+        "UPDATE generations SET thumbnail_path = ? WHERE id = ?",
+        (thumbnail_path, generation_id),
+    )
+    conn.commit()
+    conn.close()
 
 
 def get_stats_by_model() -> list[tuple]:

@@ -2,9 +2,73 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## v0.4.2 — Hunyuan Image Upload Patch
+## v0.5.9 — UI/UX Baseline and Gallery History Complete
 
 **Status**: Current
+
+### Added
+
+- Added shared shell styling for the top-level Streamlit app and cleaner tab/header spacing.
+- Reworked the Video tab into a focused generation/result panel with clearer labels and lighter copy.
+- Reworked the 3D tab into a focused generation/result panel with clearer upload/help text and result presentation.
+- Added human-readable media-role metadata and Hunyuan 3D 3.1 mode metadata in the model catalogue.
+- Added gallery-first History rendering with richer local-file awareness, thumbnails/previews, and a split between gallery and records views.
+- Added a new implementation/version note for the v0.5.0–v0.5.9 UI pass.
+
+### Fixed
+
+- Improved early validation handling so invalid inputs return from the tab renderer instead of leaving a broken generation flow active.
+- Fixed layout reliability issues around spacing, visible controls, and panel composition.
+- Tightened the History experience so local and temporary assets are shown more honestly.
+- Replaced collapsible generation status widgets with an always-visible inline loading/result area, so the panel shows progress until the preview appears.
+- Fixed duplicate History filter widgets that could crash Streamlit when both Gallery and Records tabs were rendered.
+- Made video thumbnail creation reusable and backfilled thumbnails for existing local video history rows when ffmpeg is available.
+
+### Verification
+
+- Ran `python -m compileall -q app.py src`.
+- Ran `uv run ruff check .`.
+- Ran Streamlit AppTest render against the existing local history database.
+- No paid Replicate prediction was created.
+
+---
+
+## v0.4.9 — Architecture Stabilization Complete
+
+**Status**: Superseded by v0.5.9
+
+### Added
+
+- Split the Streamlit app into `src/ui/` modules for forms, Video tab, 3D tab, History tab, and result rendering.
+- Added a generation registry and `UnifiedGenerationService` so UI tabs call a single service boundary instead of model wrappers directly.
+- Added provider-aware model metadata (`provider`, `provider_model_id`, `provider_endpoint`) for all configured Replicate models.
+- Added a Replicate provider adapter that isolates direct Replicate SDK calls.
+- Added canonical output asset/storage service scaffolding and routed local output downloads through `StorageService`.
+- Added provider-aware History support with provider model ID, provider job ID/URL, and output asset metadata columns while keeping the old `cost_tracker` API compatible.
+- Added a non-paid `prepare_generation_request()` hook for v0.5 dry-run/request-preview work.
+- Added `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md` and `IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md` documenting the completed architecture series.
+
+### Fixed
+
+- Fixed legacy SQLite migration order so existing v0.4.2 databases can add provider columns before provider indexes are created.
+- Removed duplicate History writes by keeping concrete generation wrappers as the single History write owner through v0.4.9.
+- Kept `cost_tracker.get_all_generations()` tuple shape stable for the current History UI while exposing provider-aware typed queries through `HistoryService`.
+- Unified domain output asset references around the canonical `src.output_asset.OutputAsset`.
+
+### Verification
+
+- Ran `python -m compileall -q app.py src`.
+- Ran `uv run ruff check .`.
+- Ran import probes for `src.history_service` and `src.generation_service`.
+- Ran fresh-schema and legacy-schema SQLite migration probes.
+- Ran registry/provider metadata and dry-run request-preparation probes.
+- No paid Replicate prediction was created.
+
+---
+
+## v0.4.2 — Hunyuan Image Upload Patch
+
+**Status**: Superseded by v0.4.9
 
 ### Fixed
 

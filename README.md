@@ -2,7 +2,7 @@
 
 A Streamlit-based interface for video and 3D generation using Replicate API today. fal.ai development is intentionally deferred until v1.0.0 or later.
 
-**Current version**: v0.4.2 — Hunyuan 3D 3.1 image upload patch.
+**Current version**: v0.5.9 — UI/UX baseline and gallery History complete.
 
 ## Purpose
 
@@ -22,9 +22,12 @@ The intended user flow remains workflow-first: choose Video or 3D, pick a model
 by practical outcome/use case, then see the provider as secondary context for
 setup, pricing, status, and troubleshooting.
 
+v0.4.3–v0.5.9 completed the UI stabilization series: the app shell now uses shared styling, the Video and 3D tabs are focused generation/result panels, the model catalogue carries human-readable media-role metadata, History is gallery-first with local file awareness, and the app keeps the Replicate-only workflow intact while presenting it more clearly.
+
 Future fal.ai/provider-aware design details are documented in
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` and scheduled from v1.0.0 in
-`ROADMAP.md`.
+`ROADMAP.md`. The pre-v1 architecture refactor is documented in
+`IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 
 ## Why This Project?
 
@@ -47,10 +50,10 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
                │ Python API calls
                │
 ┌──────────────▼──────────────────────┐
-│   Provider Layer                   │
-│  Current: Replicate                 │
+│   Generation / Provider Services    │
+│  Current behavior: Replicate         │
+│  v0.4.9: adapter/service layer done  │
 │  fal.ai: v1.0.0+ planned            │
-│  Workflows: Video + 3D              │
 └──────────────┬──────────────────────┘
                │
                │ Returns provider URLs
@@ -131,23 +134,30 @@ ai_generation_ui/
 ├── .env.example            # Environment variable template
 ├── src/
 │   ├── config.py          # Environment loading, paths, constants
-│   ├── pricing.py         # Static pricing table (hardware → $/sec)
-│   ├── models_config.py   # Model IDs, param schemas (balanced/advanced)
-│   ├── cost_tracker.py    # SQLite history (init, insert, query, stats)
-│   ├── video_gen.py       # Current Replicate video wrappers
-│   ├── threed_gen.py      # Current Replicate 3D wrappers
-│   ├── providers/         # Future v1.0.0+ provider adapter layer
-│   └── utils.py           # Helper functions (formatting, etc.)
+│   ├── pricing.py         # Static pricing table / cost estimates
+│   ├── models_config.py   # Model IDs, provider metadata, param schemas
+│   ├── cost_tracker.py    # Backward-compatible SQLite history API
+│   ├── history_service.py # Provider-aware typed history service
+│   ├── generation_service.py # UI generation entry point + dry-run hook
+│   ├── storage_service.py # Centralized local output downloads
+│   ├── video_gen.py       # Replicate video workflow wrappers
+│   ├── threed_gen.py      # Replicate 3D workflow wrappers
+│   ├── providers/         # Provider adapters; Replicate implemented
+│   ├── ui/                # Streamlit tabs/forms/result views
+│   └── utils.py           # Formatting, validation helpers, output utilities
 ├── data/
 │   └── history.db         # SQLite database (auto-created)
 ├── outputs/              # Local copies of generated videos/3D models
 │   ├── videos/
 │   ├── models_3d/
 │   └── thumbnails/
-├── assets/
-│   └── model_viewer.html  # Template for <model-viewer> HTML
-└── IMPLEMENTATION_PLAN.md # Step-by-step build guide
+├── assets/               # Reserved for future static assets
+└── IMPLEMENTATION_PLAN.md # Original step-by-step build guide
 ```
+
+The completed v0.4.x architecture refactor is documented in
+`IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md` and
+`IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md`.
 
 ## Environment Variables
 
@@ -162,14 +172,7 @@ The app loads this automatically using python-dotenv.
 
 ## Status
 
-**v0.4.2 personal local beta.** Core UI, generation wrappers, cost/history
-tracking, safer upload handling, Replicate output normalization, polling UX,
-schema-driven controls, pre-submit validation, Hunyuan 3D 3.1 model with
-text-to-3D/image-to-3D support, versioned Replicate calls for 3D models that
-do not support versionless prediction endpoints, and durable local output
-storage with a history card view are implemented. v0.4.2 specifically fixes
-Hunyuan 3D 3.1 image uploads so valid JPG/PNG/WEBP files are sent with explicit
-image MIME data URIs instead of extensionless provider file URLs.
+**v0.5.9 personal local beta.** The app now has shared shell styling, focused Video and 3D generation/result panels, human-readable media-role metadata, gallery-first History, and durable local output awareness. Core UI/UX polish is in place for the current Replicate-only workflow.
 
 This is intentionally a personal-use app rather than a production product. The
 focus is a robust local UI/UX that avoids obvious invalid paid provider calls and
@@ -178,6 +181,10 @@ because browser/live model QA is manual, plain-English UX for non-technical
 users is pending, and generation safety/dry-run tooling is not yet implemented.
 fal.ai is deliberately deferred until v1.0.0 or later.
 
+The next planned work is v0.6.0 generation safety: visible dry-run/request
+previews, schema drift diagnostics, and stronger no-paid-call validation probes.
+
 See `ITER_1_IMPLEMENTATION.md` for the as-built reference,
+`IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md` for the completed v0.4.x refactor,
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` for the v1.0.0+ Replicate + fal.ai
 provider plan, and `ROADMAP.md` for the versioned plan toward v1.0.0.

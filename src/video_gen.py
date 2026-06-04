@@ -5,24 +5,25 @@ Each function:
   2. Creates a prediction, polls until complete
   3. Extracts output URL + metrics
   4. Calculates estimated cost
-  5. Records the generation in SQLite history
-  6. Returns a uniform result dict
+  5. Downloads outputs locally when possible
+  6. Records the generation in SQLite history
+  7. Returns a uniform result dict
 """
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from typing import Any
 
-import replicate
-
-from .config import OUTPUTS_VIDEOS_DIR
-from .cost_tracker import record_generation
-from .models_config import SEEDANCE_2_0, WAN_2_5_I2V, WAN_2_7_T2V
-from .pricing import calculate_cost
-from .utils import download_output, output_to_url, uploaded_file_metadata
-from .validation import validate_params
+from src.cost_tracker import record_generation
+from src.models_config import SEEDANCE_2_0, WAN_2_5_I2V, WAN_2_7_T2V
+from src.pricing import calculate_cost
+from src.providers import get_replicate_adapter
+from src.storage_service import get_storage_service
+from src.utils import output_to_url, uploaded_file_metadata
+from src.validation import validate_params
 
 ProgressCallback = Callable[[str, object], None]
 
@@ -35,6 +36,21 @@ def _input_image_history_value(image: Any) -> str | None:
     return meta.get("filename") if meta else None
 
 
+def _serialize_video_assets(primary_url: str, local: dict[str, Any]) -> str:
+    """Serialize video output assets for history storage."""
+    payload = [
+        {
+            "kind": "video",
+            "provider_url": primary_url,
+            "local_path": local.get("local_path"),
+            "thumbnail_path": local.get("thumbnail_path"),
+            "file_size_bytes": local.get("file_size_bytes"),
+            "mime_type": "video/mp4",
+        }
+    ]
+    return json.dumps(payload, ensure_ascii=False)
+
+
 def _run_prediction(
     model_id: str,
     input_params: dict,
@@ -42,13 +58,14 @@ def _run_prediction(
     poll_interval: int = 5,
 ) -> dict:
     """Create a Replicate prediction, poll it, and return a normalized result."""
-    prediction = replicate.predictions.create(model=model_id, input=input_params)
+    adapter = get_replicate_adapter()
+    prediction = adapter.create_prediction(model_id, None, input_params)
     if progress_callback:
         progress_callback("created", prediction)
 
     while prediction.status not in ("succeeded", "failed", "canceled"):
         time.sleep(poll_interval)
-        prediction = replicate.predictions.get(prediction.id)
+        prediction = adapter.poll_prediction(prediction)
         if progress_callback:
             progress_callback("polled", prediction)
 
@@ -105,9 +122,18 @@ def generate_wan_2_7_t2v(
             result["predict_time"],
             output_duration=duration,
         )
-        local = download_output(result["url"], OUTPUTS_VIDEOS_DIR, prefix="video")
+        local = get_storage_service().download_output(
+            result["url"],
+            "video",
+            prefix="video",
+        )
+        assets_json = _serialize_video_assets(result["url"], local)
         record_generation(
             model_name=model.name,
+            provider=model.provider,
+            provider_model_id=model.provider_model_id or model.replicate_id,
+            provider_job_id=result.get("prediction_id"),
+            provider_job_url=result.get("prediction_url"),
             model_type="video",
             prompt=prompt,
             parameters=input_params,
@@ -117,12 +143,16 @@ def generate_wan_2_7_t2v(
             estimated_cost=cost,
             output_duration=duration,
             generation_mode="text_to_video",
-            local_file_path=local["local_path"],
-            file_size_bytes=local["file_size_bytes"],
+            local_file_path=local.get("local_path"),
+            thumbnail_path=local.get("thumbnail_path"),
+            file_size_bytes=local.get("file_size_bytes"),
+            output_assets_json=assets_json,
         )
-        result["local_file_path"] = local["local_path"]
-        result["file_size_bytes"] = local["file_size_bytes"]
+        result["local_file_path"] = local.get("local_path")
+        result["thumbnail_path"] = local.get("thumbnail_path")
+        result["file_size_bytes"] = local.get("file_size_bytes")
         result["estimated_cost"] = cost
+        result["output_assets_json"] = assets_json
     return result
 
 
@@ -161,9 +191,18 @@ def generate_wan_2_5_i2v(
             result["predict_time"],
             output_duration=duration,
         )
-        local = download_output(result["url"], OUTPUTS_VIDEOS_DIR, prefix="video")
+        local = get_storage_service().download_output(
+            result["url"],
+            "video",
+            prefix="video",
+        )
+        assets_json = _serialize_video_assets(result["url"], local)
         record_generation(
             model_name=model.name,
+            provider=model.provider,
+            provider_model_id=model.provider_model_id or model.replicate_id,
+            provider_job_id=result.get("prediction_id"),
+            provider_job_url=result.get("prediction_url"),
             model_type="video",
             prompt=prompt,
             parameters=input_params,
@@ -174,12 +213,16 @@ def generate_wan_2_5_i2v(
             output_duration=duration,
             generation_mode="image_to_video",
             input_image_path=_input_image_history_value(image),
-            local_file_path=local["local_path"],
-            file_size_bytes=local["file_size_bytes"],
+            local_file_path=local.get("local_path"),
+            thumbnail_path=local.get("thumbnail_path"),
+            file_size_bytes=local.get("file_size_bytes"),
+            output_assets_json=assets_json,
         )
-        result["local_file_path"] = local["local_path"]
-        result["file_size_bytes"] = local["file_size_bytes"]
+        result["local_file_path"] = local.get("local_path")
+        result["thumbnail_path"] = local.get("thumbnail_path")
+        result["file_size_bytes"] = local.get("file_size_bytes")
         result["estimated_cost"] = cost
+        result["output_assets_json"] = assets_json
     return result
 
 
@@ -227,19 +270,23 @@ def generate_seedance_2_0(
             result["predict_time"],
             output_duration=duration,
         )
-        local = download_output(result["url"], OUTPUTS_VIDEOS_DIR, prefix="video")
+        local = get_storage_service().download_output(
+            result["url"],
+            "video",
+            prefix="video",
+        )
         history_params = {
             k: v
             for k, v in input_params.items()
-            if k
-            not in (
-                "reference_images",
-                "reference_videos",
-                "reference_audios",
-            )
+            if k not in ("reference_images", "reference_videos", "reference_audios")
         }
+        assets_json = _serialize_video_assets(result["url"], local)
         record_generation(
             model_name=model.name,
+            provider=model.provider,
+            provider_model_id=model.provider_model_id or model.replicate_id,
+            provider_job_id=result.get("prediction_id"),
+            provider_job_url=result.get("prediction_url"),
             model_type="video",
             prompt=prompt,
             parameters=history_params,
@@ -250,10 +297,14 @@ def generate_seedance_2_0(
             output_duration=duration,
             generation_mode="image_to_video" if image else "text_to_video",
             input_image_path=_input_image_history_value(image),
-            local_file_path=local["local_path"],
-            file_size_bytes=local["file_size_bytes"],
+            local_file_path=local.get("local_path"),
+            thumbnail_path=local.get("thumbnail_path"),
+            file_size_bytes=local.get("file_size_bytes"),
+            output_assets_json=assets_json,
         )
-        result["local_file_path"] = local["local_path"]
-        result["file_size_bytes"] = local["file_size_bytes"]
+        result["local_file_path"] = local.get("local_path")
+        result["thumbnail_path"] = local.get("thumbnail_path")
+        result["file_size_bytes"] = local.get("file_size_bytes")
         result["estimated_cost"] = cost
+        result["output_assets_json"] = assets_json
     return result

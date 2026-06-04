@@ -18,9 +18,9 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.4.2 — Hunyuan Image Upload Patch**
+**Current version: v0.5.9 — UI/UX Baseline and Gallery History Complete**
 
-Why v0.4.2:
+Why v0.5.9:
 
 - v0.1.0 represented the first working Streamlit + Replicate scaffold.
 - v0.2.0 represented the post-review reliability/UX baseline: safer upload handling, Replicate output URL normalization, status polling, improved validation, cost display, and usable History filtering/links.
@@ -28,8 +28,9 @@ Why v0.4.2:
 - v0.3.1 fixed 3D model prediction creation for Replicate models that require the versioned prediction API and added friendlier UI messaging for common Replicate/API failures.
 - v0.4.0 added Hunyuan 3D 3.1 plus local-output/history scaffolding.
 - v0.4.1 fixed the durable-history persistence bug, tightened Hunyuan 3D 3.1 prompt/image validation, and improved local-file History UX.
-- v0.4.2 fixes Hunyuan 3D 3.1 image uploads by sending explicit image MIME data URIs instead of extensionless provider file URLs.
-- This is still pre-1.0 because live paid model QA is manual, the UI still needs a plain-English polish pass for non-technical users, and generation safety/dry-run tooling is still planned.
+- v0.4.2 fixed Hunyuan 3D 3.1 image uploads by sending explicit image MIME data URIs instead of extensionless provider file URLs.
+- v0.5.0–v0.5.9 completed the UI stabilization series: shared shell styling, focused Video/3D generation panels, human-readable media-role metadata, gallery-first History, and docs alignment.
+- This remains pre-1.0 because live paid model QA is manual and generation safety/dry-run tooling is the next planned milestone.
 
 ---
 
@@ -66,14 +67,15 @@ These are required for the app to feel like a dependable personal tool:
    - Store local file paths in History.
    - Make History useful as a permanent gallery, not just a temporary link table.
 
-4. **Plain-English UX polish**
-   - Explain model choices by outcome/use case, not only by model names.
-   - Explain technical controls with tooltips and “leave this alone unless…” copy.
-   - Make validation errors actionable for a non-technical user.
+4. **Minimal, familiar UX polish**
+   - Keep model names unchanged while making the surrounding UI easier to scan.
+   - Use concise labels, tooltips, and short subtexts instead of long visible explanations.
+   - Make validation and failure messages direct and actionable.
+   - Keep generation progress/result display in one focused panel.
 
 5. **Generation safety and dry-run visibility**
-   - Show the request summary before paid generation.
-   - Provide a non-paid dry-run payload preview for debugging.
+   - Keep paid generation deliberate and visibly tracked.
+   - Provide non-paid request/payload inspection where useful for debugging.
    - Keep cost estimates honest: approximate or unknown is better than misleading precision.
 
 6. **Minimal live smoke validation**
@@ -380,91 +382,350 @@ Examples:
 
 ---
 
-## v0.5.0 — Generation Safety, Dry-Run Payloads, and Schema Drift Checks
+## v0.4.3–v0.4.9 — Architecture Stabilization Series
 
-**Priority**: High before v1.0
+**Priority**: Completed prerequisite for v0.5.0
 
-**Status**: Planned
+**Status**: Complete in v0.4.9
 
-**Goal**: Make paid calls safer and make model/schema problems easy to diagnose without spending money.
+**Goal**: Sorted out structure while the app is still small enough to refactor comfortably. Keep v0.4.x Replicate-only in behavior, but separate UI, generation orchestration, provider execution, output storage, and History persistence so later work is easier and less fragile.
 
-### Planned work
+Detailed implementation guidance lives in `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`; completion notes live in `IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md`.
 
-- Add a visible input-source selector for models with mutually exclusive inputs:
-  - Hunyuan 3D 3.1: choose either “Text description” or “Subject image” before filling the form.
-  - Similar future models: derive this UI from schema/config constraints such as exactly-one-of `prompt`/`image`.
-  - Hide, disable, or clearly mark the inactive input so users do not accidentally provide both text and image.
-- Add a “Preview request” or “Dry-run payload” expander before Generate:
-  - model
-  - generation mode
-  - selected input source
-  - uploaded media roles
-  - parameter values
-  - estimated cost or “cost unknown”
-- Add a copyable payload summary for debugging.
-- Add a small non-paid schema/model diagnostics command or dev panel:
-  - current latest version ID
-  - whether versionless API is supported
-  - local config inputs vs live schema inputs
-  - unknown/missing fields
-- Add optional Replicate live smoke commands gated by explicit environment variables:
-  - `RUN_REPLICATE_SMOKE=1`
-  - provider API token set in `.env`
-- Add `RUN_FAL_SMOKE=1` only when v1.0.0+ fal.ai implementation begins.
-- Use shortest/cheapest settings for smoke checks.
-- Never run paid smoke checks by default.
+### Online research assessment
 
-### Acceptance criteria
+No online research is required for v0.4.3–v0.4.9. This is an internal refactor using established local patterns:
 
-- Default local checks run without network spending and without creating predictions.
-- Paid smoke checks require explicit opt-in and a clear cost/scope note.
-- Dry-run output is useful enough to debug model payload problems.
-- Models with exactly-one-of text/image constraints visually force or clearly guide a single input source before Generate.
-- Schema drift checks catch obvious local config vs live schema mismatches.
+- Streamlit presentation modules.
+- Service-layer orchestration.
+- Provider adapter / ports-and-adapters boundary.
+- Typed dataclasses for generation results and output assets.
+- Repository-style SQLite history access.
+
+Use online/provider docs only when a future task depends on current external facts, such as Replicate schema drift diagnostics, pricing refreshes, or v1.0.0+ fal.ai implementation.
+
+### v0.4.3 — UI Module Split
+
+**Goal**: Turn `app.py` into a thin Streamlit shell and move tab/form/result rendering into `src/ui/`.
+
+Completed work:
+
+- Create `src/ui/` package.
+- Move generic parameter form rendering to `src/ui/forms.py`.
+- Move Video tab to `src/ui/video_tab.py`.
+- Move 3D tab to `src/ui/threed_tab.py`.
+- Move History tab to `src/ui/history_tab.py`.
+- Move result rendering and `<model-viewer>` HTML helpers to `src/ui/result_views.py` / `src/ui/model_viewer.py`.
+- Preserve current generation dispatch and behavior.
+
+Acceptance criteria met:
+
+- `app.py` mostly performs page setup and calls `render_video_tab()`, `render_3d_tab()`, and `render_history_tab()`.
+- No generation behavior, provider behavior, or database schema changes.
+- Compile and Ruff checks pass.
+
+### v0.4.4 — Generation Registry + Domain Types
+
+**Goal**: Remove hard-coded model dispatch from UI modules and introduce shared internal shapes for requests/results/assets.
+
+Completed work:
+
+- Create `src/domain.py` with lightweight dataclasses such as `OutputAsset`, `CostEstimate`, and `GenerationResult`.
+- Create `src/generation_registry.py` mapping each model slug to its current generation handler.
+- Replace UI `if model.name == ...` generation branches with `run_generation(model, params, progress_callback=...)`.
+- Keep compatibility with existing result dicts while the full result model evolves.
+
+Acceptance criteria met:
+
+- UI modules no longer contain per-model generation `if/elif` chains.
+- Every configured model has a handler.
+- Local registry probe, compile, and Ruff checks pass.
+
+### v0.4.5 — Provider-Aware Model Metadata
+
+**Goal**: Make the current Replicate catalogue provider-aware without adding fal.ai behavior.
+
+Completed work:
+
+- Extend `ModelConfig` with `provider`, `provider_model_id`, and `provider_endpoint`.
+- Set all current models to `provider="replicate"`.
+- Move Replicate endpoint mode into model metadata:
+  - versionless for current video models and Hunyuan 3D 3.1
+  - versioned for Hunyuan3D 2.0 and TRELLIS 2
+- Start moving media-role UI metadata into model config where obvious.
+- Keep compatibility helpers for existing `replicate_id` usage if needed.
+
+Acceptance criteria met:
+
+- Endpoint mode is model data, not hidden generation-control flow.
+- Current behavior remains Replicate-only and unchanged.
+- Provider metadata probe, compile, and Ruff checks pass.
+
+### v0.4.6 — Replicate Adapter Extraction
+
+**Goal**: Isolate Replicate SDK details in one adapter.
+
+Completed work:
+
+- Create `src/providers/base.py` and `src/providers/replicate.py`.
+- Move prediction creation, polling, latest-version lookup, output normalization, and Replicate-friendly errors into `ReplicateAdapter`.
+- Store versioned/versionless endpoint mode in `ModelConfig.provider_endpoint`; wrappers use the adapter for creation/polling.
+- Update video/3D wrappers to use the adapter instead of direct SDK calls.
+
+Acceptance criteria met:
+
+- Direct `replicate.predictions.create(...)` usage is isolated in the Replicate provider adapter.
+- Direct provider SDK calls are no longer in generation wrappers.
+- Non-paid branch probes, compile, and Ruff checks pass.
+
+### v0.4.7 — Output Asset + Storage Service
+
+**Goal**: Represent outputs as one or more assets and centralize local saving.
+
+Completed work:
+
+- Create `src/storage_service.py`.
+- Normalize generated videos, 3D models, and preview videos as `OutputAsset` entries.
+- Move local download, extension detection, MIME detection, and local filename generation into the storage service.
+- Keep temporary compatibility keys such as `url`, `model_url`, and `video_url` until result views fully use assets.
+
+Acceptance criteria met:
+
+- Output handling no longer assumes exactly one URL per generation.
+- TRELLIS model + preview video fit the same asset model.
+- Local asset serialization/MIME probe, compile, and Ruff checks pass.
+
+### v0.4.8 — Provider-Aware History Service
+
+**Goal**: Make History provider-aware and less fragile before richer History or fal.ai work.
+
+Completed work:
+
+- Add provider-aware History fields:
+  - `provider`
+  - `provider_model_id`
+  - `provider_job_id`
+  - `provider_job_url`
+  - `output_assets_json`
+- Keep `replicate_url` for backward compatibility.
+- Create `src/history_service.py` with typed history records while keeping `cost_tracker.py` backward-compatible.
+- Keep the existing History UI tuple API stable while typed provider-aware queries are available through `HistoryService`.
+
+Acceptance criteria met:
+
+- Existing History rows remain readable.
+- New rows can store provider/job/assets metadata.
+- Fresh-schema and legacy-migration SQLite probes pass.
+- Compile and Ruff checks pass.
+
+### v0.4.9 — Integration Hardening + Dry-Run Foundation
+
+**Goal**: Finish the architecture cleanup and leave the app ready for the v0.5 UI/UX pass plus later request preview/dry-run work.
+
+Completed work:
+
+- Introduce `src/generation_service.py` as the UI's generation entry point.
+- Add a non-paid request-preparation hook that can return provider, model, mode, sanitized params, provider endpoint and sanitized payload summary without creating predictions.
+- Remove obsolete duplicate helpers where safe.
+- Re-run accumulated local probes.
+- Align docs after the refactor series.
+
+Acceptance criteria met:
+
+- UI calls a generation service rather than provider/generation wrappers directly.
+- A clean no-paid-call request-preparation hook exists for later safety/dry-run work.
+- v0.4.x remains Replicate-only in behavior.
+- Compile, Ruff, and accumulated non-paid probes pass.
 
 ---
 
-## v0.6.0 — Plain-English UX + Model Selection Polish
+## v0.5.0–v0.5.9 — Minimal UI/UX + Gallery History Series
 
-**Priority**: High before v1.0
+**Priority**: Complete
+
+**Status**: Complete
+
+**Source of truth**: `UI_Decisions.md`
+
+**Goal**: Make the local Streamlit app feel like a clean, familiar creative generation interface before adding more provider/model complexity. Keep model names unchanged, minimize visible explanatory copy, improve the tab/header presentation, make generation progress/results obvious, and turn History into a visual gallery with thumbnails/previews.
+
+### Delivered design direction
+
+- Minimal creative-tool feel, not an API dashboard.
+- Keep model names as they are.
+- Add minimal styling for a more pleasant `Video` / `3D` / `History` tab/header presentation.
+- Use light containers/spacing where helpful; avoid heavy custom styling.
+- Keep visible copy short; use tooltips/subtexts mostly for parameter help.
+- Keep `Advanced controls` collapsed and simply labeled.
+- Keep Generate after `Advanced controls`.
+- Use focused inline generation panels, not modals, for v0.5.x.
+- Result replaces loading state; no separate success banner required.
+- Failed generations show failure/error details in the same panel.
+- Completed result remains visible until the next generation replaces it.
+- Use explicit mode selection for multi-mode models.
+- Label media inputs by role: start frame, end frame, subject image, reference image.
+- History becomes gallery-first with internal `Gallery` and `Records` tabs.
+- Use ffmpeg for first-frame video thumbnails when available, with graceful fallback.
+- 3D cards use static/provider previews when available; interactive viewer stays in result/detail view.
+- If a 3D prediction returns multiple useful assets, download/link all of them to the same generation/prediction.
+
+### v0.5.0 — Minimal UI shell, layout reliability, and nicer tabs
+
+**Status**: Done
+
+**Goal**: Establish the v0.5 visual baseline and fix the layout issues found during visible-browser QA.
+
+Delivered work:
+
+- Fixed clipped Generate buttons and bottom spacing.
+- Added minimal styling for a more pleasant `Video` / `3D` / `History` tab/header area.
+- Added light form/section containers where useful.
+- Kept visible copy minimal.
+- Kept parameter explanations mostly in tooltips.
+- Kept Generate after `Advanced controls`.
+
+### v0.5.1 — Focused generation panel for Video
+
+**Status**: Done
+
+**Goal**: Make video generation progress and result display happen in one obvious place.
+
+Delivered work:
+
+- Added focused inline generation panel for video generation.
+- Showed existing status / elapsed / prediction ID details while running.
+- Replaced loading with the video result on completion.
+- Showed failure message/details in the same panel.
+- Removed redundant success banners/toasts where they added clutter.
+
+### v0.5.2 — Focused generation panel for 3D
+
+**Status**: Done
+
+**Goal**: Give 3D generation the same focused progress/result behavior as Video.
+
+Delivered work:
+
+- Added focused inline generation panel for 3D generation.
+- Showed existing status / elapsed / prediction ID details while running.
+- Replaced loading with 3D result/open/download actions on completion.
+- Showed failure message/details in the same panel.
+
+### v0.5.3 — Hunyuan 3D 3.1 mode selector
+
+**Status**: Done
+
+**Goal**: Replace prompt/image mutual-exclusivity explanation with a clear input-mode choice.
+
+Delivered work:
+
+- Added `Create from text` / `Create from image` selector for Hunyuan 3D 3.1.
+- Showed only the relevant input for the selected mode.
+- Prevented invalid text+image or neither-input states before paid calls.
+
+### v0.5.4 — Media role metadata and start/end frame pattern
+
+**Status**: Done
+
+**Goal**: Make media inputs role-aware and prepare for models with start/end frames.
+
+Delivered work:
+
+- Added model/config metadata for media roles.
+- Rendered role-specific labels instead of generic `Upload Image`.
+- Showed start frame as the visible upload when supported.
+- Hid optional end frame behind an optional control when supported.
+- Kept prompt visible for start/end-frame models.
+
+### v0.5.5 — Video thumbnails for History cards
+
+**Status**: Done
+
+**Goal**: Make video History cards visually useful.
+
+Delivered work:
+
+- Added thumbnail extraction for video outputs when a first frame or preview asset is available.
+- Displayed video thumbnails in History cards when local assets exist.
+- Kept fallback previews available when a thumbnail could not be generated.
+
+### v0.5.6 — 3D previews and multi-asset History
+
+**Status**: Done
+
+**Goal**: Capture all useful 3D outputs in History instead of only the primary asset.
+
+Delivered work:
+
+- Stored multiple 3D output assets when models return more than one useful file.
+- Added static/provider preview handling for 3D assets where available.
+- Preserved the interactive viewer for the result/detail panel.
+
+### v0.5.7 — History Gallery/Records split and copy polish
+
+**Status**: Done
+
+**Goal**: Split the History experience into a gallery view and a records view.
+
+Delivered work:
+
+- Added internal `Gallery` and `Records` tabs inside History.
+- Kept summary cards and filter controls available.
+- Improved copy around local files, temporary links, and download actions.
+
+### v0.5.8 — Gallery-first History layout and pagination prep
+
+**Status**: Done
+
+**Goal**: Make the gallery the primary History view while keeping records accessible.
+
+Delivered work:
+
+- Made gallery the default History view.
+- Kept the records table available for troubleshooting and lookup.
+- Preserved download/open actions and asset-awareness messaging.
+- Kept the gallery usable with a larger generation set.
+
+### v0.5.9 — Final UX hardening and docs alignment
+
+**Status**: Done
+
+**Goal**: Finish the v0.5 UI/UX pass and align docs before moving to safety/dry-run or later milestones.
+
+Delivered work:
+
+- Reviewed spacing, sections/components, tab styling, generation panels, and History cards across Video, 3D, and History.
+- Updated README/CHANGELOG/ROADMAP/version docs to reflect v0.5.9 completion.
+- Verified compile and Ruff checks locally.
+- Kept browser QA out of this implementation pass, per request.
+
+Acceptance criteria:
+
+- Compile and Ruff checks pass.
+- Docs agree on v0.5.x behavior and remaining known limitations.
+
+---
+
+## v0.6.0 — Generation Safety, Dry-Run Payloads, and Schema Drift Checks
+
+**Priority**: High before v1.0, after v0.5.x UI/UX baseline
 
 **Status**: Planned
 
-**Goal**: Make the app comfortable for a non-technical household user who wants to generate videos or 3D models without understanding model/API terminology.
+**Goal**: Use the v0.4.9 request-preparation hook to make paid calls safer and make model/schema problems easy to diagnose without spending money.
 
 ### Planned work
 
-- Replace bare model dropdown copy with model descriptions/cards or a richer selector:
-  - best for
-  - needs
-  - output type
-  - speed/cost expectation where known
-  - recommended use case
-- Add clear labels, help text, captions, or tooltips for model parameters:
-  - Seed: “reuse this number to get a more repeatable result; leave random if unsure”
-  - Duration: “how long the video should be”
-  - Resolution: “image sharpness; higher is usually slower/more expensive”
-  - Aspect ratio: “wide, square, or vertical framing”
-  - Guidance scale: “how strongly the model follows the prompt”
-  - Steps: “more steps can improve detail but take longer”
-  - Pipeline/quality mode: “speed vs quality preset”
-  - Texture size / mesh resolution / polygon budget: plain-English 3D quality trade-offs
-- Add recommended-defaults copy for advanced settings.
-- Keep technical/API parameter names out of the main UI when possible.
-- Consider an explicit Simple / Advanced UI mode if the existing expander is not enough.
-- Improve validation errors so they explain how to fix the issue.
-- Add better empty states and upload guidance, especially for image-to-3D:
-  - one clear centered subject
-  - simple background
-  - good lighting
-  - avoid multiple objects or tiny/cropped subjects
+- Add optional “Preview request” / dry-run payload visibility where useful for debugging.
+- Show a concise request summary and copyable technical payload in a collapsed/debug area.
+- Add small non-paid schema/model diagnostics for current Replicate models.
+- Add optional paid smoke commands only behind explicit environment variables and user authorization.
 
 ### Acceptance criteria
 
-- A non-technical user can understand the main controls without model jargon.
-- Advanced controls explain when to change them and when to leave them alone.
-- Model selection helps choose between Wan, Seedance, Hunyuan3D/Hunyuan 3D 3.1, and TRELLIS by desired outcome.
-- Browser/manual QA checks UI copy for clarity, not just functional correctness.
+- Default local checks run without spending money and without creating predictions.
+- Paid smoke checks require explicit opt-in and clear cost/scope.
+- Dry-run output is useful enough to debug payload problems without cluttering the normal UI.
 
 ---
 
@@ -474,29 +735,20 @@ Examples:
 
 **Status**: Planned
 
-**Goal**: Turn technical failures and long waits into actionable user-facing messages.
+**Goal**: Keep failure and long-wait behavior understandable while preserving the minimal UI direction.
 
 ### Planned work
 
-- Translate common Replicate/API errors:
-  - 401: token missing or invalid
-  - 404: model endpoint/version mismatch or model ID problem
-  - 422: invalid setting; identify the relevant control where possible
-  - network/timeout: connection or Replicate availability issue
-  - prediction failed: show model error and prediction URL
-- Show prediction URL during generation, not only after completion/failure.
-- Improve loading-stage copy:
-  - uploading image
-  - queued by Replicate
-  - generating
-  - finalizing output
-- Add “this is taking longer than usual” copy after model-specific thresholds.
-- Investigate cancel support only if Replicate exposes it cleanly and it is simple.
+- Translate common provider/API errors in provider adapters.
+- Show provider job URL during generation when available.
+- Improve progress state handling without verbose visible copy.
+- Add “taking longer than usual” messaging after model-specific thresholds only if it proves useful.
+- Investigate cancel support only if provider APIs expose it cleanly and simply.
 
 ### Acceptance criteria
 
 - Common errors are understandable without reading Python/HTTP exception details.
-- The user always knows whether a job is waiting, running, done, or failed.
+- The generation panel always shows whether a job is waiting, running, done, or failed.
 - Failed jobs preserve useful debugging information.
 
 ---
@@ -507,63 +759,41 @@ Examples:
 
 **Status**: Planned
 
-**Goal**: Make iterative creative workflows faster once durable History exists.
+**Goal**: Make iterative creative workflows faster once gallery-first History exists.
 
 ### Planned work
 
 - Add “use these settings again” from History.
 - Add copy prompt / copy seed / copy settings actions.
-- Add simple favorites.
-- Add optional notes per generation.
-- Add prompt examples or starter chips for common workflows.
-- Consider lightweight presets:
-  - video: fast draft / balanced / higher quality
-  - 3D: fast preview / balanced / detailed model
+- Add simple favorites and optional notes.
+- Consider lightweight presets such as fast draft / balanced / detailed only if they do not clutter the main flow.
 
 ### Acceptance criteria
 
 - A good prior result can be reused without manually re-entering prompt/settings.
 - History helps compare and continue creative experiments.
-- The feature remains lightweight and local; no account/user system.
+- The feature remains lightweight and local.
 
 ---
 
 ## v0.9.0 — Model Capability Metadata Hardening
 
-**Priority**: Medium before v1.0 if time allows; otherwise first post-v1.0 cleanup
+**Priority**: Medium before v1.0 if any metadata gaps remain after v0.5.x
 
 **Status**: Planned
 
-**Goal**: Make model input/output roles explicit enough to support future expansion safely.
+**Goal**: Finish any model metadata hardening not completed during the v0.5 media-role and mode-selection work.
 
 ### Planned work
 
-Add richer model metadata beyond simple `supports_text` / `supports_image` flags:
-
-```python
-capabilities = {
-    "provider": "replicate",  # future providers such as fal.ai start at v1.0+
-    "provider_model_id": "tencent/hunyuan-3d-3.1",
-    "modes": ["text_to_video", "image_to_video", "text_to_3d", "image_to_3d"],
-    "media_roles": ["start_frame", "subject_image", "reference_image"],
-    "endpoint_mode": "versionless" | "versioned",
-    "output_types": ["video", "glb", "preview_video"],
-    "conditional_requirements": [],
-    "mutually_exclusive": [],
-}
-```
-
-Use this metadata to drive:
-
-- UI labels.
-- validation.
-- History mode labels.
-- future masking/reference-media support.
-- dry-run payload display.
+- Fill remaining media-role metadata gaps.
+- Add output-type metadata for all models.
+- Make conditional requirements explicit where schema/config supports them.
+- Prepare model metadata for future reference-media/mask fields without implementing those features yet.
 
 ### Acceptance criteria
 
-- Adding a model no longer requires guessing media roles from generic image/audio flags.
+- Adding a model no longer requires guessing media roles from generic image flags.
 - Future reference-media and mask fields have an obvious metadata home.
 - Local validation remains schema-safe before paid calls.
 
@@ -578,8 +808,8 @@ Use this metadata to drive:
 ### Release criteria
 
 - Durable output storage and permanent History/gallery behavior are implemented or explicitly documented as out of scope.
-- Plain-English UX pass is complete for main controls, advanced controls, model selection, and common errors.
-- Dry-run payload preview or equivalent request summary is available before paid generation.
+- Minimal UI/UX pass is complete for tabs, forms, generation panels, controls, and History gallery/records.
+- Dry-run payload preview or equivalent request summary is available where useful before paid generation/debugging.
 - All implemented models have verified schema constraints and endpoint mode handling.
 - At least one user-authorized live successful smoke generation has been run for each supported workflow:
   - text-to-video
@@ -736,12 +966,19 @@ Post-1.0 work should expand creative power only after the core local app is depe
 | v0.3.1 | 3D endpoint compatibility patch | Immediate | Pre-1.0 patch |
 | v0.4.0 | Hunyuan 3D 3.1 + durable History | Highest | Must-have v1.0 |
 | v0.4.1 | Durable History patch | Immediate | Superseded by v0.4.2 |
-| v0.4.2 | Hunyuan image upload patch | Immediate | Current patch |
-| v0.5.0 | Generation safety, dry-run payloads, schema drift checks | High | Must-have v1.0 |
-| v0.6.0 | Plain-English UX + model selection polish | High | Must-have v1.0 |
+| v0.4.2 | Hunyuan image upload patch | Immediate | Superseded by v0.4.9 |
+| v0.4.3 | UI module split | Done | Architecture stabilization |
+| v0.4.4 | Generation registry + domain types | Done | Architecture stabilization |
+| v0.4.5 | Provider-aware model metadata | Done | Architecture stabilization |
+| v0.4.6 | Replicate adapter extraction | Done | Architecture stabilization |
+| v0.4.7 | Output asset + storage service | Done | Architecture stabilization |
+| v0.4.8 | Provider-aware History service | Done | Architecture stabilization |
+| v0.4.9 | Integration hardening + dry-run foundation | Superseded | Prepares v0.5 UI work and later safety work |
+| v0.5.0-v0.5.9 | Minimal UI/UX + gallery History series | Complete | UI stabilization milestone |
+| v0.6.0 | Generation safety, dry-run payloads, schema drift checks | High | Next major milestone |
 | v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |
 | v0.8.0 | History reuse and creative iteration | Medium | Nice-to-have v1.0 |
-| v0.9.0 | Model capability metadata hardening | Medium | Prepares for v1.0+ provider work without implementing fal.ai |
+| v0.9.0 | Model capability metadata hardening | Medium | Finish remaining metadata gaps |
 | v1.0.0 | Stable personal local release | Release | Release target |
 | v1.1 | Masking and inpainting exploration | High | Post-1.0 |
 | v1.2 | Model catalogue expansion | Medium | Post-1.0 |

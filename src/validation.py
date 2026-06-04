@@ -15,14 +15,16 @@ class ValidationError(Exception):
     """Aggregates one or more user-friendly validation messages."""
 
 
-_VALIDATION_SKIP = frozenset({
-    "_uploaded_image",
-    "image",
-    "progress_callback",
-    "reference_images",
-    "reference_videos",
-    "reference_audios",
-})
+_VALIDATION_SKIP = frozenset(
+    {
+        "_uploaded_image",
+        "image",
+        "progress_callback",
+        "reference_images",
+        "reference_videos",
+        "reference_audios",
+    }
+)
 
 
 def _is_provided(value: object) -> bool:
@@ -59,9 +61,7 @@ def validate_params(model: ModelConfig, kwargs: dict) -> None:
         if len(provided) > 1:
             labels = ", ".join(repr(p) for p in provided)
             group_label = " or ".join(repr(p) for p in group)
-            errors.append(
-                f"Only one of {group_label} can be provided; got {labels}."
-            )
+            errors.append(f"Only one of {group_label} can be provided; got {labels}.")
 
     for pname, value in kwargs.items():
         if pname in _VALIDATION_SKIP:

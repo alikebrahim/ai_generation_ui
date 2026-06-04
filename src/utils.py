@@ -318,18 +318,18 @@ def download_output(
             ext = ".obj"
         elif url.endswith(".png") or "image/png" in content_type:
             ext = ".png"
-        elif url.endswith(".jpg") or url.endswith(
-            ".jpeg",
-        ) or "image/jpeg" in content_type:
+        elif (
+            url.endswith(".jpg")
+            or url.endswith(
+                ".jpeg",
+            )
+            or "image/jpeg" in content_type
+        ):
             ext = ".jpg"
         else:
             # Guess from the URL path without query-string tokens.
             url_path = urlparse(url).path.rstrip("/").rsplit("/", 1)[-1]
-            ext = (
-                Path(url_path).suffix
-                if url_path and "." in url_path
-                else ".bin"
-            )
+            ext = Path(url_path).suffix if url_path and "." in url_path else ".bin"
 
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         unique_suffix = time.time_ns() % 1_000_000_000

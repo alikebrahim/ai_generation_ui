@@ -2,6 +2,8 @@
 
 > **For Hermes:** This plan is for v1.0.0 or later. Do not implement fal.ai work in v0.x. Use the subagent-driven-development skill if implementing this plan task-by-task once v1.0.0+ work begins.
 
+**Prerequisite:** Complete or intentionally supersede the v0.4.3–v0.4.9 architecture stabilization plan in `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md` before starting real fal.ai implementation. The v0.4.x series should leave behind UI modules, provider-aware model metadata, a Replicate adapter, normalized output assets, provider-aware History, and a dry-run/request-preparation service hook.
+
 **Goal:** Starting at v1.0.0 or later, expand the app from a Replicate-only local generator into a two-provider video/3D generation UI that supports Replicate and fal.ai without making the user think in API-specific terms.
 
 **Architecture:** Introduce a thin provider layer underneath the existing Streamlit tabs. The UI should select workflows and models using common concepts, while provider adapters translate validated common inputs into Replicate or fal.ai payloads. History, cost/status messaging, output normalization, and dry-run previews should store provider metadata explicitly so each provider's quirks stay visible to developers but mostly hidden from non-technical users.

@@ -102,6 +102,16 @@ Do not leave docs in a mixed state where one file says “current”, another sa
 “planned”, and another says “pending”. Prefer one source of truth for detailed
 requirements and link to it rather than duplicating long specs across many docs.
 
+Follow the project's established documentation style only:
+- Keep documentation in the existing project docs (`README.md`, `CHANGELOG.md`,
+  `ROADMAP.md`, `DECISIONS.md`, and implementation-plan/version docs) rather than
+  creating ad-hoc summary/report files.
+- Match the tone, structure, and level of detail already used in nearby sections.
+- Prefer updating the canonical document for a topic over adding a parallel file
+  that restates the same status.
+- Do not add standalone patch summaries, completion reports, or review notes unless
+  the user explicitly asks for that artifact.
+
 ## Versioning Policy
 
 Use lightweight pre-1.0 versioning as a personal planning aid:

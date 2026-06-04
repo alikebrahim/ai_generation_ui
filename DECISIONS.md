@@ -94,17 +94,17 @@ This gives full control without overwhelming casual users. The Balanced set cove
 
 ## Decision 7: File Management
 
-**SELECTED: Preview-only — no local file storage**
+**SELECTED: Inline viewer + automatic local copy**
 
 **Flow**:
 1. Replicate API returns an ephemeral output URL
 2. Inline viewer shows the output directly from that URL (video: `st.video(url)`, 3D: `<model-viewer src=url>`)
-3. User clicks Download button to save to their browser's default Downloads folder
-4. No file is automatically saved to disk on the server
-5. Replicate URLs expire after ~1 hour; after that the output is no longer viewable
-6. Metadata (prompt, params, cost, timestamp, replicate_url) is preserved in SQLite history
+3. Successful outputs are automatically saved under `outputs/videos/` or `outputs/models_3d/`
+4. History stores both the provider URL and local file metadata
+5. History distinguishes local files, missing local files, and temporary provider links
+6. Provider URLs remain useful for immediate preview, but may expire after ~1 hour
 
-**Rationale**: Prevents redundant disk usage. Autosave + download do the same thing. Preview works from URL without saving. The user saves only when they want to keep the output.
+**Rationale**: This keeps the immediate preview experience simple while also preserving durable local copies and honest History metadata for later review or download.
 
 ---
 
@@ -175,6 +175,26 @@ uv run streamlit run app.py # Run the app
 
 ---
 
+
+## Decision 13: Pre-v1 Architecture Stabilization
+
+**SELECTED: Use v0.4.3–v0.4.9 for architecture cleanup before adding more user-facing features**
+
+- Keep v0.4.x behavior Replicate-only.
+- Do not implement fal.ai in v0.4.x.
+- Split Streamlit UI code out of `app.py` before adding more UI features.
+- Introduce shared domain/result types before richer History, dry-run previews, or provider expansion.
+- Make the model catalogue provider-aware while all current models still use Replicate.
+- Extract Replicate SDK behavior into a provider adapter before adding another provider.
+- Normalize outputs as typed assets so single-output and multi-output models share one path.
+- Make History provider-aware and named-field/typed-record based before adding reuse, filters, or fal.ai.
+
+**Rationale**: The current v0.4.2 implementation works, but too many responsibilities are concentrated in `app.py` and the generation wrappers. Sorting out presentation/service/provider/storage/history boundaries now is less risky than doing it after dry-run tooling, plain-English UX, History reuse, or fal.ai support have added more coupling.
+
+Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
+
+---
+
 ## Final Model List
 
 ### Video Models (current + planned)
@@ -186,7 +206,7 @@ uv run streamlit run app.py # Run the app
 ### 3D Models (current + planned)
 4. `tencent/hunyuan3d-2` — Image-to-3D; current; Replicate versioned prediction path
 5. `fishwowater/trellis2` — Image-to-3D (PBR); current; Replicate versioned prediction path
-6. `tencent/hunyuan-3d-3.1` — Text-to-3D or Image-to-3D; planned for v0.4.0; Replicate versionless prediction path
+6. `tencent/hunyuan-3d-3.1` — Text-to-3D or Image-to-3D; current; Replicate versionless prediction path
 
 ---
 

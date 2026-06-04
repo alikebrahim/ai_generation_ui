@@ -45,7 +45,7 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 **Purpose**: Version history — what changed in each standard-versioned release.
 
 **Contains**:
-- Current version: v0.4.2 Hunyuan image upload patch
+- Current version: v0.4.9 architecture stabilization complete
 - Summary of additions, changes, fixes, verification, and known limitations
 - Historical v0.3.0, v0.2.0, and v0.1.0 entries
 
@@ -154,18 +154,17 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 
 ### 8. ROADMAP.md
 
-**Purpose**: Versioned roadmap — what comes next after v0.4.2.
+**Purpose**: Versioned roadmap — what comes next after v0.5.9.
 
 **Contains**:
-- Current version estimate: v0.4.2 Hunyuan image upload patch
+- Current version estimate: v0.5.9 UI/UX baseline complete
 - Pre-1.0 must-haves vs nice-to-haves
-- v0.4.0/v0.4.1/v0.4.2: Hunyuan 3D 3.1, durable output storage, History local-file fixes, and image upload encoding fixes
-- v0.5.0: generation safety, dry-run payloads, and schema drift checks
-- v0.6.0: plain-English UX + model selection polish
+- v0.5.0-v0.5.9: UI shell polish, focused generation panels, media-role metadata, thumbnail/preview assets, and gallery-first History
+- v0.6.0: generation safety, dry-run payloads, and schema drift checks
 - Post-1.0 exploration including masking/inpainting and local mask helpers
 - Priority ranking and v1.0.0 release criteria
 
-**Read when**: Planning the next version. Roadmap items after v0.4.2 are not implemented yet.
+**Read when**: Planning the next version. Roadmap items through v0.5.9 are implemented.
 
 ---
 

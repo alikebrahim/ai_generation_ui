@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from typing import Literal, TypedDict
 
 ModelType = Literal["video", "3d"]
+ProviderName = Literal["replicate", "fal"]
+ProviderEndpointMode = Literal["versionless", "versioned"]
 
 
 class ParamConstraint(TypedDict, total=False):
@@ -40,6 +42,15 @@ class ModelConfig:
     supports_audio: bool = False
     requires_text: bool = False
     requires_image: bool = False
+    # Provider metadata (v0.4.5+)
+    provider: ProviderName = "replicate"
+    # Can differ from replicate_id for future fal.ai integration
+    provider_model_id: str | None = None
+    provider_endpoint: ProviderEndpointMode = "versionless"
+    # Human-readable media role labels and mode selectors
+    media_roles: dict[str, str] = field(default_factory=dict)
+    generation_modes: list[tuple[str, str]] = field(default_factory=list)
+    default_generation_mode: str | None = None
     # Parameter groups
     balanced_params: list[str] = field(default_factory=list)
     advanced_params: list[str] = field(default_factory=list)
@@ -66,6 +77,12 @@ WAN_2_7_T2V = ModelConfig(
     supports_image=False,
     supports_audio=True,  # accepts audio uri for synchronization
     requires_text=True,
+    provider="replicate",
+    provider_model_id="wan-video/wan-2.7-t2v",
+    provider_endpoint="versionless",
+    media_roles={
+        "prompt": "Prompt",
+    },
     balanced_params=[
         "prompt",
         "duration",
@@ -106,6 +123,13 @@ WAN_2_5_I2V = ModelConfig(
     supports_audio=True,
     requires_text=True,
     requires_image=True,
+    provider="replicate",
+    provider_model_id="wan-video/wan-2.5-i2v-fast",
+    provider_endpoint="versionless",
+    media_roles={
+        "prompt": "Prompt",
+        "image": "Start frame image",
+    },
     balanced_params=[
         "prompt",
         "image",
@@ -140,6 +164,13 @@ SEEDANCE_2_0 = ModelConfig(
     supports_image=True,
     supports_audio=True,
     requires_text=True,
+    provider="replicate",
+    provider_model_id="bytedance/seedance-2.0",
+    provider_endpoint="versionless",
+    media_roles={
+        "prompt": "Prompt",
+        "image": "Start frame image",
+    },
     balanced_params=[
         "prompt",
         "image",
@@ -169,8 +200,14 @@ SEEDANCE_2_0 = ModelConfig(
         "resolution": {"enum": ["480p", "720p", "1080p"], "ui_type": "dropdown"},
         "aspect_ratio": {
             "enum": [
-                "16:9", "4:3", "1:1", "3:4", "9:16",
-                "21:9", "9:21", "adaptive",
+                "16:9",
+                "4:3",
+                "1:1",
+                "3:4",
+                "9:16",
+                "21:9",
+                "9:21",
+                "adaptive",
             ],
             "ui_type": "dropdown",
         },
@@ -192,6 +229,12 @@ HUNYUAN3D_2 = ModelConfig(
     supports_text=False,  # NOTE: Replicate schema shows image-only
     supports_image=True,
     requires_image=True,
+    provider="replicate",
+    provider_model_id="tencent/hunyuan3d-2",
+    provider_endpoint="versioned",
+    media_roles={
+        "image": "Subject image",
+    },
     balanced_params=[
         "image",
         "seed",
@@ -224,6 +267,12 @@ TRELLIS_2 = ModelConfig(
     supports_text=False,
     supports_image=True,
     requires_image=True,
+    provider="replicate",
+    provider_model_id="fishwowater/trellis2",
+    provider_endpoint="versioned",
+    media_roles={
+        "image": "Subject image",
+    },
     balanced_params=[
         "image",
         "seed",
@@ -279,6 +328,18 @@ HUNYUAN_3D_3_1 = ModelConfig(
     supports_image=True,
     requires_text=False,  # Either prompt or image is sufficient
     requires_image=False,  # Either prompt or image is sufficient
+    provider="replicate",
+    provider_model_id="tencent/hunyuan-3d-3.1",
+    provider_endpoint="versionless",
+    media_roles={
+        "prompt": "Describe the 3D model",
+        "image": "Subject image",
+    },
+    generation_modes=[
+        ("text", "Create from text"),
+        ("image", "Create from image"),
+    ],
+    default_generation_mode="text",
     balanced_params=[
         "prompt",
         "image",
@@ -345,7 +406,8 @@ def get_options_for_param(model: ModelConfig, param_name: str) -> list | None:
 
 
 def get_range_for_param(
-    model: ModelConfig, param_name: str,
+    model: ModelConfig,
+    param_name: str,
 ) -> tuple[int | float | None, int | float | None]:
     """Return (min, max) for a numeric parameter, or (None, None)."""
     c = model.param_constraints.get(param_name, {})
