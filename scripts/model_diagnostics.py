@@ -19,7 +19,11 @@ from dotenv import load_dotenv  # noqa: E402
 
 from src.generation_registry import verify_all_models_have_handlers  # noqa: E402
 from src.generation_service import run_local_safety_checks  # noqa: E402
-from src.schema_diagnostics import format_report_text, run_all_diagnostics  # noqa: E402
+from src.schema_diagnostics import (  # noqa: E402
+    format_report_text,
+    run_all_diagnostics,
+    validate_presets,
+)
 
 
 def main() -> int:
@@ -55,6 +59,16 @@ def main() -> int:
     if not safety["validation_ok"]:
         print("FAIL: validation probes")
         for err in safety["validation_errors"]:
+            print(f"  {err}")
+        exit_code = 1
+    else:
+        print("OK")
+
+    print("\nPreset constraint probes…")
+    preset_errors = validate_presets()
+    if preset_errors:
+        print("FAIL: invalid preset values")
+        for err in preset_errors:
             print(f"  {err}")
         exit_code = 1
     else:

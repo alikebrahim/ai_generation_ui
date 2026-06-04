@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS generations (
 
 CREATE INDEX IF NOT EXISTS idx_model_name ON generations(model_name);
 CREATE INDEX IF NOT EXISTS idx_timestamp   ON generations(timestamp);
-CREATE INDEX IF NOT EXISTS idx_provider    ON generations(provider);
 """
 
 

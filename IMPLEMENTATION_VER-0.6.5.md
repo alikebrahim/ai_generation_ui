@@ -1,7 +1,7 @@
 # IMPLEMENTATION_VER-0.6.5.md — Replicate 3D and Texture Model Expansion
 
-**Version**: v0.6.5  
-**Status**: Complete  
+**Version**: v0.6.5
+**Status**: Complete
 **Date**: 2026-06-04
 
 ## Goal

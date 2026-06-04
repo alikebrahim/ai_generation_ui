@@ -2,9 +2,59 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## v0.6.10 — Video Model Expansion + Workflow-Aware UI
+## Planned milestones (not released)
+
+These are documented in `ROADMAP.md` and implementation notes; **no code yet** unless a version entry appears below.
+
+| Version | Scope | Doc |
+|---------|--------|-----|
+| **v0.7.0** | Better errors, progress, recovery | `ROADMAP.md` |
+| **v0.9.0** | Audio tab: 3 music + 6 speech Replicate models (9 total; **research fetched** — see `IMPLEMENTATION_VER-0.9.0-*.json`) | `IMPLEMENTATION_VER-0.9.0.md` |
+| **v0.8.0** | Browser QA + authorized smoke (video, 3D, music, speech) | `ROADMAP.md` |
+| **v1.0.0** | Stable Replicate-only personal baseline | `ROADMAP.md` |
+| **Post-1.0** | Aleph keyframes, fal.ai | `ROADMAP.md` |
+
+**v0.9.0 audio models (planned)** — music: `minimax/music-2.5`, `stability-ai/stable-audio-2.5`, `google/lyria-2`; speech: `inworld/realtime-tts-2`, `inworld/realtime-tts-1.5-max`, `minimax/speech-2.8-hd`, `minimax/speech-2.8-turbo`, `resemble-ai/chatterbox`, `elevenlabs/v3`.
+
+---
+
+## v0.6.11 — Creative param exposure, presets, History remix, and UX polish (pre-0.7 completion)
 
 **Status**: Current
+
+This release finishes all planned work before v0.7.0 (better errors/progress/recovery). It consolidates the major UX improvements for exposing model parameters and enabling creative freedom (originally scoped across 0.6.6/0.6.7 plans) on top of the v0.6.10 video expansion, plus final pre-0.7 polish items.
+
+### UX & Creative Freedom (param exposure complete)
+- `advanced_param_groups` for organized sections inside "Advanced controls" (e.g. Quality & steps, Mesh & texture for Trellis; View sampling, Update passes for Text2Tex).
+- `param_help` + dynamic help text on all widgets, plus `high_impact_params` (★ marker on labels like face_count, num_viewpoints, quality, mode) with plain-English trade-off guidance.
+- Widgets now respect `ui_type: "slider"` from live schema constraints where ranges apply.
+- **Per-model presets**: Named bundles (e.g. "Fast preview", "High quality / detail", "Stylized / loose", "Balanced") with one-click Apply + Reset in the controls column. Primes all relevant balanced/advanced scalars via session state. Populated for Trellis 2, Text2Tex, Rodin, Hunyuan3D 2/2MV/3.1, Kling v3 Omni, Seedance 2.0 (and variants).
+- "♻️ Load settings into tab (remix)" on History success cards: prefills prompt + scalar params (and forces filter="all" + model); re-upload media as needed. Works for both Video and 3D.
+- Multi-file reference uploads now supported for reference_images/videos/audios (and Rodin images) via accept_multiple_files; better handling and captions.
+- 3D tab parity: capability/workflow radio filter ("From image", "From text", "Multiview", "Mesh texturing") + name-based stable model selector (consistent with Video).
+- Layout/visibility polish: wider controls column, shorter prompt area, generate action more reachable; grouped advanced always before submit.
+
+### Pre-0.7 Polish Items (nice-to-haves completed)
+- Better loading-stage copy and “taking longer than usual” messaging: explicit estimates in initial status ("30s–several minutes" for video; "1–10 minutes" for 3D), enhanced progress lines and spinners.
+- Small copy-only History actions: "📋 Copy actions" expander on every gallery card with one-click buttons for "Copy prompt", "Copy settings (JSON)", and "Copy seed (N)" when present. Shows copyable st.code on click + toast.
+- Basic prompt helper examples / starter prompts: "💡 Example prompts (click to load)" expander inside every text prompt area, with 2 ready-to-use concrete examples (subject + motion + camera + style + mood) + "Use example" buttons that load into the prompt field.
+
+### Docs & Housekeeping (full alignment)
+- Version bumped to 0.6.11. All docs (pyproject, README, CHANGELOG, ROADMAP, relevant IMPLEMENTATION_VER) updated in one pass with no mixed states.
+- History now accurately reflects: v0.6.10 (video models + workflow UI), v0.6.11 (this creative param exposure + polish completion, pre-0.7).
+- Post-1.0 items remain as before; 0.7.0 next for errors/progress/recovery.
+
+### Verification
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- Runtime probes for presets, groups, remix state, copy logic, examples, messages.
+- No paid Replicate calls.
+
+---
+
+## v0.6.10 — Video Model Expansion + Workflow-Aware UI
+
+**Status**: Superseded (features delivered; full UX/param work + polish completed in 0.6.11)
 
 ### Added
 
@@ -21,7 +71,7 @@ All notable project changes are tracked here using SemVer-style versions.
 
 - Video catalogue: **11 models** (3 existing + 8 new). Model selector moved above the
   generation workspace; workflow filter narrows the list by intent.
-- Multimodal models support single reference image/video uploads (full multi-upload deferred).
+- Multimodal models shipped with single reference image/video uploads in v0.6.10; v0.6.11 later expanded this to multi-file reference upload controls.
 
 ### Documentation
 

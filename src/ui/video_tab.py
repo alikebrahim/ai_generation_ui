@@ -24,6 +24,34 @@ format_duration = app_utils.format_duration
 friendly_error_message = app_utils.friendly_error_message
 
 
+def _consume_pending_remix(expected_type: str) -> None:
+    """Apply pending History remix data to session state for widget prefill."""
+    remix = st.session_state.pop("pending_remix", None)
+    if not remix:
+        return
+    if str(remix.get("model_type", "")).lower() != expected_type:
+        st.session_state["pending_remix"] = remix  # restore for other tab
+        return
+    mname = str(remix.get("model_name") or "")
+    if mname:
+        st.session_state["video_model_name"] = mname
+        st.session_state["video_workflow_filter"] = "all"  # ensure model is selectable
+    prompt = remix.get("prompt") or ""
+    params = remix.get("params") or {}
+    if mname and prompt:
+        st.session_state[f"prompt_{mname}"] = prompt
+    for pname, pval in params.items() if isinstance(params, dict) else []:
+        if mname:
+            for is_adv in (False, True):
+                k = f"{mname}_{'adv_' if is_adv else ''}{pname}"
+                try:
+                    st.session_state[k] = pval
+                except Exception:
+                    pass
+    if prompt or params:
+        st.toast("Loaded from History. Re-upload media if needed.")
+
+
 def render_video_tab() -> None:
     """Render the video generation tab."""
     st.header("Video Generation")
@@ -31,6 +59,8 @@ def render_video_tab() -> None:
         "Pick what you want to do, choose a matching model, then generate in the "
         "preview panel."
     )
+
+    _consume_pending_remix("video")
 
     workflow_key = render_workflow_filter()
     filtered_models = filter_models_for_workflow(VIDEO_MODELS, workflow_key)
@@ -64,7 +94,7 @@ def render_video_tab() -> None:
         else:
             preview_handles["status"].info(
                 "Run a generation and the live status plus final preview will stay "
-                "open here."
+                "open here. Video gens typically 30s to a few minutes."
             )
 
     kwargs = render_generation_form(
@@ -98,7 +128,8 @@ def render_video_tab() -> None:
         progress_line = preview_handles.get("progress") or st.empty()
         result_area = preview_handles.get("result") or st.empty()
         status_line.info(
-            f"Generating with {model.display_name}… the preview will appear here."
+            f"Generating with {model.display_name}… preview here. "
+            "Typically 30s–few min (model/duration/load dependent). Status below."
         )
         try:
             start_time = monotonic()

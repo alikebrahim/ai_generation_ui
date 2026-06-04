@@ -22,7 +22,9 @@ This is not a general marketplace for every generation API. This expansion start
   - text-to-video
   - image-to-video, starting fal.ai with NVIDIA Cosmos 3 Super Image to Video
   - image-to-3D
-- Keep image generation, audio generation, video-to-video, and local inference out of scope unless separately requested.
+- Keep image generation and local inference out of scope unless separately requested.
+- Standalone music/speech via Replicate is **in scope for v0.9.0** (before v1.0.0); see `IMPLEMENTATION_VER-0.9.0.md`. fal.ai audio remains post-v1.0.
+- Video-to-video transformations remain a future consideration.
 
 The user-facing mental model should be:
 

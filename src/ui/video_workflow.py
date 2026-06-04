@@ -51,16 +51,20 @@ def _file_uploader(
     *,
     required: bool = False,
     key_suffix: str = "",
+    multiple: bool = False,
 ) -> None:
-    """Render one file uploader into session kwargs via caller's dict."""
+    """Render one (or multi) file uploader into session kwargs via caller's dict."""
     extensions = model.file_input_params.get(param_name, ["png", "jpg", "jpeg"])
     label = model.media_roles.get(
         param_name, param_name.replace("_", " ").title()
     )
+    is_ref_list = "reference" in param_name
+    use_multi = multiple or is_ref_list
     uploaded = st.file_uploader(
         label + (" *" if required else " (optional)"),
         type=extensions,
         key=f"wf_{model.name}_{param_name}{key_suffix}",
+        accept_multiple_files=use_multi,
     )
     return uploaded
 
@@ -137,8 +141,8 @@ def render_multimodal_media_sections(model: ModelConfig, kwargs: dict) -> None:
 
         with st.expander("Reference image or video (optional)", expanded=False):
             st.caption(
-                "One reference file at a time for now. Mention it in your prompt "
-                "(e.g. <<<image_1>>> or [Image1] depending on the model)."
+                "You can select multiple references. Mention them in your prompt "
+                "(e.g. <<<image_1>>> or [Image1] depending on the model docs)."
             )
             if "reference_images" in model.file_input_params:
                 ref_img = _file_uploader(model, "reference_images")
@@ -154,6 +158,12 @@ def render_multimodal_media_sections(model: ModelConfig, kwargs: dict) -> None:
                 )
                 if ref_vid is not None:
                     kwargs["_uploaded_reference_videos"] = ref_vid
+            if "reference_audios" in model.file_input_params:
+                ref_audio = _file_uploader(
+                    model, "reference_audios", key_suffix="_ra"
+                )
+                if ref_audio is not None:
+                    kwargs["_uploaded_reference_audios"] = ref_audio
 
 
 def model_caption(model: ModelConfig) -> str:

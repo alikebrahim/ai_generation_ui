@@ -285,6 +285,33 @@ def format_report_text(report: ModelDiagnosticReport) -> str:
     return "\n".join(lines)
 
 
+def validate_presets() -> list[str]:
+    """Return local preset values that violate model constraints."""
+    errors: list[str] = []
+    for model in ALL_MODELS:
+        for preset_name, values in (model.presets or {}).items():
+            for pname, value in values.items():
+                enum_vals = get_options_for_param(model, pname)
+                if enum_vals is not None and value not in enum_vals:
+                    errors.append(
+                        f"{model.name} preset {preset_name!r}: {pname}={value!r} "
+                        f"is not in {enum_vals!r}"
+                    )
+                min_val, max_val = get_range_for_param(model, pname)
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    if min_val is not None and value < min_val:
+                        errors.append(
+                            f"{model.name} preset {preset_name!r}: {pname}={value!r} "
+                            f"is below minimum {min_val!r}"
+                        )
+                    if max_val is not None and value > max_val:
+                        errors.append(
+                            f"{model.name} preset {preset_name!r}: {pname}={value!r} "
+                            f"is above maximum {max_val!r}"
+                        )
+    return errors
+
+
 def all_reports_ok(reports: list[ModelDiagnosticReport]) -> bool:
     """Return True when no report has error-severity issues."""
     return all(r.ok for r in reports)

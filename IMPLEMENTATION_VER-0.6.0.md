@@ -1,7 +1,7 @@
 # IMPLEMENTATION_VER-0.6.0.md — Safety, Metadata Audit, Dry-Run, Schema Diagnostics
 
-**Version**: v0.6.0  
-**Status**: Complete  
+**Version**: v0.6.0
+**Status**: Complete
 **Date**: 2026-06-04
 
 ## Goal

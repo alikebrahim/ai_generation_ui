@@ -1,7 +1,7 @@
 # IMPLEMENTATION_VER-0.6.10.md — Video Model Expansion + Workflow-Aware UI (Planning)
 
-**Version**: v0.6.10 (planned)  
-**Status**: **Complete** (implemented 2026-06-04)  
+**Version**: v0.6.10
+**Status**: Complete (implemented 2026-06-04; creative param/UX polish continued and completed in v0.6.11)
 **Metadata verified**: 2026-06-04 (Replicate OpenAPI + model pages + `billingConfig` on pages)
 
 **Prerequisite**: v0.6.0 dry-run/safety and v0.6.5 file-upload patterns.
@@ -68,69 +68,69 @@ Full tier criteria: `IMPLEMENTATION_VER-0.6.10-pricing-scrape.json`.
 
 #### Happy Horse 1.0 (`happyhorse-1.0`)
 
-- **Replicate ID**: `alibaba/happyhorse-1.0` — https://replicate.com/alibaba/happyhorse-1.0  
-- **Version**: `d867e39d045d6449a05b8dd3bc10ea3acca69b99aebc34b831809c09cd523527`  
-- **Modes**: T2V (`prompt`) or I2V (`image`, optional `prompt` for motion). `aspect_ratio` ignored when `image` set.  
-- **Params**: `prompt` (≤2500 chars per page); `image` (jpg/png/bmp/webp, ≤10MB, 300px+ min side, AR 1:2.5–2.5:1); `resolution` enum `720p`|`1080p` (default `1080p`); `aspect_ratio` enum `16:9`,`9:16`,`1:1`,`4:3`,`3:4`; `duration` enum **3–15** (default 5); `seed` 0–2147483647 nullable.  
-- **UI**: Balanced — prompt, image, resolution, duration, aspect_ratio, seed. No video upload.  
+- **Replicate ID**: `alibaba/happyhorse-1.0` — https://replicate.com/alibaba/happyhorse-1.0
+- **Version**: `d867e39d045d6449a05b8dd3bc10ea3acca69b99aebc34b831809c09cd523527`
+- **Modes**: T2V (`prompt`) or I2V (`image`, optional `prompt` for motion). `aspect_ratio` ignored when `image` set.
+- **Params**: `prompt` (≤2500 chars per page); `image` (jpg/png/bmp/webp, ≤10MB, 300px+ min side, AR 1:2.5–2.5:1); `resolution` enum `720p`|`1080p` (default `1080p`); `aspect_ratio` enum `16:9`,`9:16`,`1:1`,`4:3`,`3:4`; `duration` enum **3–15** (default 5); `seed` 0–2147483647 nullable.
+- **UI**: Balanced — prompt, image, resolution, duration, aspect_ratio, seed. No video upload.
 - **pricing_notes**: `720p $0.14/s; 1080p $0.28/s output (Replicate page 2026-06-04).`
 
 #### Kling 3 Omni Video (`kling-v3-omni`)
 
-- **Replicate ID**: `kwaivgi/kling-v3-omni-video` — https://replicate.com/kwaivgi/kling-v3-omni-video  
-- **Version**: `460d4f46adf3c29abbcd8f42cf5434570da6b50a39ec4593f2006486b1dd3fba`  
-- **Params**: `prompt` (required, max 2500); `mode` `standard`|`pro`|`4k` (default `pro`); `duration` 3–15 (ignored for edit/base video); `aspect_ratio` `16:9`|`9:16`|`1:1`; `start_image`, `end_image` (end requires start); `reference_images` (max 7, or 4 with video); `reference_video` (mp4/mov, 3–10s, 720–2160px, ≤200MB); `video_reference_type` `feature`|`base`; `generate_audio` (default false, **exclusive** with `reference_video`); `keep_original_sound` (default true); `multi_prompt` JSON (≤6 shots, durations sum to `duration`).  
-- **Not in API**: README mentions `negative_prompt` — **not present** in OpenAPI (2026-06-04).  
-- **media_roles**: `start_image` → “Start frame”; `end_image` → “End frame”; `reference_video` → “Reference or source video”; `reference_images` → “Reference images”.  
+- **Replicate ID**: `kwaivgi/kling-v3-omni-video` — https://replicate.com/kwaivgi/kling-v3-omni-video
+- **Version**: `460d4f46adf3c29abbcd8f42cf5434570da6b50a39ec4593f2006486b1dd3fba`
+- **Params**: `prompt` (required, max 2500); `mode` `standard`|`pro`|`4k` (default `pro`); `duration` 3–15 (ignored for edit/base video); `aspect_ratio` `16:9`|`9:16`|`1:1`; `start_image`, `end_image` (end requires start); `reference_images` (max 7, or 4 with video); `reference_video` (mp4/mov, 3–10s, 720–2160px, ≤200MB); `video_reference_type` `feature`|`base`; `generate_audio` (default false, **exclusive** with `reference_video`); `keep_original_sound` (default true); `multi_prompt` JSON (≤6 shots, durations sum to `duration`).
+- **Not in API**: README mentions `negative_prompt` — **not present** in OpenAPI (2026-06-04).
+- **media_roles**: `start_image` → “Start frame”; `end_image` → “End frame”; `reference_video` → “Reference or source video”; `reference_images` → “Reference images”.
 - **pricing_notes**: Tiered by `mode` + audio; see pricing table (up to $0.42/s for 4k).
 
 #### Seedance 2.0 Fast (`seedance-2.0-fast`)
 
-- **Replicate ID**: `bytedance/seedance-2.0-fast` — https://replicate.com/bytedance/seedance-2.0-fast  
-- **Version**: `8a876cb913d631d9a4d47b3f777df7326d5571f37c49ed020fdcf4103240b158`  
-- **Overlap with `seedance-2.0`**: Same multimodal pattern; Fast drops **1080p** (only `480p`|`720p`), shares ref arrays + `generate_audio`, adds no new required fields. Reuse payload builder patterns from Seedance 2.0 where param names match.  
-- **Params**: `prompt` (required); `duration` **-1..15** (-1 = intelligent duration); `resolution` `480p`|`720p`; `aspect_ratio` includes `adaptive`; `image`, `last_frame_image` (mutually exclusive with `reference_images`); `reference_images` (≤9), `reference_videos` (≤3, total ≤15s), `reference_audios` (≤3, total ≤15s, needs image or video ref); `generate_audio` default true; `seed` nullable.  
+- **Replicate ID**: `bytedance/seedance-2.0-fast` — https://replicate.com/bytedance/seedance-2.0-fast
+- **Version**: `8a876cb913d631d9a4d47b3f777df7326d5571f37c49ed020fdcf4103240b158`
+- **Overlap with `seedance-2.0`**: Same multimodal pattern; Fast drops **1080p** (only `480p`|`720p`), shares ref arrays + `generate_audio`, adds no new required fields. Reuse payload builder patterns from Seedance 2.0 where param names match.
+- **Params**: `prompt` (required); `duration` **-1..15** (-1 = intelligent duration); `resolution` `480p`|`720p`; `aspect_ratio` includes `adaptive`; `image`, `last_frame_image` (mutually exclusive with `reference_images`); `reference_images` (≤9), `reference_videos` (≤3, total ≤15s), `reference_audios` (≤3, total ≤15s, needs image or video ref); `generate_audio` default true; `seed` nullable.
 - **pricing_notes**: $0.07–0.17/s depending on resolution and whether reference video inputs used.
 
 #### Runway Gen-4.5 (`gen-4.5`)
 
-- **Replicate ID**: `runwayml/gen-4.5` — https://replicate.com/runwayml/gen-4.5  
-- **Version**: `2e10d5ae08888b39ed31c828003f4a5ddc89a7cdec3bc7a9926661e0d22cb034`  
-- **Params**: `prompt` (required); `image` optional first frame; `duration` enum **5, 10** only; `aspect_ratio` `16:9`,`9:16`,`4:3`,`3:4`,`1:1`,`21:9`; `seed` nullable.  
-- **UI**: Duration as dropdown (not slider). No resolution param (provider picks quality).  
+- **Replicate ID**: `runwayml/gen-4.5` — https://replicate.com/runwayml/gen-4.5
+- **Version**: `2e10d5ae08888b39ed31c828003f4a5ddc89a7cdec3bc7a9926661e0d22cb034`
+- **Params**: `prompt` (required); `image` optional first frame; `duration` enum **5, 10** only; `aspect_ratio` `16:9`,`9:16`,`4:3`,`3:4`,`1:1`,`21:9`; `seed` nullable.
+- **UI**: Duration as dropdown (not slider). No resolution param (provider picks quality).
 - **pricing_notes**: `$0.12/s output (flat).`
 
 #### Dreamactor M2.0 (`dreamactor-m2.0`)
 
-- **Replicate ID**: `bytedance/dreamactor-m2.0` — https://replicate.com/bytedance/dreamactor-m2.0  
-- **Version**: `b23bf8e6d5f31dd67ad219fac057fd43d3ac38fc58343025ab557be74a9450ca`  
-- **Params**: `image` (required; JPEG/JPG/PNG, ≤4.7MB, 480×480–1920×1080); `video` (required; MP4/MOV/WebM, ≤30s, 200×200–2048×1440); `cut_first_second` boolean default true.  
-- **file_input_params**: `image` → png,jpg,jpeg,webp; `video` → mp4,mov,webm.  
+- **Replicate ID**: `bytedance/dreamactor-m2.0` — https://replicate.com/bytedance/dreamactor-m2.0
+- **Version**: `b23bf8e6d5f31dd67ad219fac057fd43d3ac38fc58343025ab557be74a9450ca`
+- **Params**: `image` (required; JPEG/JPG/PNG, ≤4.7MB, 480×480–1920×1080); `video` (required; MP4/MOV/WebM, ≤30s, 200×200–2048×1440); `cut_first_second` boolean default true.
+- **file_input_params**: `image` → png,jpg,jpeg,webp; `video` → mp4,mov,webm.
 - **pricing_notes**: `$0.05/s output.`
 
 #### Runway Aleph 2.0 (`aleph-2`)
 
-- **Replicate ID**: `runwayml/aleph-2` — https://replicate.com/runwayml/aleph-2  
-- **Version**: `67a723556e73936d6b4a1de17f10e033c94ee4310f8f80225511869b386a82e1`  
-- **Early access**: ~49 runs on Replicate (2026-06-04); pricing/behavior may change.  
-- **Params**: `video` (required; 2–30s, **≤16MB**); `prompt` (required); `keyframe_images` (≤5) + `keyframe_positions` (`first`|`last`|timestamp seconds, parallel arrays); `seed` nullable. Output AR matches input.  
-- **Attribution**: Runway asks “Powered by Runway” + link when attributing (see page README).  
+- **Replicate ID**: `runwayml/aleph-2` — https://replicate.com/runwayml/aleph-2
+- **Version**: `67a723556e73936d6b4a1de17f10e033c94ee4310f8f80225511869b386a82e1`
+- **Early access**: ~49 runs on Replicate (2026-06-04); pricing/behavior may change.
+- **Params**: `video` (required; 2–30s, **≤16MB**); `prompt` (required); `keyframe_images` (≤5) + `keyframe_positions` (`first`|`last`|timestamp seconds, parallel arrays); `seed` nullable. Output AR matches input.
+- **Attribution**: Runway asks “Powered by Runway” + link when attributing (see page README).
 - **pricing_notes**: `$0.336/s output; treat estimates as provisional.`
 
 #### Kling 3 Motion Control (`kling-v3-motion`)
 
-- **Replicate ID**: `kwaivgi/kling-v3-motion-control` — https://replicate.com/kwaivgi/kling-v3-motion-control  
-- **Version**: `15430b300f8c044e8f9e3567fd6daadf6d62e9bb0cee23fdb7969d3b26542f40`  
-- **Params**: `image`, `video` (required); `prompt` optional default `""`; `mode` `std`|`pro` (720p vs 1080p); `character_orientation` `image` (max **10s** video) | `video` (max **30s**); `keep_original_sound` default true; video mp4/mov ≤100MB.  
+- **Replicate ID**: `kwaivgi/kling-v3-motion-control` — https://replicate.com/kwaivgi/kling-v3-motion-control
+- **Version**: `15430b300f8c044e8f9e3567fd6daadf6d62e9bb0cee23fdb7969d3b26542f40`
+- **Params**: `image`, `video` (required); `prompt` optional default `""`; `mode` `std`|`pro` (720p vs 1080p); `character_orientation` `image` (max **10s** video) | `video` (max **30s**); `keep_original_sound` default true; video mp4/mov ≤100MB.
 - **pricing_notes**: `$0.07/s (std), $0.12/s (pro) output.`
 
 #### Kling O1 (`kling-o1`)
 
-- **Replicate ID**: `kwaivgi/kling-o1` — https://replicate.com/kwaivgi/kling-o1  
-- **Version**: `6d5f2d4becc7f734d190d17f13f776229c359cafc1c1898d78945e8d87c57538`  
-- **Dual use**: Same schema as Omni-lite — generation (T2V/I2V/refs) **or** edit (`reference_video` + `video_reference_type=base`).  
-- **Params**: `prompt` (required); `mode` `std`|`pro`; `duration` enum 3–10 (T2V/I2V often 5/10 per description; 3–10 with feature video); `aspect_ratio`; `start_image`, `end_image`; `reference_images`; `reference_video`; `video_reference_type`; `keep_original_sound`.  
-- **Page vs API**: README discusses `keep_audio` and `@Element1` notation — API field is `keep_original_sound`; element slots may be prompt-only on Replicate (no separate element URIs in OpenAPI).  
+- **Replicate ID**: `kwaivgi/kling-o1` — https://replicate.com/kwaivgi/kling-o1
+- **Version**: `6d5f2d4becc7f734d190d17f13f776229c359cafc1c1898d78945e8d87c57538`
+- **Dual use**: Same schema as Omni-lite — generation (T2V/I2V/refs) **or** edit (`reference_video` + `video_reference_type=base`).
+- **Params**: `prompt` (required); `mode` `std`|`pro`; `duration` enum 3–10 (T2V/I2V often 5/10 per description; 3–10 with feature video); `aspect_ratio`; `start_image`, `end_image`; `reference_images`; `reference_video`; `video_reference_type`; `keep_original_sound`.
+- **Page vs API**: README discusses `keep_audio` and `@Element1` notation — API field is `keep_original_sound`; element slots may be prompt-only on Replicate (no separate element URIs in OpenAPI).
 - **pricing_notes**: `$0.084–0.168/s depending on mode and whether video input used (see scrape JSON).
 
 ### Schema / documentation discrepancies (implementers)
@@ -373,10 +373,10 @@ Store which workflow filter was active for troubleshooting.
 
 ## Resolved scope decisions
 
-| Topic | v0.6.10 choice | After v1.0.0 |
+| Topic | v0.6.10 choice | Later status |
 |-------|----------------|--------------|
-| Reference arrays | Single reference image/video MVP in expander | **Post-1.0**: full multi-upload — `ROADMAP.md` → “Advanced video inputs” |
-| Aleph keyframes | Not in UI (API supports them) | **Post-1.0**: keyframe editor UI — same roadmap section |
+| Reference arrays | Single reference image/video MVP in expander | Resolved in v0.6.11 for metadata-marked multi-file params |
+| Aleph keyframes | Not in UI (API supports them) | **Post-1.0**: keyframe editor UI — `ROADMAP.md` → “Advanced video inputs” |
 | Model picker | Workflow filter only | — |
 | Seedance 2.0 vs Fast | Both in catalogue | — |
 
@@ -384,4 +384,9 @@ Store which workflow filter was active for troubleshooting.
 
 ## Next after v0.6.10
 
-v0.7.0 — errors/progress/recovery (can run in parallel only if v0.6.10 UI scope stays bounded).
+1. **v0.7.0** — errors/progress/recovery
+2. **v0.9.0** — Replicate audio (music + speech); see `IMPLEMENTATION_VER-0.9.0.md`
+3. **v0.8.0** — smoke QA (video, 3D, audio)
+4. **v1.0.0** — release
+
+Post-1.0 video UI deferral after v0.6.11: Aleph keyframes (`ROADMAP.md`). Multi-reference upload controls were completed in v0.6.11 for metadata-marked multi-file params.

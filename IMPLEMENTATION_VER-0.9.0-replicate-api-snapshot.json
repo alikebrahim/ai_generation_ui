@@ -1,0 +1,926 @@
+{
+  "_meta": {
+    "fetched_date": "2026-06-04",
+    "model_count": 9,
+    "errors": [],
+    "resolved_id_aliases": {},
+    "notes": [
+      "Catalogue speech: inworld/realtime-tts-1.5-max"
+    ]
+  },
+  "minimax/music-2.5": {
+    "url": "https://replicate.com/minimax/music-2.5",
+    "description": "Generate full-length songs with vocals, lyrics, and rich instrumentation from a text prompt",
+    "visibility": "public",
+    "latest_version_id": "f2100977b6ce90322ab00443b76d48f079435c1d903c4805517f89d2b8cc9c5a",
+    "created_at": "2026-04-09 14:58:42.123435+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "lyrics"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "lyrics": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Lyrics for the song. Use \\n to separate lines. You can add structure tags like [Intro], [Verse], [Pre Chorus], [Chorus], [Interlude], [Bridge], [Outro], [Post Chorus], [Transition], [Break], [Hook], [Build Up], [Inst], [Solo] to control the arrangement. 1-3500 characters."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "",
+        "maxLength": null,
+        "description": "A description of the music style, mood, and scenario. For example: 'Pop, melancholic, perfect for a rainy night'. 0-2000 characters."
+      },
+      "bitrate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 256000,
+        "maxLength": null,
+        "description": "Bitrate for the generated music"
+      },
+      "sample_rate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 44100,
+        "maxLength": null,
+        "description": "Sample rate for the generated music"
+      },
+      "audio_format": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mp3",
+        "maxLength": null,
+        "description": "Audio format for the output"
+      }
+    },
+    "cog_version": "0.17.2",
+    "uses_versionless_api": null,
+    "planned_slug": "music-2.5",
+    "audio_category": "music",
+    "requested_replicate_id": "minimax/music-2.5",
+    "resolved_replicate_id": "minimax/music-2.5"
+  },
+  "stability-ai/stable-audio-2.5": {
+    "url": "https://replicate.com/stability-ai/stable-audio-2.5",
+    "description": "Generate high-quality music and sound from text prompts",
+    "visibility": "public",
+    "latest_version_id": "a61ac8edbb27cd2eda1b2eff2bbc03dcff1131f5560836ff77a052df05b77491",
+    "created_at": "2025-11-07 13:20:02.292922+00:00",
+    "hardware": "A100 (80GB)",
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Random seed for reproducible results. Leave blank for random seed."
+      },
+      "steps": {
+        "type": "integer",
+        "enum": null,
+        "min": 4,
+        "max": 8,
+        "nullable": null,
+        "default": 8,
+        "maxLength": null,
+        "description": "Number of diffusion steps (higher = better quality but slower)"
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt describing the desired audio"
+      },
+      "duration": {
+        "type": "integer",
+        "enum": null,
+        "min": 1,
+        "max": 190,
+        "nullable": null,
+        "default": 190,
+        "maxLength": null,
+        "description": "Duration of generated audio in seconds"
+      },
+      "cfg_scale": {
+        "type": "number",
+        "enum": null,
+        "min": 1,
+        "max": 25,
+        "nullable": null,
+        "default": 1,
+        "maxLength": null,
+        "description": "Classifier-free guidance scale (higher = more prompt adherence)"
+      }
+    },
+    "cog_version": "0.16.8",
+    "uses_versionless_api": null,
+    "planned_slug": "stable-audio-2.5",
+    "audio_category": "music",
+    "requested_replicate_id": "stability-ai/stable-audio-2.5",
+    "resolved_replicate_id": "stability-ai/stable-audio-2.5"
+  },
+  "google/lyria-2": {
+    "url": "https://replicate.com/google/lyria-2",
+    "description": "Lyria 2 is a music generation model that produces 48kHz stereo audio through text-based prompts",
+    "visibility": "public",
+    "latest_version_id": "bb621623ee2772c96d300b2a303c9e444b482f6b0fafcc7424923e1429971120",
+    "created_at": "2025-11-25 16:14:35.700871+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Random seed. Omit for random generations"
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt for audio generation"
+      },
+      "negative_prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Description of what to exclude from the generated audio"
+      }
+    },
+    "cog_version": "0.16.9",
+    "uses_versionless_api": null,
+    "planned_slug": "lyria-2",
+    "audio_category": "music",
+    "requested_replicate_id": "google/lyria-2",
+    "resolved_replicate_id": "google/lyria-2"
+  },
+  "inworld/realtime-tts-2": {
+    "url": "https://replicate.com/inworld/realtime-tts-2",
+    "description": "Most expressive text-to-speech model from Inworld, with natural-language steering, real-time latency, and multilingual support across 100+ languages.",
+    "visibility": "public",
+    "latest_version_id": "ff2e08e7e058fa4d45e2179da92a390e2d7803f879542136c3deb7d6c809181b",
+    "created_at": "2026-05-05 16:44:20.601454+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "text"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "text": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "The text to convert to speech. Maximum 2,000 characters. Supports natural-language steering with bracketed instructions placed before the text they apply to (e.g. `[say excitedly]`, `[whisper in a hushed style]`, `[say sadly with deliberate pauses in a low voice]`). Inline non-verbal tags are also supported (e.g. `[laugh]`, `[sigh]`, `[breathe]`, `[clear throat]`, `[cough]`, `[yawn]`). SSML break tags work for pauses (e.g. `<break time=\"1s\" />`). Capitalize words for emphasis (e.g. `I told you NOT to do that`)."
+      },
+      "language": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "auto",
+        "maxLength": null,
+        "description": "Language of the input text. Use 'auto' to let the model detect the language. Supported production languages: English (en), Chinese (zh), Japanese (ja), Korean (ko), Russian (ru), Italian (it), Spanish (es), Portuguese (pt), French (fr), German (de), Polish (pl), Dutch (nl), Hindi (hi), Hebrew (he), Arabic (ar)."
+      },
+      "voice_id": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "Ashley",
+        "maxLength": null,
+        "description": "The voice to use. Use a preset voice name (e.g. 'Ashley', 'Dennis', 'Alex', 'Darlene') or a custom cloned voice ID."
+      },
+      "sample_rate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 48000,
+        "maxLength": null,
+        "description": "Audio sample rate in Hz."
+      },
+      "temperature": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 2,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Controls randomness when generating audio. Higher values produce more expressive results, lower values are more deterministic. Set to 0 to use the model default (1.1)."
+      },
+      "audio_format": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mp3",
+        "maxLength": null,
+        "description": "Output audio format."
+      },
+      "speaking_rate": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 1.5,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Speaking speed multiplier. Set to 0 for normal speed (1.0)."
+      },
+      "text_normalization": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "auto",
+        "maxLength": null,
+        "description": "Controls whether numbers, dates, and abbreviations are expanded before synthesis. 'auto' lets the model decide, 'on' always normalizes, 'off' reads text as-is."
+      }
+    },
+    "cog_version": "0.19.3",
+    "uses_versionless_api": null,
+    "planned_slug": "realtime-tts-2",
+    "audio_category": "speech",
+    "requested_replicate_id": "inworld/realtime-tts-2",
+    "resolved_replicate_id": "inworld/realtime-tts-2"
+  },
+  "minimax/speech-2.8-hd": {
+    "url": "https://replicate.com/minimax/speech-2.8-hd",
+    "description": "Minimax Speech 2.8 HD focuses on high-fidelity audio generation with features like studio-grade quality, flexible emotion control, multilingual support, and voice cloning capabilities",
+    "visibility": "public",
+    "latest_version_id": "0e4b9c04c2cc34e0d36468f6efc05c4e71835e9acbf1c249a0d8a1a903384c9b",
+    "created_at": "2026-04-20 21:35:37.229595+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "text"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "text": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text to narrate (max 10,000 characters). Use markers like <#0.5#> to insert pauses in seconds."
+      },
+      "pitch": {
+        "type": "integer",
+        "enum": null,
+        "min": -12,
+        "max": 12,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Semitone offset applied to the voice (\u221212 to +12)."
+      },
+      "speed": {
+        "type": "number",
+        "enum": null,
+        "min": 0.5,
+        "max": 2,
+        "nullable": null,
+        "default": 1,
+        "maxLength": null,
+        "description": "Speech speed multiplier (0.5\u20132.0). Lower is slower, higher is faster."
+      },
+      "volume": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 10,
+        "nullable": null,
+        "default": 1,
+        "maxLength": null,
+        "description": "Relative loudness. 1.0 is default MiniMax gain. Range 0\u201310."
+      },
+      "bitrate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 128000,
+        "maxLength": null,
+        "description": "MP3 bitrate in bits per second. Only used when audio_format is mp3."
+      },
+      "channel": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mono",
+        "maxLength": null,
+        "description": "mono for 1 channel (default), stereo for 2 channels."
+      },
+      "emotion": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "auto",
+        "maxLength": null,
+        "description": "Desired delivery style. Use auto to let MiniMax choose, or pick a specific emotion."
+      },
+      "voice_id": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "English_Wiselady",
+        "maxLength": null,
+        "description": "Voice to synthesize. Pick any MiniMax system voice (e.g. English_Wiselady, English_Deep-VoicedGentleman) or a voice_id returned by https://replicate.com/minimax/voice-cloning. See the full list of voices in the README."
+      },
+      "sample_rate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 32000,
+        "maxLength": null,
+        "description": "Audio sample rate in Hz."
+      },
+      "audio_format": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mp3",
+        "maxLength": null,
+        "description": "File format for the generated audio. Choose mp3 for general use, wav/flac for lossless, or pcm for raw bytes."
+      },
+      "language_boost": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "None",
+        "maxLength": null,
+        "description": "Optional language hint. Choose Automatic to let MiniMax detect the language, or pick a specific locale."
+      },
+      "subtitle_enable": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": false,
+        "maxLength": null,
+        "description": "Return MiniMax subtitle metadata with sentence timestamps (non-streaming only)."
+      },
+      "english_normalization": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": false,
+        "maxLength": null,
+        "description": "Improve number/date reading for English text (adds a small amount of latency)."
+      }
+    },
+    "cog_version": "0.18.0",
+    "uses_versionless_api": null,
+    "planned_slug": "speech-2.8-hd",
+    "audio_category": "speech",
+    "requested_replicate_id": "minimax/speech-2.8-hd",
+    "resolved_replicate_id": "minimax/speech-2.8-hd"
+  },
+  "minimax/speech-2.8-turbo": {
+    "url": "https://replicate.com/minimax/speech-2.8-turbo",
+    "description": "Minimax Speech 2.8 Turbo: Turn text into natural, expressive speech with voice cloning, emotion control, and support for 40+ languages",
+    "visibility": "public",
+    "latest_version_id": "5525c705c8fa70fd49fcb12b231c6d0e872437c82620bc4d51e64c0c5017ecfe",
+    "created_at": "2026-04-20 21:33:17.621212+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "text"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "text": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text to narrate (max 10,000 characters). Use markers like <#0.5#> to insert pauses in seconds."
+      },
+      "pitch": {
+        "type": "integer",
+        "enum": null,
+        "min": -12,
+        "max": 12,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Semitone offset applied to the voice (\u221212 to +12)."
+      },
+      "speed": {
+        "type": "number",
+        "enum": null,
+        "min": 0.5,
+        "max": 2,
+        "nullable": null,
+        "default": 1,
+        "maxLength": null,
+        "description": "Speech speed multiplier (0.5\u20132.0). Lower is slower, higher is faster."
+      },
+      "volume": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 10,
+        "nullable": null,
+        "default": 1,
+        "maxLength": null,
+        "description": "Relative loudness. 1.0 is default MiniMax gain. Range 0\u201310."
+      },
+      "bitrate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 128000,
+        "maxLength": null,
+        "description": "MP3 bitrate in bits per second. Only used when audio_format is mp3."
+      },
+      "channel": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mono",
+        "maxLength": null,
+        "description": "mono for 1 channel (default), stereo for 2 channels."
+      },
+      "emotion": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "auto",
+        "maxLength": null,
+        "description": "Desired delivery style. Use auto to let MiniMax choose, or pick a specific emotion."
+      },
+      "voice_id": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "English_Wiselady",
+        "maxLength": null,
+        "description": "Voice to synthesize. Pick any MiniMax system voice (e.g. English_Wiselady, English_Deep-VoicedGentleman) or a voice_id returned by https://replicate.com/minimax/voice-cloning. See the full list of voices in the README."
+      },
+      "sample_rate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 32000,
+        "maxLength": null,
+        "description": "Audio sample rate in Hz."
+      },
+      "audio_format": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mp3",
+        "maxLength": null,
+        "description": "File format for the generated audio. Choose mp3 for general use, wav/flac for lossless, or pcm for raw bytes."
+      },
+      "language_boost": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "None",
+        "maxLength": null,
+        "description": "Optional language hint. Choose Automatic to let MiniMax detect the language, or pick a specific locale."
+      },
+      "subtitle_enable": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": false,
+        "maxLength": null,
+        "description": "Return MiniMax subtitle metadata with sentence timestamps (non-streaming only)."
+      },
+      "english_normalization": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": false,
+        "maxLength": null,
+        "description": "Improve number/date reading for English text (adds a small amount of latency)."
+      }
+    },
+    "cog_version": "0.18.0",
+    "uses_versionless_api": null,
+    "planned_slug": "speech-2.8-turbo",
+    "audio_category": "speech",
+    "requested_replicate_id": "minimax/speech-2.8-turbo",
+    "resolved_replicate_id": "minimax/speech-2.8-turbo"
+  },
+  "resemble-ai/chatterbox": {
+    "url": "https://replicate.com/resemble-ai/chatterbox",
+    "description": "Generate expressive, natural speech. Features unique emotion control, instant voice cloning from short audio, and built-in watermarking.",
+    "visibility": "public",
+    "latest_version_id": "1b8422bc49635c20d0a84e387ed20879c0dd09254ecdb4e75dc4bec10ff94e97",
+    "created_at": "2025-06-20 17:54:52.911035+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Seed (0 for random)"
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text to synthesize"
+      },
+      "cfg_weight": {
+        "type": "number",
+        "enum": null,
+        "min": 0.2,
+        "max": 1,
+        "nullable": null,
+        "default": 0.5,
+        "maxLength": null,
+        "description": "CFG/Pace weight"
+      },
+      "temperature": {
+        "type": "number",
+        "enum": null,
+        "min": 0.05,
+        "max": 5,
+        "nullable": null,
+        "default": 0.8,
+        "maxLength": null,
+        "description": "Temperature"
+      },
+      "audio_prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Path to the reference audio file (Optional)"
+      },
+      "exaggeration": {
+        "type": "number",
+        "enum": null,
+        "min": 0.25,
+        "max": 2,
+        "nullable": null,
+        "default": 0.5,
+        "maxLength": null,
+        "description": "Exaggeration (Neutral = 0.5, extreme values can be unstable)"
+      }
+    },
+    "cog_version": "0.15.5",
+    "uses_versionless_api": null,
+    "planned_slug": "chatterbox",
+    "audio_category": "speech",
+    "requested_replicate_id": "resemble-ai/chatterbox",
+    "resolved_replicate_id": "resemble-ai/chatterbox"
+  },
+  "elevenlabs/v3": {
+    "url": "https://replicate.com/elevenlabs/v3",
+    "description": "The most expressive Text to Speech model",
+    "visibility": "public",
+    "latest_version_id": "7611845fe3de62dc322513b8bdc81b785cb730417a015093f6356f2a89fa3e73",
+    "created_at": "2025-10-23 16:33:23.352482+00:00",
+    "hardware": "CPU",
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "speed": {
+        "type": "number",
+        "enum": null,
+        "min": 0.7,
+        "max": 1.2,
+        "nullable": null,
+        "default": 1,
+        "maxLength": null,
+        "description": "Speed of speech (0.25 to 4.0)"
+      },
+      "style": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 1,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Style exaggeration (0.0 to 1.0)"
+      },
+      "voice": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "Rachel",
+        "maxLength": null,
+        "description": "Voice choice for speech generation"
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "The text to convert to speech"
+      },
+      "next_text": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "",
+        "maxLength": null,
+        "description": "Next text for context"
+      },
+      "stability": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 1,
+        "nullable": null,
+        "default": 0.5,
+        "maxLength": null,
+        "description": "Stability setting for voice generation (0.0 to 1.0)"
+      },
+      "language_code": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "en",
+        "maxLength": null,
+        "description": "Language code (e.g., 'en', 'es', 'fr')"
+      },
+      "previous_text": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "",
+        "maxLength": null,
+        "description": "Previous text for context"
+      },
+      "similarity_boost": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 1,
+        "nullable": null,
+        "default": 0.75,
+        "maxLength": null,
+        "description": "Similarity boost setting (0.0 to 1.0)"
+      }
+    },
+    "cog_version": "0.16.8",
+    "uses_versionless_api": null,
+    "planned_slug": "elevenlabs-v3",
+    "audio_category": "speech",
+    "requested_replicate_id": "elevenlabs/v3",
+    "resolved_replicate_id": "elevenlabs/v3"
+  },
+  "inworld/realtime-tts-1.5-max": {
+    "url": "https://replicate.com/inworld/realtime-tts-1.5-max",
+    "description": "Highest-quality realtime text-to-speech with <200ms latency, emotion control, and 15-language support",
+    "visibility": "public",
+    "latest_version_id": "4a2e51066a48d694207736b7598590ac44a8c780d3ee50147951c5ddf3e52e1d",
+    "created_at": "2026-04-16 13:51:16.200557+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "text"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "text": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "The text to convert to speech. Maximum 2,000 characters. Supports SSML break tags for pauses (e.g. `<break time=\"1s\" />`), emotion markups (e.g. `[happy]`, `[sad]`), and non-verbal vocalizations (e.g. `[laugh]`, `[sigh]`)."
+      },
+      "voice_id": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "Ashley",
+        "maxLength": null,
+        "description": "The voice to use. Use a preset voice name (e.g. 'Ashley', 'Dennis', 'Alex') or a custom cloned voice ID."
+      },
+      "sample_rate": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 48000,
+        "maxLength": null,
+        "description": "Audio sample rate in Hz."
+      },
+      "temperature": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 2,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Controls randomness when generating audio. Higher values produce more expressive results, lower values are more deterministic. Set to 0 to use the model default (1.1)."
+      },
+      "audio_format": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "mp3",
+        "maxLength": null,
+        "description": "Output audio format."
+      },
+      "speaking_rate": {
+        "type": "number",
+        "enum": null,
+        "min": 0,
+        "max": 1.5,
+        "nullable": null,
+        "default": 0,
+        "maxLength": null,
+        "description": "Speaking speed multiplier. Set to 0 for normal speed (1.0)."
+      },
+      "text_normalization": {
+        "type": null,
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "auto",
+        "maxLength": null,
+        "description": "Controls whether numbers, dates, and abbreviations are expanded before synthesis. 'auto' lets the model decide, 'on' always normalizes, 'off' reads text as-is."
+      }
+    },
+    "cog_version": "0.18.0",
+    "uses_versionless_api": null,
+    "planned_slug": "realtime-tts-1.5-max",
+    "audio_category": "speech",
+    "requested_replicate_id": "inworld/realtime-tts-1.5-max",
+    "resolved_replicate_id": "inworld/realtime-tts-1.5-max"
+  }
+}

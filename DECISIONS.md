@@ -38,11 +38,11 @@ All decisions have been made. This document records the final choices and ration
 
 ## Decision 3: UI Layout
 
-**SELECTED: Three top-level destinations with query-param-backed segmented navigation**
+**SELECTED: Top-level destinations with query-param-backed segmented navigation**
 
-Top-level destinations: **Video** | **3D** | **History**
+Top-level destinations today: **Video** | **3D** | **History**. **v0.9.0** adds **Audio** (music + speech) before v1.0.0.
 
-The app keeps the same three-page mental model, but uses segmented navigation backed by query params instead of top-level `st.tabs`. This lets deep links such as `?page=history` and History preview selections stay on the correct page instead of resetting to Video on rerun.
+The app uses segmented navigation backed by query params instead of top-level `st.tabs`. This lets deep links such as `?page=history` and History preview selections stay on the correct page instead of resetting to Video on rerun.
 
 History itself uses a `Gallery` / `Records` segmented view selector that redraws exactly one body at a time, rather than rendering both tab bodies as nested content.
 
@@ -201,20 +201,45 @@ Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 
 ## Final Model List
 
-### Video Models (current + planned)
-1. `wan-video/wan-2.7-t2v` — Text-to-Video; current Replicate
-2. `wan-video/wan-2.5-i2v-fast` — Image-to-Video; current Replicate
-3. `bytedance/seedance-2.0` — T2V + I2V (multi-reference); current Replicate
-4. `nvidia/cosmos-3-super/image-to-video` — Image-to-Video; planned post-v1.0 fal.ai pilot
+Authoritative counts: **CHANGELOG.md** (shipped), **IMPLEMENTATION_VER-0.9.0.md** (planned audio).
 
-### 3D Models (current Replicate)
-4. `tencent/hunyuan3d-2` — Image-to-3D; versioned
-5. `tencent/hunyuan3d-2mv` — Multiview image-to-3D; versioned (v0.6.5)
-6. `fishwowater/trellis2` — Image-to-3D (PBR + preview video); versioned
-7. `tencent/hunyuan-3d-3.1` — Text-to-3D or Image-to-3D; versionless
-8. `adirik/text2tex` — Mesh texturing (.obj + prompt); versioned (v0.6.5)
-9. `adirik/texture` — Mesh texturing (mesh + prompt); versioned (v0.6.5)
-10. `hyper3d/rodin` — Text-to-3D (+ optional reference images); versioned (v0.6.5)
+### Video Models (11 — Replicate, v0.6.10)
+
+| Replicate ID | Role |
+|---|---|
+| `wan-video/wan-2.7-t2v` | Text-to-video |
+| `wan-video/wan-2.5-i2v-fast` | Image-to-video |
+| `bytedance/seedance-2.0` | T2V / I2V |
+| `bytedance/seedance-2.0-fast` | Faster multimodal T2V / I2V |
+| `alibaba/happyhorse-1.0` | T2V / I2V |
+| `runwayml/gen-4.5` | T2V / I2V |
+| `kwaivgi/kling-v3-omni-video` | Multimodal |
+| `bytedance/dreamactor-m2.0` | Motion transfer |
+| `runwayml/aleph-2` | Video edit |
+| `kwaivgi/kling-v3-motion-control` | Motion transfer |
+| `kwaivgi/kling-o1` | Multimodal / edit |
+
+**Post-1.0 UI**: Aleph keyframes — see Decision below and `ROADMAP.md`. Multi-reference uploads were resolved in v0.6.11 for metadata-marked multi-file params.
+
+**Post-1.0 provider**: `nvidia/cosmos-3-super/image-to-video` via fal.ai.
+
+### 3D / texture Models (7 — Replicate)
+
+| Replicate ID | Role |
+|---|---|
+| `tencent/hunyuan3d-2` | Image-to-3D; versioned |
+| `tencent/hunyuan3d-2mv` | Multiview image-to-3D; versioned (v0.6.5) |
+| `fishwowater/trellis2` | Image-to-3D (PBR + preview); versioned |
+| `tencent/hunyuan-3d-3.1` | Text-to-3D or image-to-3D; versionless |
+| `adirik/text2tex` | Mesh texturing (.obj + prompt); versioned (v0.6.5) |
+| `adirik/texture` | Mesh texturing (mesh + prompt); versioned (v0.6.5) |
+| `hyper3d/rodin` | Text-to-3D (+ optional reference); versioned (v0.6.5) |
+
+### Audio Models (9 — planned v0.9.0, not implemented)
+
+**Music**: `minimax/music-2.5`, `stability-ai/stable-audio-2.5`, `google/lyria-2`.
+
+**Speech**: `inworld/realtime-tts-2`, `inworld/realtime-tts-1.5-max`, `minimax/speech-2.8-hd`, `minimax/speech-2.8-turbo`, `resemble-ai/chatterbox`, `elevenlabs/v3`.
 
 ---
 
@@ -254,16 +279,32 @@ Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 
 ---
 
-## Decision: v0.6.10 deferred video UI → post-1.0.0
+## Decision: advanced Aleph keyframe UI → post-1.0.0
 
-**Date**: 2026-06-04 (recorded after v0.6.10 completion)
+**Date**: 2026-06-04 (recorded after v0.6.10 completion; updated after v0.6.11 multi-reference upload support)
 
 **Deferred intentionally (not v1.0.0 blockers)**:
 
-1. **Multi-reference uploads** — full UI for `reference_images`, `reference_videos`, and `reference_audios` on multimodal video models (Seedance family, Kling Omni, Kling O1). v0.6.10 ships a single reference image/video stub only.
+1. **Aleph 2.0 keyframes** — UI for paired `keyframe_images` + `keyframe_positions`. v0.6.10 ships source video + edit prompt only, and v0.6.11 keeps keyframe controls deferred.
 
-2. **Aleph 2.0 keyframes** — UI for paired `keyframe_images` + `keyframe_positions`. v0.6.10 ships source video + edit prompt only.
+**Resolved in v0.6.11**: multi-reference upload controls for `reference_images`, `reference_videos`, `reference_audios`, and Rodin `images` are no longer deferred; the UI supports multi-file upload controls where the model metadata marks those params as multi-file.
 
-**Rationale**: Reduce risk of invalid paid calls and UI clutter before the Replicate-only personal baseline (v1.0.0). Models remain usable without these controls; power-user flows can wait until after v1.0.
+**Rationale**: Reduce risk of invalid paid calls and UI clutter before the Replicate-only personal baseline (v1.0.0). Aleph remains usable without keyframes; that power-user flow can wait until after v1.0.
 
-**Planned milestone**: Post-1.0 — see `ROADMAP.md` section “Advanced video inputs (deferred from v0.6.10)”. Not part of v0.7.0–v0.8.0 unless explicitly reprioritized.
+**Planned milestone**: Post-1.0 — see `ROADMAP.md` section “Advanced video inputs”. Not part of v0.7.0–v0.8.0 unless explicitly reprioritized.
+
+---
+
+## Decision: Audio models before v1.0.0 (v0.9.0)
+
+**Date**: 2026-06-04
+
+**Scope**: Add Replicate **music** and **speech** models before declaring v1.0.0, as milestone **v0.9.0** (after v0.7.0, before v0.8.0 smoke QA).
+
+**Music**: `minimax/music-2.5`, `stability-ai/stable-audio-2.5`, `google/lyria-2`.
+
+**Speech**: `inworld/realtime-tts-2`, `inworld/realtime-tts-1.5-max`, `minimax/speech-2.8-hd`, `minimax/speech-2.8-turbo`, `resemble-ai/chatterbox`, `elevenlabs/v3`.
+
+**Rationale**: Personal studio should cover video, 3D, and audio before the Replicate-only v1.0 baseline; fal.ai remains post-1.0.
+
+**Details**: `IMPLEMENTATION_VER-0.9.0.md`, `ROADMAP.md` v0.9.0.

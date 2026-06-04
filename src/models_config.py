@@ -5,10 +5,12 @@ Each ModelConfig captures:
 - Which input modes are supported (text, image)
 - Which parameters are Balanced (always visible) vs Advanced (in expander)
 - Default values for all parameters
+- (v0.6.6+) Grouped advanced, param help, high-impact ★, and named presets (creative
+  starting points) for better discoverability of model capabilities.
 """
 
 from dataclasses import dataclass, field
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 ModelType = Literal["video", "3d"]
 ProviderName = Literal["replicate", "fal"]
@@ -81,6 +83,13 @@ class ModelConfig:
     # v0.6.10 video workflow UI
     workflow_archetype: WorkflowArchetype | None = None
     workflow_tags: list[str] = field(default_factory=list)
+    # v0.6.6+ creative param exposure & UX
+    param_help: dict[str, str] = field(default_factory=dict)
+    high_impact_params: list[str] = field(default_factory=list)
+    advanced_param_groups: list[tuple[str, list[str]]] = field(default_factory=list)
+    # Per-model presets for quick creative starting points (e.g. "Fast preview").
+    # Value = partial {param: value} applied to session keys for the widgets.
+    presets: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 # ═══════════════════════════════════════════════
@@ -260,6 +269,36 @@ SEEDANCE_2_0 = ModelConfig(
         "image": {"nullable": True},
         "prompt": {"max": 4000},
     },
+    param_help={
+        "generate_audio": "Let the model generate matching audio (may cost more).",
+        "reference_images": "Style/subject refs. Tag in prompt (e.g. [Image1]).",
+        "reference_videos": "Motion/style clips. Prompt tagging usually required.",
+        "reference_audios": "Audio refs for sync or style.",
+    },
+    high_impact_params=["generate_audio"],
+    presets={
+        "Fast T2V no audio": {
+            "duration": 5,
+            "resolution": "720p",
+            "generate_audio": False,
+        },
+        "Balanced": {
+            "duration": 5,
+            "resolution": "720p",
+            "aspect_ratio": "16:9",
+            "generate_audio": True,
+        },
+        "High res + audio": {
+            "duration": 8,
+            "resolution": "1080p",
+            "generate_audio": True,
+        },
+        "With end frame": {
+            "duration": 5,
+            "generate_audio": True,
+            "last_frame_image": None,  # user still uploads
+        },
+    },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/bytedance/seedance-2.0",
     pricing_notes="Approx $0.15/s output; prompt max 4000 chars on Replicate.",
@@ -438,6 +477,11 @@ SEEDANCE_2_0_FAST = ModelConfig(
         "reference_videos": _VIDEO_FILE_TYPES,
         "reference_audios": ["mp3", "wav", "m4a", "aac"],
     },
+    param_help={
+        "generate_audio": "Generate audio track with the video.",
+        "reference_images": "Style/subject refs (tag in prompt per model docs).",
+    },
+    high_impact_params=["generate_audio"],
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/bytedance/seedance-2.0-fast",
     pricing_notes="$0.07–0.17/s output depending on resolution and video refs.",
@@ -510,6 +554,39 @@ KLING_V3_OMNI = ModelConfig(
         "end_image": _IMAGE_FILE_TYPES,
         "reference_images": _IMAGE_FILE_TYPES,
         "reference_video": _VIDEO_FILE_TYPES,
+    },
+    param_help={
+        "mode": "standard=fast; pro=higher quality; 4k=max res (no ref video).",
+        "video_reference_type": "feature=guidance; base=source for edit.",
+        "multi_prompt": "Extra structured prompts (see model card).",
+        "keep_original_sound": "Preserve audio from reference video.",
+    },
+    high_impact_params=["mode"],
+    presets={
+        "Fast / cheap": {
+            "mode": "standard",
+            "duration": 5,
+            "generate_audio": False,
+            "video_reference_type": "feature",
+        },
+        "Balanced pro": {
+            "mode": "pro",
+            "duration": 5,
+            "aspect_ratio": "16:9",
+            "generate_audio": False,
+        },
+        "High quality + audio": {
+            "mode": "pro",
+            "duration": 8,
+            "generate_audio": True,
+            "keep_original_sound": False,
+        },
+        "4K cinematic": {
+            "mode": "4k",
+            "duration": 5,
+            "aspect_ratio": "16:9",
+            "generate_audio": False,
+        },
     },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/kwaivgi/kling-v3-omni-video",
@@ -620,6 +697,11 @@ KLING_V3_MOTION = ModelConfig(
         "video": _VIDEO_FILE_TYPES,
     },
     required_file_params=["image", "video"],
+    param_help={
+        "mode": "pro usually better motion quality.",
+        "character_orientation": "Driving video or character image sets facing.",
+        "keep_original_sound": "Preserve audio from driving video.",
+    },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/kwaivgi/kling-v3-motion-control",
     pricing_notes="$0.07/s (std), $0.12/s (pro) output.",
@@ -686,6 +768,11 @@ KLING_O1 = ModelConfig(
         "reference_images": _IMAGE_FILE_TYPES,
         "reference_video": _VIDEO_FILE_TYPES,
     },
+    param_help={
+        "mode": "std vs pro quality tier.",
+        "video_reference_type": "feature=guidance; base=edit source video.",
+    },
+    high_impact_params=["mode"],
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/kwaivgi/kling-o1",
     pricing_notes="$0.084–$0.168/s output by mode and video input.",
@@ -711,6 +798,7 @@ HUNYUAN3D_2 = ModelConfig(
     media_roles={
         "image": "Subject image",
     },
+    workflow_tags=["image_to_3d"],
     balanced_params=[
         "image",
         "seed",
@@ -733,6 +821,33 @@ HUNYUAN3D_2 = ModelConfig(
         "guidance_scale": {"min": 1.0, "max": 20.0, "ui_type": "number"},
         "octree_resolution": {"enum": [256, 384, 512], "ui_type": "dropdown"},
     },
+    param_help={
+        "steps": "Inference steps. Higher improves quality (plateau ~40).",
+        "guidance_scale": "Prompt vs creativity. 5-8 typical for 3D.",
+        "octree_resolution": "Voxel res (256 fast; 512 sharper/heavier).",
+        "remove_background": "Auto-remove bg from input for clean subject.",
+    },
+    high_impact_params=["steps", "guidance_scale", "octree_resolution"],
+    presets={
+        "Fast": {
+            "steps": 20,
+            "guidance_scale": 3.0,
+            "octree_resolution": 256,
+            "remove_background": True,
+        },
+        "Balanced": {
+            "steps": 50,
+            "guidance_scale": 5.5,
+            "octree_resolution": 256,
+            "remove_background": True,
+        },
+        "High quality": {
+            "steps": 50,
+            "guidance_scale": 8.0,
+            "octree_resolution": 512,
+            "remove_background": True,
+        },
+    },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/tencent/hunyuan3d-2",
     pricing_notes="L40S compute-time estimate from pricing table.",
@@ -753,6 +868,7 @@ TRELLIS_2 = ModelConfig(
     media_roles={
         "image": "Subject image",
     },
+    workflow_tags=["image_to_3d"],
     balanced_params=[
         "image",
         "seed",
@@ -769,6 +885,21 @@ TRELLIS_2 = ModelConfig(
         "tex_slat_steps",
         "shape_slat_guidance_strength",
         "tex_slat_guidance_strength",
+    ],
+    advanced_param_groups=[
+        ("Toggles", ["generate_model", "generate_video", "preprocess_image"]),
+        (
+            "Quality & steps",
+            [
+                "pipeline_type",
+                "sparse_structure_steps",
+                "shape_slat_steps",
+                "tex_slat_steps",
+                "shape_slat_guidance_strength",
+                "tex_slat_guidance_strength",
+            ],
+        ),
+        ("Mesh & texture", ["texture_size", "decimation_target"]),
     ],
     defaults={
         "seed": 42,
@@ -797,6 +928,66 @@ TRELLIS_2 = ModelConfig(
         "shape_slat_guidance_strength": {"min": 0.0, "max": 15.0, "ui_type": "number"},
         "tex_slat_guidance_strength": {"min": 0.0, "max": 15.0, "ui_type": "number"},
     },
+    param_help={
+        "pipeline_type": "Higher cascade = better quality, slower/expensive.",
+        "texture_size": "Higher = sharper textures, larger files, longer time.",
+        "decimation_target": "Target tris after simplify. Lower = lighter files.",
+        "sparse_structure_steps": "Coarse structure steps (higher helps complex).",
+        "shape_slat_steps": "Shape detail refinement steps.",
+        "tex_slat_steps": "Texture detail steps.",
+        "shape_slat_guidance_strength": "Shape fidelity to input (higher=faithful).",
+        "tex_slat_guidance_strength": "Texture adherence to prompt/image.",
+    },
+    high_impact_params=[
+        "pipeline_type",
+        "texture_size",
+        "decimation_target",
+        "shape_slat_guidance_strength",
+    ],
+    presets={
+        "Fast preview": {
+            "pipeline_type": "512",
+            "generate_video": False,
+            "texture_size": 1024,
+            "decimation_target": 100_000,
+            "sparse_structure_steps": 6,
+            "shape_slat_steps": 6,
+            "tex_slat_steps": 6,
+            "shape_slat_guidance_strength": 5.0,
+            "tex_slat_guidance_strength": 1.0,
+        },
+        "Balanced": {
+            "pipeline_type": "1024_cascade",
+            "generate_model": True,
+            "generate_video": True,
+            "texture_size": 4096,
+            "decimation_target": 1_000_000,
+            "sparse_structure_steps": 12,
+            "shape_slat_steps": 12,
+            "tex_slat_steps": 12,
+            "shape_slat_guidance_strength": 7.5,
+            "tex_slat_guidance_strength": 1.0,
+        },
+        "High quality / detail": {
+            "pipeline_type": "1536_cascade",
+            "texture_size": 8192,
+            "decimation_target": 2_000_000,
+            "sparse_structure_steps": 25,
+            "shape_slat_steps": 25,
+            "tex_slat_steps": 25,
+            "shape_slat_guidance_strength": 10.0,
+            "tex_slat_guidance_strength": 2.0,
+        },
+        "Low poly / stylized": {
+            "pipeline_type": "1024",
+            "texture_size": 2048,
+            "decimation_target": 100_000,
+            "sparse_structure_steps": 8,
+            "shape_slat_steps": 8,
+            "tex_slat_steps": 8,
+            "shape_slat_guidance_strength": 4.0,
+        },
+    },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/fishwowater/trellis2",
     pricing_notes="A100-80GB compute-time estimate from pricing table.",
@@ -820,6 +1011,7 @@ HUNYUAN_3D_3_1 = ModelConfig(
         "prompt": "Describe the 3D model",
         "image": "Subject image",
     },
+    workflow_tags=["text_to_3d", "image_to_3d"],
     generation_modes=[
         ("text", "Create from text"),
         ("image", "Create from image"),
@@ -851,6 +1043,34 @@ HUNYUAN_3D_3_1 = ModelConfig(
     # Exactly one of prompt or image must be provided; both together is invalid.
     mutual_exclusion=[("prompt", "image")],
     required_one_of=[("prompt", "image")],
+    param_help={
+        "face_count": "Target faces. Higher detail = heavier files, slower use.",
+        "generate_type": "Normal=textured; Geometry=pure shape (no tex).",
+        "enable_pbr": "Generate PBR maps (extra compute).",
+    },
+    high_impact_params=["face_count"],
+    presets={
+        "Low poly / fast": {
+            "face_count": 100_000,
+            "generate_type": "Normal",
+            "enable_pbr": False,
+        },
+        "Balanced": {
+            "face_count": 500_000,
+            "generate_type": "Normal",
+            "enable_pbr": False,
+        },
+        "High detail": {
+            "face_count": 1_000_000,
+            "generate_type": "Normal",
+            "enable_pbr": True,
+        },
+        "Pure geometry": {
+            "face_count": 800_000,
+            "generate_type": "Geometry",
+            "enable_pbr": False,
+        },
+    },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/tencent/hunyuan-3d-3.1",
     pricing_notes="Replicate page: per-unit pricing (~$0.16/unit); CPU hardware.",
@@ -874,6 +1094,7 @@ HUNYUAN3D_2MV = ModelConfig(
         "left_image": "Left view (optional)",
         "right_image": "Right view (optional)",
     },
+    workflow_tags=["multiview_to_3d"],
     file_input_params={
         "front_image": ["png", "jpg", "jpeg", "webp"],
         "back_image": ["png", "jpg", "jpeg", "webp"],
@@ -916,6 +1137,19 @@ HUNYUAN3D_2MV = ModelConfig(
         "octree_resolution": {"min": 16, "max": 512, "ui_type": "number"},
         "num_chunks": {"min": 1000, "max": 5000000, "ui_type": "number"},
     },
+    param_help={
+        "target_face_num": "Approx faces in final mesh (post decimation).",
+        "steps": "Overall inference steps.",
+        "guidance_scale": "Image prompt strength.",
+        "num_chunks": "Internal chunks; higher helps detailed subjects.",
+        "octree_resolution": "Internal res (higher=detail, more mem/time).",
+    },
+    high_impact_params=[
+        "steps",
+        "guidance_scale",
+        "octree_resolution",
+        "target_face_num",
+    ],
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/tencent/hunyuan3d-2mv",
     pricing_notes="Replicate page ~$0.14/run on L40S; time varies with settings.",
@@ -937,6 +1171,7 @@ TEXT2TEX = ModelConfig(
         "prompt": "Texture description",
         "obj_file": "3D mesh file (.obj)",
     },
+    workflow_tags=["texturing"],
     file_input_params={"obj_file": ["obj"]},
     required_file_params=["obj_file"],
     balanced_params=[
@@ -981,6 +1216,53 @@ TEXT2TEX = ModelConfig(
         },
         "seed": {"nullable": True},
     },
+    advanced_param_groups=[
+        ("View sampling (quality & time)", ["num_viewpoints", "viewpoint_mode"]),
+        ("Update / refinement", ["update_steps", "update_mode", "update_strength"]),
+        ("Diffusion steps", ["ddim_steps", "new_strength"]),
+        ("Other", ["negative_prompt", "seed"]),
+    ],
+    param_help={
+        "ddim_steps": "Diffusion steps. Higher=better tex, more time.",
+        "new_strength": "New texture vs original (1.0=full replace).",
+        "update_strength": "Strength of texture update pass.",
+        "num_viewpoints": "Rendered views for tex. More=coverage, slower.",
+        "viewpoint_mode": "Viewpoint placement around object.",
+        "update_steps": "Texture update/refinement steps.",
+    },
+    high_impact_params=["num_viewpoints", "ddim_steps", "new_strength"],
+    presets={
+        "Fast / low views": {
+            "num_viewpoints": 6,
+            "ddim_steps": 20,
+            "new_strength": 0.8,
+            "update_steps": 10,
+            "update_strength": 0.2,
+        },
+        "Balanced": {
+            "num_viewpoints": 36,
+            "ddim_steps": 50,
+            "new_strength": 1.0,
+            "update_strength": 0.3,
+            "update_steps": 20,
+            "update_mode": "heuristic",
+        },
+        "High quality / dense": {
+            "num_viewpoints": 68,
+            "ddim_steps": 80,
+            "new_strength": 1.0,
+            "update_strength": 0.5,
+            "update_steps": 40,
+            "viewpoint_mode": "hemisphere",
+        },
+        "Stylized / loose": {
+            "num_viewpoints": 12,
+            "ddim_steps": 30,
+            "new_strength": 1.0,
+            "update_strength": 0.1,
+            "viewpoint_mode": "predefined",
+        },
+    },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/adirik/text2tex",
     pricing_notes="L40S compute-time estimate; non-commercial license on model card.",
@@ -1002,6 +1284,7 @@ ADIRIK_TEXTURE = ModelConfig(
         "prompt": "Surface appearance",
         "shape_path": "Untextured mesh file",
     },
+    workflow_tags=["texturing"],
     file_input_params={"shape_path": ["obj", "glb", "ply"]},
     required_file_params=["shape_path"],
     balanced_params=[
@@ -1028,6 +1311,12 @@ ADIRIK_TEXTURE = ModelConfig(
         "guidance_scale": {"min": 0.0, "max": 20.0, "ui_type": "number"},
         "shape_scale": {"min": 0.0, "max": 1.0, "ui_type": "number"},
     },
+    param_help={
+        "guidance_scale": "Texture vs prompt adherence (higher = stronger).",
+        "shape_scale": "Scale applied to input mesh during texturing.",
+        "texture_interpolation_mode": "Texture sampling (bilinear usually fine).",
+    },
+    high_impact_params=["guidance_scale"],
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/adirik/texture",
     pricing_notes="L40S compute-time estimate from pricing table.",
@@ -1051,6 +1340,7 @@ RODIN = ModelConfig(
         "prompt": "Describe the 3D model",
         "images": "Reference image (optional)",
     },
+    workflow_tags=["text_to_3d"],
     generation_modes=[
         ("text", "Text only"),
         ("reference", "Text + reference image"),
@@ -1094,6 +1384,39 @@ RODIN = ModelConfig(
         "material": {"enum": ["PBR", "Shaded", "All"], "ui_type": "dropdown"},
         "mesh_mode": {"enum": ["Quad", "Raw"], "ui_type": "dropdown"},
         "seed": {"nullable": True},
+    },
+    param_help={
+        "quality": "Higher=better geo/materials (high=slow/expensive).",
+        "material": "PBR realistic; Shaded simple; All for both.",
+        "mesh_mode": "Quad=clean topo; Raw=max fidelity (may need cleanup).",
+        "preview_render": "Small preview render (extra time).",
+        "tapose": "Experimental; usually leave off.",
+    },
+    high_impact_params=["quality", "material"],
+    presets={
+        "Fast / low quality": {
+            "quality": "low",
+            "preview_render": False,
+            "mesh_mode": "Raw",
+        },
+        "Balanced (medium)": {
+            "quality": "medium",
+            "geometry_file_format": "glb",
+            "material": "PBR",
+            "mesh_mode": "Quad",
+            "preview_render": False,
+        },
+        "High quality": {
+            "quality": "high",
+            "geometry_file_format": "glb",
+            "material": "PBR",
+            "mesh_mode": "Quad",
+            "preview_render": True,
+        },
+        "Extra detail (slow)": {
+            "quality": "high",
+            "preview_render": True,
+        },
     },
     metadata_verified_date="2026-06-04",
     replicate_page_url="https://replicate.com/hyper3d/rodin",

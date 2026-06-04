@@ -134,6 +134,40 @@ def _row_assets_summary(value: object) -> str:
     return ", ".join(kinds) if kinds else "—"
 
 
+def _trigger_remix(row: pd.Series) -> None:
+    """Store remix intent in session and navigate to the matching tab."""
+    model_name = str(row.get("Model") or "")
+    model_type = str(row.get("Type") or "video").lower()
+    prompt_val = row.get("Prompt") or ""
+    if prompt_val == "No prompt provided":
+        prompt_val = ""
+    params_raw = row.get("Params") or "{}"
+    try:
+        params = (
+            json.loads(params_raw)
+            if isinstance(params_raw, str)
+            else (params_raw or {})
+        )
+    except Exception:
+        params = {}
+    # Keep only scalar params we can safely prefill (files will need re-upload)
+    safe_params = {}
+    for k, v in params.items() if isinstance(params, dict) else []:
+        if k in ("prompt", "image", "video", "obj_file", "shape_path"):
+            continue
+        if isinstance(v, (str, int, float, bool)) or v is None:
+            safe_params[k] = v
+    st.session_state["pending_remix"] = {
+        "model_name": model_name,
+        "model_type": model_type,
+        "prompt": prompt_val,
+        "params": safe_params,
+    }
+    target = "video" if model_type == "video" else "3d"
+    st.query_params["page"] = target
+    st.rerun()
+
+
 def _image_data_uri(path: Path) -> str | None:
     """Return a browser-safe data URI for a local thumbnail image."""
     try:
@@ -175,8 +209,7 @@ def _render_gallery_preview(row: pd.Series) -> None:
     with st.container(border=True):
         st.markdown(f"#### Preview: {row['Model']}")
         st.caption(
-            f"{row.get('Mode', model_type)} · "
-            f"{format_timestamp(str(row['Timestamp']))}"
+            f"{row.get('Mode', model_type)} · {format_timestamp(str(row['Timestamp']))}"
         )
         if model_type == "video" and source:
             st.video(source)
@@ -326,6 +359,36 @@ def _render_history_card(row: pd.Series) -> None:
         )
         st.caption(_row_prompt(row.get("Prompt")))
 
+        with st.expander("📋 Copy actions", expanded=False):
+            prompt_text = _row_prompt(row.get("Prompt"))
+            if st.button(
+                "Copy prompt", key=f"copy_prompt_{row['ID']}", use_container_width=True
+            ):
+                st.toast("Prompt shown below — select to copy")
+                st.code(prompt_text, language="text")
+            params_json = row.get("Params")
+            if params_json:
+                if st.button(
+                    "Copy settings (JSON)",
+                    key=f"copy_settings_{row['ID']}",
+                    use_container_width=True,
+                ):
+                    st.toast("Settings JSON shown below")
+                    st.code(params_json, language="json")
+            try:
+                params = json.loads(params_json) if isinstance(params_json, str) else {}
+                if isinstance(params, dict) and "seed" in params:
+                    seed_val = params["seed"]
+                    if st.button(
+                        f"Copy seed ({seed_val})",
+                        key=f"copy_seed_{row['ID']}",
+                        use_container_width=True,
+                    ):
+                        st.toast("Seed shown below")
+                        st.code(str(seed_val))
+            except Exception:
+                pass
+
         st.metric(
             "Cost",
             format_cost(cost) if cost else "—",
@@ -372,6 +435,16 @@ def _render_history_card(row: pd.Series) -> None:
                 st.caption("Large file — open it from the path above.")
         elif url:
             st.link_button("Open temporary URL", url, use_container_width=True)
+
+        # Remix / load settings for creative iteration (v0.6.6)
+        if status_val == "success":
+            if st.button(
+                "♻️ Load settings into tab (remix)",
+                key=f"remix_{row['ID']}",
+                use_container_width=True,
+                help="Prefill prompt/params (re-upload images/videos).",
+            ):
+                _trigger_remix(row)
 
 
 def _render_gallery_tab(filtered: pd.DataFrame, total_count: int) -> None:
@@ -447,7 +520,9 @@ def _render_records_tab(filtered: pd.DataFrame) -> None:
         lambda row: (
             "💾 Local"
             if safe_local_path(row["Local File"])
-            else "⚠️ Missing local file" if row["Local File"] else "☁️ Temporary"
+            else "⚠️ Missing local file"
+            if row["Local File"]
+            else "☁️ Temporary"
         ),
         axis=1,
     )

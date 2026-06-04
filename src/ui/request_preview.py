@@ -8,7 +8,7 @@ import streamlit as st
 
 from src.generation_service import get_generation_service
 from src.models_config import ModelConfig
-from src.ui.forms import normalize_file_kwargs
+from src.ui.form_utils import normalize_file_kwargs
 from src.validation import ValidationError, validate_params
 
 

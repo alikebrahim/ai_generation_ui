@@ -4,7 +4,7 @@ This roadmap is the source of truth for product direction. It separates what sho
 
 ## Product framing
 
-This is a personal local Streamlit UI for hosted video and 3D generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
+This is a personal local Streamlit UI for hosted **video**, **3D**, and (planned v0.9.0) **audio** generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
 
 - Avoiding invalid or wasteful paid provider calls.
 - A clear, pleasant UI for the project owner and a non-technical household user.
@@ -18,7 +18,9 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.6.10 — Video Model Expansion + Workflow-Aware UI Complete**
+**Current version: v0.6.11 — Creative param exposure (groups, help, ★ high-impact, presets), History remix, multi-ref uploads, 3D parity, loading/“taking longer” messages, History copy actions (prompt/seed/settings), basic prompt starter examples + docs alignment (pre-0.7 UX polish completion)**
+
+**Catalogue today**: 11 video models, 7 3D/texture models, 0 audio (audio planned v0.9.0).
 
 Version history (summary):
 
@@ -32,9 +34,25 @@ Version history (summary):
 - v0.5.0–v0.5.10 completed the UI stabilization series: shared shell styling, focused Video/3D generation panels, human-readable media-role metadata, gallery-first History, separate Gallery/Records redraw views, inline History previews, and docs alignment.
 - v0.6.0 added dry-run/request preview, shared payload builders, schema diagnostics, metadata audit fields, and opt-in paid smoke scripts.
 - v0.6.5 added Hunyuan3D 2 Multiview, Text2Tex, Adirik Texture, and Rodin Gen-2 with mesh/multiview file upload UI.
-- v0.6.10 added eight Replicate video models, workflow filter on the Video tab, archetype-specific forms, and video file uploads.
+- v0.6.6–0.6.11 completed rich creative param exposure for using model capabilities (advanced_param_groups, param_help + dynamic help, high_impact_params with ★ markers, widget slider support, per-model presets with Apply/Reset on the richest models, “♻️ Load settings” remix from History, safer multi-file reference uploads, 3D tab capability filter + consistent name-based selection for parity with Video, layout tweaks for action prominence); plus pre-0.7 polish items (better loading-stage “taking longer than usual” messaging with time estimates, History copy-only actions for prompt/seed/settings, basic prompt helper examples/starter prompts loadable in the form).
 - **Next planned**: v0.7.0 — better errors, progress messaging, and recovery.
-- This remains pre-1.0 because authorized live workflow smoke QA (v0.8.0) is still pending.
+- **Before v1.0.0**: v0.9.0 — Replicate **music + speech** models (nine models; see v0.9.0 section).
+- Then v0.8.0 — authorized smoke QA and browser pass (video, 3D, **and audio**).
+- This remains pre-1.0 because v0.9.0 audio, v0.8.0 smoke, and plain-English UX for v1.0 are still pending.
+
+### Pre-1.0 path at a glance
+
+| Order | Milestone | What it delivers |
+|-------|-----------|------------------|
+| Done | **v0.6.11** | creative param exposure (groups/help/★/presets) + remix/multi-ref/3D parity + pre-0.7 polish (loading messages, History copies, prompt starters) |
+| Done | **v0.6.10** | 11 video models + workflow-aware Video tab |
+| Done | **v0.6.5** / **v0.6.0** | 7 3D/texture models, dry-run + diagnostics |
+| Next | **v0.7.0** | Clearer errors, progress, recovery |
+| Then | **v0.9.0** | **Audio** tab: 3 music + 6 speech models (9 total) |
+| Then | **v0.8.0** | Browser QA + authorized smoke (video, 3D, **music**, **speech**) |
+| Release | **v1.0.0** | Replicate-only personal baseline declared stable |
+
+**Post-1.0** (not v1.0 blockers): Aleph keyframes, fal.ai — see sections below. Multi-reference uploads were completed in v0.6.11 for metadata-marked multi-file params.
 
 ---
 
@@ -93,21 +111,23 @@ These are required for the app to feel like a dependable personal tool:
      - image-to-video
      - image-to-3D
      - text-to-3D
+     - music generation (v0.9.0)
+     - speech / TTS (v0.9.0)
    - Optionally extend smoke coverage to v0.6.5 workflows (multiview 3D, mesh texturing, Rodin).
 
 ### Nice to have before v1.0 if time allows
 
 These improve the experience but should not block v1.0 if the must-haves are complete:
 
-- Better loading-stage copy and “taking longer than usual” messaging.
-- Small copy-only History actions such as copy prompt / copy seed / copy settings, if they are easy and do not delay v1.0 readiness.
-- Basic prompt helper examples or starter prompts.
+- Better loading-stage copy and “taking longer than usual” messaging. (completed in v0.6.11)
+- Small copy-only History actions such as copy prompt / copy seed / copy settings. (completed in v0.6.11)
+- Basic prompt helper examples or starter prompts. (completed in v0.6.11)
 
 ### Post-1.0 exploration
 
 These are valuable but should wait until the core product is stable:
 
-- Rerun/remix from History.
+- Rerun/remix from History (basic version landed in 0.6.11; richer variants later).
 - Favorites or simple notes in History.
 - fal.ai provider implementation and additional provider/catalog expansion, including Meshy.
 - Masking/inpainting workflows for models that support masks.
@@ -117,6 +137,13 @@ These are valuable but should wait until the core product is stable:
 - Advanced prompt builder/templates.
 - CSV/JSON export.
 - Per-model quirks database.
+
+**Bigger architectural / creative explorations (logged for post-1.0 per user request 2026):**
+
+- Model-specific form renderers (or a small registry of form fragments) for the most complex workflows instead of one giant generic `render_generation_form`.
+- Side-by-side generation (two models, same prompt/media) for direct comparison.
+- Visual “param explorer” or interactive cost/time/quality simulator for high-variance params (e.g. steps, guidance, texture size, num viewpoints).
+- Full dynamic forms driven from Replicate (or future provider) OpenAPI schemas, using the existing diagnostics tooling, while keeping curated `ModelConfig` as the source of friendly labels, safe defaults, groups, help text, and high-impact flags.
 
 ---
 
@@ -373,7 +400,7 @@ Examples:
 
 **Priority**: Immediate patch
 
-**Status**: Current
+**Status**: Implemented / superseded by v0.4.9
 
 **Goal**: Fix Hunyuan 3D 3.1 image-to-3D uploads where valid JPG files could reach the model as extensionless provider file URLs and be rejected as `Unsupported image format: .`.
 
@@ -861,24 +888,24 @@ Current Video tab layout works for **prompt + optional single image** models. Ne
 
 Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 
-1. **Workflow-first filter** (top of Video tab)  
-   User picks: *Make from text* | *Animate image* | *Motion from video* | *Edit video* | *All models*  
+1. **Workflow-first filter** (top of Video tab)
+   User picks: *Make from text* | *Animate image* | *Motion from video* | *Edit video* | *All models*
    → Model dropdown lists only matching models (11+ total when “All” selected).
 
-2. **`workflow_archetype` on `ModelConfig`**  
+2. **`workflow_archetype` on `ModelConfig`**
    Drives which form layout renders: `text_or_image_video`, `multimodal_video`, `motion_transfer`, `video_edit`.
 
-3. **Per-archetype form sections** (minimal creative-tool feel)  
-   - **Text/image**: mode radio like Hunyuan 3D 3.1 where needed.  
-   - **Multimodal**: prompt + start frame + optional end frame + collapsed “Reference media”.  
-   - **Motion transfer**: side-by-side or stacked **Character image** + **Driving video**.  
+3. **Per-archetype form sections** (minimal creative-tool feel)
+   - **Text/image**: mode radio like Hunyuan 3D 3.1 where needed.
+   - **Multimodal**: prompt + start frame + optional end frame + collapsed “Reference media”.
+   - **Motion transfer**: side-by-side or stacked **Character image** + **Driving video**.
    - **Video edit**: **Source video** + **Edit instructions** prompt; keyframes in Advanced (phase decision).
 
 4. **Extend `file_input_params` to video** (`mp4`, `mov`, `webm`) — reuse v0.6.5 upload plumbing and dry-run previews.
 
 5. **Keep** Preview request (no charge), validation, payload builders, and `model_diagnostics` probes per model.
 
-6. **Defer or phase** multi-file reference arrays (`reference_images`, `reference_videos`, `reference_audios`) — document decision in implementation (minimum: one reference image vs full multi-upload).
+6. **Phase** multi-file reference arrays (`reference_images`, `reference_videos`, `reference_audios`) — v0.6.10 can start with one reference; v0.6.11 completes metadata-marked multi-file upload controls.
 
 ### Suggested implementation phases
 
@@ -901,7 +928,7 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 
 ### Resolved decisions (v0.6.10)
 
-- Reference **arrays**: single-file MVP shipped; **full multi-upload UI → post-1.0** (see below).
+- Reference **arrays**: single-file MVP shipped in v0.6.10; multi-file upload controls completed in v0.6.11 for metadata-marked multi-file params.
 - **Aleph keyframes**: **post-1.0**; v0.6.10 ships prompt + source video only.
 - **Two-step** model picker: not required; workflow filter is enough for v1.0.
 - **Seedance 2.0 vs 2.0 Fast**: both remain in catalogue (Fast capped at 720p).
@@ -932,6 +959,74 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 
 ---
 
+## v0.9.0 — Replicate Audio Model Expansion (Music + Speech)
+
+**Priority**: High before v1.0.0 (after v0.7.0, before v0.8.0 smoke)
+
+**Status**: **Research complete** (schema + pricing fetched 2026-06-04) — **not implemented**
+
+**Source of truth**: `IMPLEMENTATION_VER-0.9.0.md`
+
+**Goal**: Add dedicated **music** and **speech** generation via Replicate, with an **Audio** section in the app, the same dry-run/validation/history patterns as video and 3D, and plain-English workflow filters (music vs speech).
+
+**Not in scope for v0.9.0**: fal.ai audio; stem editing; replacing video models’ built-in “generate audio” toggles.
+
+### Authoritative data on disk (fetch-first, no paid predictions)
+
+Before implementing v0.9.0, use these repo-root JSON snapshots (same pattern as v0.6.10):
+
+| File | Contents |
+|------|----------|
+| [`IMPLEMENTATION_VER-0.9.0-replicate-api-snapshot.json`](IMPLEMENTATION_VER-0.9.0-replicate-api-snapshot.json) | Latest version IDs, OpenAPI `Input`/`Output`, required fields, resolved params, endpoint hints |
+| [`IMPLEMENTATION_VER-0.9.0-pricing-scrape.json`](IMPLEMENTATION_VER-0.9.0-pricing-scrape.json) | Replicate page `billingConfig` tiers, p50 median, hardware label |
+
+**Fetch method**: `replicate.models.get()` + OpenAPI schema; Replicate HTML `billingConfig` from model pages (no predictions).
+
+**Verified 2026-06-04**: **9 of 9** planned Replicate IDs exist (includes `inworld/realtime-tts-1.5-max`).
+
+### Models to add (schema-checked 2026-06-04)
+
+**Music (3)**
+
+| Planned slug | Replicate ID |
+|--------------|--------------|
+| `music-2.5` | `minimax/music-2.5` |
+| `stable-audio-2.5` | `stability-ai/stable-audio-2.5` |
+| `lyria-2` | `google/lyria-2` |
+
+**Speech / TTS (6)**
+
+| Planned slug | Replicate ID |
+|--------------|--------------|
+| `realtime-tts-2` | `inworld/realtime-tts-2` |
+| `realtime-tts-1.5-max` | `inworld/realtime-tts-1.5-max` |
+| `speech-2.8-hd` | `minimax/speech-2.8-hd` |
+| `speech-2.8-turbo` | `minimax/speech-2.8-turbo` |
+| `chatterbox` | `resemble-ai/chatterbox` |
+| `elevenlabs-v3` | `elevenlabs/v3` |
+
+Note: `stability-ai/stable-audio-2.5` was listed twice in planning notes — one catalogue entry only.
+
+### Planned UI direction
+
+- New **Audio** nav segment (alongside Video, 3D, History).
+- Workflow filter: *Make music* | *Generate speech* | *All audio models*.
+- `st.audio()` preview + download; outputs under `outputs/audio/`; History `model_type` = `audio`.
+- Reuse Preview request, payload builders, and `model_diagnostics` (no paid dev probes).
+
+### Acceptance criteria
+
+- All nine models verified (OpenAPI, pricing, endpoint mode) and documented in the JSON snapshots above.
+- Audio tab ships with music/speech-appropriate forms (not one generic layout).
+- Invalid requests blocked before paid calls; dry-run matches live payloads.
+- v0.8.0 smoke plan includes at least one authorized **music** and one **speech** workflow.
+
+### Milestone order before v1.0
+
+`v0.7.0` → **`v0.9.0` (audio)** → `v0.8.0` (smoke + QA) → `v1.0.0`
+
+---
+
 ## v0.8.0 — v1.0 Readiness and Authorized Smoke QA
 
 **Priority**: Final pre-v1.0 milestone
@@ -945,6 +1040,7 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 - Run visible browser QA for:
   - Video page;
   - 3D page;
+  - Audio page (after v0.9.0);
   - History Gallery view;
   - History Records view;
   - validation errors and empty states.
@@ -952,7 +1048,9 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
   - text-to-video;
   - image-to-video;
   - image-to-3D;
-  - text-to-3D.
+  - text-to-3D;
+  - **music generation** (v0.9.0, after audio milestone);
+  - **speech / TTS** (v0.9.0, after audio milestone).
 - After each authorized smoke, verify:
   - completed result preview remains visible;
   - local output is saved when possible;
@@ -987,7 +1085,9 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
   - image-to-video
   - image-to-3D
   - text-to-3D
-- Browser visual QA is complete for Video, 3D, History Gallery, and History Records views.
+  - music generation (v0.9.0)
+  - speech / TTS (v0.9.0)
+- Browser visual QA is complete for Video, 3D, **Audio**, History Gallery, and History Records views.
 - Lightweight local checks cover core utility, validation, pricing, history, output normalization, and endpoint-mode behavior.
 - README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation docs agree on scope, version, model IDs, storage behavior, and known limitations.
 
@@ -1025,31 +1125,15 @@ Acceptance criteria before any paid fal.ai call:
 
 Post-1.0 work should expand creative power only after the core Replicate-only local app is dependable.
 
-## Post-1.0 — Advanced video inputs (deferred from v0.6.10)
+## Post-1.0 — Advanced video inputs
 
 **Priority**: Medium post-1.0 (Replicate-only; not part of v1.0.0 scope)
 
-**Status**: Planned
+**Status**: Partly resolved in v0.6.11; Aleph keyframe UI remains planned
 
-**Explicitly out of v1.0.0**: These were scoped out of v0.6.10 so motion/edit and basic multimodal paths could ship without risky multi-file UI. v1.0.0 does **not** require them.
+**v0.6.11 resolved**: multi-file upload controls now exist for multimodal reference arrays such as `reference_images`, `reference_videos`, `reference_audios`, plus Rodin `images`, where the model metadata marks those params as multi-file. Continue to rely on dry-run payload preview and local validation before paid calls.
 
-### 1. Multi-reference uploads (multimodal video models)
-
-**Models affected**: Seedance 2.0 / 2.0 Fast, Kling 3 Omni, Kling O1 (and similar array params).
-
-**Goal**: Replace the single-file “Reference image or video (optional)” MVP with validated multi-upload:
-
-- Multiple reference images (per-model caps, e.g. up to 7 / 9)
-- Multiple reference videos and audios where the schema allows (duration/count limits)
-- Plain-English labels (“Reference 1”, “Reference 2”) and prompt-tag hints (`[Image1]`, `<<<image_1>>>`, etc.)
-- Pre-submit validation for mutual exclusion (e.g. Seedance start frame vs reference arrays; Kling audio vs reference video)
-
-**Acceptance criteria**:
-
-- Dry-run payload matches live multi-file payloads; invalid combos blocked before paid calls.
-- `model_diagnostics` and docs updated when shipped.
-
-### 2. Aleph 2.0 keyframe editor UI
+### 1. Aleph 2.0 keyframe editor UI
 
 **Model affected**: `runwayml/aleph-2` (`aleph-2`).
 
@@ -1068,22 +1152,26 @@ Post-1.0 work should expand creative power only after the core Replicate-only lo
 
 ---
 
-## v1.1 — History Reuse and Creative Iteration
+## v1.1 — Favorites and Creative Iteration Notes
 
-**Priority**: High post-1.0 quality-of-life
+**Priority**: Medium post-1.0 quality-of-life
 
-**Goal**: Make iterative creative workflows faster once the stable Replicate-only baseline is complete.
+**Goal**: Add lightweight curation on top of the History remix/copy/preset work already completed in v0.6.11.
+
+### Already completed before v1.0
+
+- History remix: load prior scalar settings back into the matching tab.
+- Copy prompt / copy seed / copy settings actions.
+- Lightweight per-model presets such as fast draft / balanced / detailed.
 
 ### Planned work
 
-- Add “use these settings again” from History.
-- Add copy prompt / copy seed / copy settings actions if not already added before v1.0.
 - Add simple favorites and optional notes.
-- Consider lightweight presets such as fast draft / balanced / detailed only if they do not clutter the main flow.
+- Consider small comparison/continuation affordances only if they do not clutter the main flow.
 
 ### Acceptance criteria
 
-- A good prior result can be reused without manually re-entering prompt/settings.
+- A good prior result can be marked and annotated without manual bookkeeping.
 - History helps compare and continue creative experiments.
 - The feature remains lightweight and local.
 
@@ -1239,8 +1327,9 @@ Post-1.0 work should expand creative power only after the core Replicate-only lo
 | v0.6.0 | Safety, metadata audit, dry-run, schema diagnostics | Complete | Done in v0.6.0 |
 | v0.6.5 | Replicate 3D and texture model expansion | Complete | Done in v0.6.5 |
 | v0.6.10 | Video model expansion + workflow-aware UI | Complete | Done in v0.6.10 |
-| v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |
-| v0.8.0 | v1.0 readiness and authorized smoke QA | Highest | Final pre-v1.0 milestone |
+| v0.7.0 | Better errors, progress, and recovery | Medium | Next planned |
+| v0.9.0 | Replicate audio (music + speech; research in `IMPLEMENTATION_VER-0.9.0-*.json`) | High | Research done; impl before v1.0 |
+| v0.8.0 | v1.0 readiness and authorized smoke QA | Highest | After v0.9.0; final pre-v1.0 gate |
 | v1.0.0 | Stable Replicate-only personal local release | Release | Release target |
 | v1.1 | History reuse and creative iteration | High | Post-1.0 quality-of-life |
 | v1.2 | fal.ai provider expansion and Meshy exploration | High | Post-1.0 provider expansion |

@@ -1,0 +1,347 @@
+{
+  "_meta": {
+    "fetched_date": "2026-06-04"
+  },
+  "minimax/music-2.5": {
+    "page_url": "https://replicate.com/minimax/music-2.5",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.0096",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or around 66 files for $10",
+              "metric": "audio_output_count",
+              "metric_display": "output audio file",
+              "price": "$0.15",
+              "title": "per output audio file",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per output audio file",
+        "type": "per-unit",
+        "metric": "audio_output_count",
+        "metric_display": "output audio file",
+        "price": "$0.15",
+        "description": "or around 66 files for $10",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "stability-ai/stable-audio-2.5": {
+    "page_url": "https://replicate.com/stability-ai/stable-audio-2.5",
+    "hardware": "A100 (80GB)",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.00047",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or 50 files for $10",
+              "metric": "audio_output_count",
+              "metric_display": "output audio file",
+              "price": "$0.20",
+              "title": "per output audio file",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per output audio file",
+        "type": "per-unit",
+        "metric": "audio_output_count",
+        "metric_display": "output audio file",
+        "price": "$0.20",
+        "description": "or 50 files for $10",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "google/lyria-2": {
+    "page_url": "https://replicate.com/google/lyria-2",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.0024",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or 500 seconds for $1",
+              "metric": "audio_output_duration_seconds",
+              "metric_display": "second of output audio",
+              "price": "$2",
+              "title": "per thousand seconds of output audio",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand seconds of output audio",
+        "type": "per-unit",
+        "metric": "audio_output_duration_seconds",
+        "metric_display": "second of output audio",
+        "price": "$2",
+        "description": "or 500 seconds for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "inworld/realtime-tts-2": {
+    "page_url": "https://replicate.com/inworld/realtime-tts-2",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.00020",
+    "billing_config_raw": {
+      "current_description": "<p>Inworld Realtime TTS 2.0 \u2014 $35 per 1M input characters (public pricing)</p>",
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or around 28,571 characters for $1",
+              "metric": "character_input_count",
+              "metric_display": "input character",
+              "price": "$0.035",
+              "title": "per thousand input characters",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand input characters",
+        "type": "per-unit",
+        "metric": "character_input_count",
+        "metric_display": "input character",
+        "price": "$0.035",
+        "description": "or around 28,571 characters for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "minimax/speech-2.8-hd": {
+    "page_url": "https://replicate.com/minimax/speech-2.8-hd",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.00020",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or 10,000 tokens for $1",
+              "metric": "token_input_count",
+              "metric_display": "input token",
+              "price": "$0.10",
+              "title": "per thousand input tokens",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand input tokens",
+        "type": "per-unit",
+        "metric": "token_input_count",
+        "metric_display": "input token",
+        "price": "$0.10",
+        "description": "or 10,000 tokens for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "minimax/speech-2.8-turbo": {
+    "page_url": "https://replicate.com/minimax/speech-2.8-turbo",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.00020",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or around 16,666 tokens for $1",
+              "metric": "token_input_count",
+              "metric_display": "input token",
+              "price": "$0.06",
+              "title": "per thousand input tokens",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand input tokens",
+        "type": "per-unit",
+        "metric": "token_input_count",
+        "metric_display": "input token",
+        "price": "$0.06",
+        "description": "or around 16,666 tokens for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "resemble-ai/chatterbox": {
+    "page_url": "https://replicate.com/resemble-ai/chatterbox",
+    "hardware": "CPU",
+    "compute_time_rate": null,
+    "p50_median_run_usd": "$0.0087",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or 40,000 characters for $1",
+              "metric": "character_input_count",
+              "metric_display": "input character",
+              "price": "$0.025",
+              "title": "per thousand input characters",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand input characters",
+        "type": "per-unit",
+        "metric": "character_input_count",
+        "metric_display": "input character",
+        "price": "$0.025",
+        "description": "or 40,000 characters for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "elevenlabs/v3": {
+    "page_url": "https://replicate.com/elevenlabs/v3",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.00016",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or 10,000 characters for $1",
+              "metric": "character_input_count",
+              "metric_display": "input character",
+              "price": "$0.10",
+              "title": "per thousand input characters",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand input characters",
+        "type": "per-unit",
+        "metric": "character_input_count",
+        "metric_display": "input character",
+        "price": "$0.10",
+        "description": "or 10,000 characters for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  },
+  "inworld/realtime-tts-1.5-max": {
+    "page_url": "https://replicate.com/inworld/realtime-tts-1.5-max",
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.00013",
+    "billing_config_raw": {
+      "current_description": null,
+      "current_tiers": [
+        {
+          "criteria": [],
+          "description": null,
+          "prices": [
+            {
+              "description": "or around 28,571 characters for $1",
+              "metric": "character_input_count",
+              "metric_display": "input character",
+              "price": "$0.035",
+              "title": "per thousand input characters",
+              "type": "per-unit"
+            }
+          ],
+          "title": null
+        }
+      ]
+    },
+    "pricing_tiers": [
+      {
+        "title": "per thousand input characters",
+        "type": "per-unit",
+        "metric": "character_input_count",
+        "metric_display": "input character",
+        "price": "$0.035",
+        "description": "or around 28,571 characters for $1",
+        "criteria": []
+      }
+    ],
+    "uses_versionless_api": null
+  }
+}
