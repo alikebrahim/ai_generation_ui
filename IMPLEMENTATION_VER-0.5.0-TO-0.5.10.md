@@ -1,4 +1,4 @@
-# v0.5.0-v0.5.9 UI/UX Baseline — Complete
+# v0.5.0-v0.5.10 UI/UX Baseline — Complete
 
 **Status: ALL Patches Complete** ✅
 **Verification**: `python -m compileall -q app.py src` + `uv run ruff check .`
@@ -9,7 +9,7 @@
 
 ## Overview
 
-Completed the v0.5 UI/UX series that turned the app into a cleaner, more focused local creative workspace. The app now has a shared shell style, focused generation/result panels, human-readable media-role metadata, gallery-first History views, and updated docs/version alignment.
+Completed the v0.5 UI/UX series that turned the app into a cleaner, more focused local creative workspace. The app now has a shared shell style, focused generation/result panels, human-readable media-role metadata, gallery-first History views, separate Gallery/Records redraw views, inline History previews, and updated docs/version alignment.
 
 The work kept the Replicate-only product scope intact while making the visible UI feel more coherent and easier to use.
 
@@ -143,7 +143,23 @@ The work kept the Replicate-only product scope intact while making the visible U
 - Aligned the roadmap and reference docs with the completed UI baseline.
 - Cleaned up the file-management decision so it matches durable local output behavior.
 
-**Benefit**: The code and docs now agree on the current milestone.
+**Benefit**: The code and docs agreed on the v0.5.9 milestone before the follow-up History hardening pass.
+
+---
+
+### v0.5.10 — History preview and layout hardening ✅
+
+**Files**: `app.py`, `src/ui/history_tab.py`, `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `REFERENCE.md`, `DECISIONS.md`, `UI_Decisions.md`, `pyproject.toml`
+
+**Changes**:
+- Replaced top-level tabs with query-param-backed segmented navigation so History preview links stay on the History page.
+- Changed History Gallery / Records into separate redraw views rather than concurrently rendered internal tab bodies.
+- Kept selected History previews inline and visible in Gallery.
+- Backfilled missing video thumbnails from existing local output files when ffmpeg is available, then re-queried History.
+- Confirmed newest-first History ordering through `ORDER BY timestamp DESC, id DESC`.
+- Added native Streamlit card actions for thumbnail preview, local downloads, and opening local files in the desktop file finder.
+
+**Benefit**: A completed prediction remains easy to see, and History behaves like a visual browser first while keeping Records available as a separate table view.
 
 ---
 
@@ -153,8 +169,8 @@ The work kept the Replicate-only product scope intact while making the visible U
 - `uv run ruff check .`
 - Streamlit AppTest render with existing History rows: no app exceptions.
 - Existing local video rows were backfilled with ffmpeg thumbnails where possible.
+- Browser QA confirmed `?page=history` opens History directly and Gallery/Records render as separate views.
 - No paid provider predictions were created.
-- Browser QA was intentionally skipped for this implementation pass.
 
 ### Final hardening notes
 
@@ -166,5 +182,5 @@ The work kept the Replicate-only product scope intact while making the visible U
 
 ## Notes
 
-- The next planned milestone is v0.6.0: generation safety, dry-run payloads, and schema drift checks.
+- The next planned milestone is v0.6.0: safety, metadata audit, dry-run payloads, and schema drift checks, followed by v0.6.5 verified Replicate 3D/texture model expansion.
 - v0.x remains Replicate-only by design.

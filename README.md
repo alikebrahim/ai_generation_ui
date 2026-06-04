@@ -1,8 +1,8 @@
 # AI Generation UI
 
-A Streamlit-based interface for video and 3D generation using Replicate API today. fal.ai development is intentionally deferred until v1.0.0 or later.
+A Streamlit-based interface for video and 3D generation using Replicate API today. fal.ai development is intentionally deferred until after the v1.0.0 Replicate-only baseline.
 
-**Current version**: v0.5.9 — UI/UX baseline and gallery History complete.
+**Current version**: v0.5.10 — History preview/layout hardening complete.
 
 ## Purpose
 
@@ -15,17 +15,16 @@ Image generation is handled separately via ComfyUI workflows (not in this projec
 
 ## Provider Direction
 
-Current implemented provider support is Replicate. fal.ai is not part of the v0.x
-implementation plan; it begins at v1.0.0 or later, after the Replicate-only
-personal workflow is stable.
+Current implemented provider support is Replicate. fal.ai is not part of the v0.x implementation plan or the v1.0.0 release target;
+it begins after the Replicate-only personal workflow is stable.
 The intended user flow remains workflow-first: choose Video or 3D, pick a model
 by practical outcome/use case, then see the provider as secondary context for
 setup, pricing, status, and troubleshooting.
 
-v0.4.3–v0.5.9 completed the UI stabilization series: the app shell now uses shared styling, the Video and 3D tabs are focused generation/result panels, the model catalogue carries human-readable media-role metadata, History is gallery-first with local file awareness, and the app keeps the Replicate-only workflow intact while presenting it more clearly.
+v0.4.3–v0.5.10 completed the UI stabilization series: the app shell now uses shared styling, the Video and 3D pages are focused generation/result panels, the model catalogue carries human-readable media-role metadata, History is gallery-first with local file awareness, Gallery and Records redraw as separate History views, and preview selections stay inside History through query-param-backed navigation.
 
 Future fal.ai/provider-aware design details are documented in
-`IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` and scheduled from v1.0.0 in
+`IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` and scheduled after v1.0.0 in
 `ROADMAP.md`. The pre-v1 architecture refactor is documented in
 `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 
@@ -43,8 +42,8 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
 ```
 ┌─────────────────────────────────────┐
 │   Streamlit Web Interface           │
-│  (input forms, model selection,     │
-│   video/3D preview)                 │
+│  (page navigation, input forms,     │
+│   model selection, video/3D preview)│
 └──────────────┬──────────────────────┘
                │
                │ Python API calls
@@ -53,7 +52,7 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
 │   Generation / Provider Services    │
 │  Current behavior: Replicate         │
 │  v0.4.9: adapter/service layer done  │
-│  fal.ai: v1.0.0+ planned            │
+│  fal.ai: post-v1.0 planned         │
 └──────────────┬──────────────────────┘
                │
                │ Returns provider URLs
@@ -70,7 +69,7 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
 
 - **Package Manager**: uv (fast, modern Python project management)
 - **Frontend**: Streamlit 1.58.0 (Python web framework)
-- **API Providers**: Replicate 1.0.7 today; fal.ai planned for v1.0.0+ via provider adapter
+- **API Providers**: Replicate 1.0.7 today; fal.ai planned post-v1.0 via provider adapter
 - **Video Display**: Streamlit's built-in `st.video()`
 - **3D Display**: Google's `<model-viewer>` (via Streamlit custom HTML)
 - **Environment Variables**: python-dotenv 1.2.2
@@ -82,7 +81,7 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
 
 - Python 3.11+ (managed by uv)
 - Replicate API token ([get one here](https://replicate.com/account/api-tokens))
-- fal.ai API token is not needed for v0.x; it will be needed only once v1.0.0+ fal.ai support is implemented
+- fal.ai API token is not needed for v0.x or v1.0.0; it will be needed only once post-v1.0 fal.ai support is implemented
 
 ### Installation
 
@@ -107,7 +106,7 @@ uv pip install -e ".[dev]"
 # Set up environment variables
 cp .env.example .env
 # Edit .env and add your REPLICATE_API_TOKEN
-# fal.ai credentials will be added when v1.0.0+ fal.ai support is implemented
+# fal.ai credentials will be added when post-v1.0 fal.ai support is implemented
 ```
 
 ### Running the App
@@ -165,26 +164,27 @@ Create a `.env` file (copy from `.env.example`):
 
 ```bash
 REPLICATE_API_TOKEN=r8_your_token_here
-# fal.ai token variable will be added for v1.0.0+ fal.ai support
+# fal.ai token variable will be added for post-v1.0 fal.ai support
 ```
 
 The app loads this automatically using python-dotenv.
 
 ## Status
 
-**v0.5.9 personal local beta.** The app now has shared shell styling, focused Video and 3D generation/result panels, human-readable media-role metadata, gallery-first History, and durable local output awareness. Core UI/UX polish is in place for the current Replicate-only workflow.
+**v0.5.10 personal local beta.** The app now has shared shell styling, focused Video and 3D generation/result panels, human-readable media-role metadata, gallery-first History, separate Gallery/Records redraw views, inline History preview selection, and durable local output awareness. Core UI/UX polish is in place for the current Replicate-only workflow.
 
 This is intentionally a personal-use app rather than a production product. The
 focus is a robust local UI/UX that avoids obvious invalid paid provider calls and
 keeps useful generation history with local file persistence. It remains pre-1.0
 because browser/live model QA is manual, plain-English UX for non-technical
 users is pending, and generation safety/dry-run tooling is not yet implemented.
-fal.ai is deliberately deferred until v1.0.0 or later.
+fal.ai is deliberately deferred until after the v1.0.0 Replicate-only baseline.
 
 The next planned work is v0.6.0 generation safety: visible dry-run/request
 previews, schema drift diagnostics, and stronger no-paid-call validation probes.
 
 See `ITER_1_IMPLEMENTATION.md` for the as-built reference,
 `IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md` for the completed v0.4.x refactor,
+`IMPLEMENTATION_VER-0.5.0-TO-0.5.10.md` for the completed v0.5 UI/UX pass,
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` for the v1.0.0+ Replicate + fal.ai
-provider plan, and `ROADMAP.md` for the versioned plan toward v1.0.0.
+provider plan, and `ROADMAP.md` for the versioned plan toward v1.0.0 and post-v1.0 provider expansion.

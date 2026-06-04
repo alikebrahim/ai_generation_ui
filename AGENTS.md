@@ -14,8 +14,8 @@ This document defines conventions, defaults, and constraints for this project. F
 
 **IN SCOPE:**
 - Video generation: Text-to-Video (T2V), Image-to-Video (I2V)
-- 3D generation: Image-to-3D (I23D); Text-to-3D (T23D) is planned when a reliable hosted provider/model schema is verified, starting with Replicate `tencent/hunyuan-3d-3.1` in v0.4.0
-- Replicate API integration today; fal.ai provider integration is planned for v1.0.0 or later
+- 3D generation: Image-to-3D (I23D), Text-to-3D (T23D), and hosted 3D texture/model workflows when reliable provider schemas are verified. Current text-to-3D starts with Replicate `tencent/hunyuan-3d-3.1`; v0.6.5 plans additional verified Replicate 3D/texture models.
+- Replicate API integration today; fal.ai provider integration, including Meshy exploration, is post-v1.0.0 work
 - Streamlit-based web interface
 - Cost tracking and generation history
 
@@ -119,7 +119,7 @@ Use lightweight pre-1.0 versioning as a personal planning aid:
 - Patch versions: small fixes, UI polish, docs corrections, pricing updates
 - Minor versions: meaningful UX, model-support, validation, history, or storage
   improvements
-- v1.0.0: a comfortable personal baseline, not a public production guarantee
+- v1.0.0: a comfortable Replicate-only personal baseline, not a public production guarantee
 
 A version is complete when implemented behavior, local verification, and docs
 agree.
@@ -135,7 +135,7 @@ agree.
 ```toml
 streamlit = ">=1.58.0"       # Web UI framework
 replicate = ">=1.0.7"        # Replicate API client
-# fal.ai dependency/client will be added when v1.0.0+ fal.ai provider support is implemented
+# fal.ai dependency/client will be added when post-v1.0 fal.ai provider support is implemented
 python-dotenv = ">=1.2.2"    # Environment variable management
 pillow = ">=10.0.0"          # Image processing
 requests = ">=2.31.0"        # HTTP client for downloads
@@ -158,7 +158,7 @@ black = ">=24.0.0"           # Code formatter
 
 ### API / Provider Layer
 - Current implementation uses the `replicate` Python package (official client).
-- v1.0.0+ provider expansion adds fal.ai through a provider adapter layer; do not scatter provider-specific branches throughout `app.py`.
+- Post-v1.0 provider expansion adds fal.ai through a provider adapter layer; do not scatter provider-specific branches throughout `app.py`.
 - Keep a single model catalogue in `src/models_config.py` with provider metadata for each model.
 - Suggested future provider modules: `src/providers/base.py`, `src/providers/replicate.py`, `src/providers/fal.py`.
 - One workflow wrapper per generation type can remain (`src/video_gen.py`, `src/threed_gen.py`) but should call provider adapters rather than knowing every API detail.
@@ -197,7 +197,7 @@ black = ">=24.0.0"           # Code formatter
 - Generated output files are local artifacts and should stay gitignored.
 
 ### Streamlit App Structure
-- Single-page app with tabs: Video | 3D | History
+- Single-page app with query-param-backed segmented navigation: Video | 3D | History
 - **Video Tab**:
   - Model selector dropdown
   - Input form (text prompt, image upload if applicable)
@@ -209,11 +209,12 @@ black = ">=24.0.0"           # Code formatter
   - Download button for output file
   - Cost estimate display
 - **3D Tab**: Same structure with 3D viewer instead of video player; current models include image-to-3D plus Hunyuan 3D 3.1 text-to-3D/image-to-3D
-- **History Tab**:
+- **History Page**:
   - Summary stats (total spend, generations by model)
+  - Gallery and Records as separate redraw views, not nested/concurrent tab bodies
   - Card view of recent generations with local/temporary/missing-local indicators
-  - Collapsible filterable table of past generations
-  - Local download buttons for existing local files when practical
+  - Filterable records table for troubleshooting and lookup
+  - Local preview/download/open buttons for existing local files when practical
 - Use `st.session_state` to persist form inputs during generation
 
 ### UI Components
@@ -238,6 +239,15 @@ black = ">=24.0.0"           # Code formatter
 - Do not require all provider tokens at startup; unavailable providers should be hidden or disabled with clear setup copy.
 - No hardcoded Replicate model versions — use `latest` alias or fetch version list where appropriate.
 - Model configurations in `src/models_config.py` should map model names to provider identifiers, capability flags, parameter groups, endpoint metadata, and defaults.
+
+### Adding or Updating Models
+- Before adding any Replicate model, fetch current authoritative facts from `replicate.com` and/or the Replicate API for the exact model ID. Verify available parameters, required fields, ranges/enums/defaults, endpoint mode (`model=` versionless vs `version=` latest-version path), output schema, hardware, and pricing.
+- Before adding any fal.ai model, fetch current authoritative facts from the fal.ai model page and OpenAPI schema for the exact endpoint ID. Verify available parameters, required fields, output schema, queue/endpoint behavior, pricing, and any cost multipliers such as duration, candidate count, or agentic generation.
+- Do not add a model from memory, stale notes, provider marketing summaries, or another model's schema. Record source URLs and date checked in the relevant roadmap/implementation notes when adding model support.
+- Keep pricing honest: if current pricing cannot be verified, display “Cost unknown” or an explicit approximate estimate rather than pretending precision.
+- Never create a paid provider prediction just to discover schema or pricing. Use provider docs/API metadata, dry-run payload inspection, and local validation probes unless the user explicitly authorizes a paid smoke test with expected cost/scope.
+- Planned v0.6.5 Replicate candidates are `tencent/hunyuan3d-2mv`, `adirik/text2tex`, `adirik/texture`, and `hyper3d/rodin`; treat their params/pricing/output shapes as unknown until verified from Replicate at implementation time.
+- Meshy is planned as post-v1.0 fal.ai/provider-expansion work; treat its params/pricing/output shapes as unknown until verified from fal.ai at implementation time.
 
 ## Naming Conventions
 
@@ -310,6 +320,7 @@ Design with these future additions in mind (but don't implement now):
 - ComfyUI integration for image preprocessing
 - Local model support (Hunyuan3D-2 on local GPU)
 - Export history to CSV/JSON
+- Post-v1.0 fal.ai provider expansion including Meshy
 
 ## Deployment
 

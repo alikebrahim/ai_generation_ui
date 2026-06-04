@@ -29,7 +29,7 @@ Reasoning:
 Use online/provider documentation only when a milestone actually depends on current external facts:
 
 - v0.5.0 schema diagnostics may query Replicate metadata non-paid.
-- v1.0.0+ fal.ai implementation must re-check fal.ai OpenAPI, upload behavior, output shape, and pricing before any real model is added.
+- post-v1.0 fal.ai implementation must re-check fal.ai OpenAPI, upload behavior, output shape, and pricing before any real model is added.
 - Pricing refresh work should use current provider pricing docs/API if available.
 
 ---
@@ -363,9 +363,11 @@ uv run ruff check .
 
 After this series, resume feature work:
 
-- v0.5.0-v0.5.9: Minimal UI/UX, nicer tabs/header, focused generation panels, media-role forms, thumbnails/previews, and gallery-first History.
+- v0.5.0-v0.5.10: Minimal UI/UX, nicer navigation/header, focused generation panels, media-role forms, thumbnails/previews, gallery-first History, separate Gallery/Records views, and inline History previews.
 - v0.6.0: Generation safety, dry-run payload previews, schema drift checks.
 - v0.7.0: Better errors, progress, and recovery.
-- v0.8.0: History reuse and creative iteration.
-- v0.9.0: Remaining model capability metadata hardening if any pieces were not completed in v0.5.x.
-- v1.0.0: Stable personal local release. fal.ai implementation may begin at or after v1.0.0 through `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`.
+- v0.6.0: Safety, metadata audit, dry-run payloads, and schema diagnostics.
+- v0.6.5: Verified Replicate 3D/texture model expansion.
+- v0.7.0: Better errors, progress, and recovery.
+- v0.8.0: v1.0 readiness and authorized smoke QA.
+- v1.0.0: Stable Replicate-only personal local release. fal.ai implementation begins after v1.0.0 through `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`.

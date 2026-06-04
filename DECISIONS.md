@@ -38,11 +38,13 @@ All decisions have been made. This document records the final choices and ration
 
 ## Decision 3: UI Layout
 
-**SELECTED: Option A — Tabbed Interface**
+**SELECTED: Three top-level destinations with query-param-backed segmented navigation**
 
-Tabs: **Video** | **3D** | **History**
+Top-level destinations: **Video** | **3D** | **History**
 
-Clean separation, each tab self-contained, standard Streamlit pattern.
+The app keeps the same three-page mental model, but uses segmented navigation backed by query params instead of top-level `st.tabs`. This lets deep links such as `?page=history` and History preview selections stay on the correct page instead of resetting to Video on rerun.
+
+History itself uses a `Gallery` / `Records` segmented view selector that redraws exactly one body at a time, rather than rendering both tab bodies as nested content.
 
 ---
 
@@ -50,11 +52,12 @@ Clean separation, each tab self-contained, standard Streamlit pattern.
 
 **SELECTED: Option C — Inline viewer + automatic local copy**
 
-- Video: `st.video(url)` inline player using the provider output URL directly.
-- 3D: `<model-viewer>` inline using the provider output URL directly.
+- Video: `st.video(url)` inline player using the provider output URL or saved local file when available.
+- 3D: `<model-viewer>` inline using the provider output URL or saved local file when available.
 - Successful outputs are automatically saved under `outputs/videos/` or `outputs/models_3d/`.
 - History stores both the provider URL and local file metadata.
 - History distinguishes local files, missing local files, and temporary provider links.
+- History Gallery cards can preview saved outputs inline, download local files, and open local outputs in the desktop file finder when available.
 - Provider URLs remain useful for immediate preview, but may expire after ~1 hour.
 
 ---
@@ -165,11 +168,12 @@ uv run streamlit run app.py # Run the app
 **SELECTED: Add fal.ai through a provider adapter layer, not direct UI branches**
 
 - Current implementation remains Replicate-only.
-- fal.ai development starts at v1.0.0 or later; v0.x remains Replicate-only implementation work.
+- fal.ai development starts after the v1.0.0 Replicate-only baseline; v0.x and v1.0.0 remain Replicate-only implementation/release work.
 - Provider should be visible in model cards, History, dry-run payloads, diagnostics, and errors, but model selection should remain workflow/use-case first.
 - Missing credentials for one provider should not block using the other provider.
-- NVIDIA Cosmos 3 Super Image to Video (`nvidia/cosmos-3-super/image-to-video`) is the first documented fal.ai candidate for v1.0.0+ work.
-- Additional fal.ai model IDs, schemas, output shapes, and pricing must be verified before adding real fal.ai models.
+- NVIDIA Cosmos 3 Super Image to Video (`nvidia/cosmos-3-super/image-to-video`) is the first documented fal.ai image-to-video candidate for post-v1.0 work.
+- Meshy is a post-v1.0 fal.ai/provider-expansion candidate.
+- Additional fal.ai model IDs, schemas, output shapes, and pricing must be verified from fal.ai model pages/OpenAPI before adding real fal.ai models.
 
 **Rationale**: Provider expansion is useful, but the app is a personal creative UI rather than an API console. A thin provider layer keeps Replicate/fal.ai differences manageable while preserving plain-English UX.
 
@@ -201,7 +205,7 @@ Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 1. `wan-video/wan-2.7-t2v` — Text-to-Video; current Replicate
 2. `wan-video/wan-2.5-i2v-fast` — Image-to-Video; current Replicate
 3. `bytedance/seedance-2.0` — T2V + I2V (multi-reference); current Replicate
-4. `nvidia/cosmos-3-super/image-to-video` — Image-to-Video; planned v1.0.0+ fal.ai pilot
+4. `nvidia/cosmos-3-super/image-to-video` — Image-to-Video; planned post-v1.0 fal.ai pilot
 
 ### 3D Models (current + planned)
 4. `tencent/hunyuan3d-2` — Image-to-3D; current; Replicate versioned prediction path

@@ -1,6 +1,6 @@
 # v1.0.0+ Multi-Provider Expansion Plan — Replicate + fal.ai
 
-> **For Hermes:** This plan is for v1.0.0 or later. Do not implement fal.ai work in v0.x. Use the subagent-driven-development skill if implementing this plan task-by-task once v1.0.0+ work begins.
+> **For Hermes:** This plan is for post-v1.0 work. Do not implement fal.ai work in v0.x or in the v1.0.0 Replicate-only release target. Use the subagent-driven-development skill if implementing this plan task-by-task once post-v1.0 provider work begins.
 
 **Prerequisite:** Complete or intentionally supersede the v0.4.3–v0.4.9 architecture stabilization plan in `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md` before starting real fal.ai implementation. The v0.4.x series should leave behind UI modules, provider-aware model metadata, a Replicate adapter, normalized output assets, provider-aware History, and a dry-run/request-preparation service hook.
 
@@ -8,7 +8,7 @@
 
 **Architecture:** Introduce a thin provider layer underneath the existing Streamlit tabs. The UI should select workflows and models using common concepts, while provider adapters translate validated common inputs into Replicate or fal.ai payloads. History, cost/status messaging, output normalization, and dry-run previews should store provider metadata explicitly so each provider's quirks stay visible to developers but mostly hidden from non-technical users.
 
-**Tech Stack:** Streamlit, Python 3.11+, uv, python-dotenv, Replicate Python client, fal.ai client or HTTP API once v1.0.0+ implementation begins, SQLite history.
+**Tech Stack:** Streamlit, Python 3.11+, uv, python-dotenv, Replicate Python client, fal.ai client or HTTP API once post-v1.0 implementation begins, SQLite history.
 
 ---
 
@@ -377,7 +377,7 @@ History should keep provider job links separate from output links.
 
 **Verification:** Non-paid payload probes and compile/lint checks pass. Do not run paid predictions without authorization.
 
-### Task 6: Add fal.ai credential detection (v1.0.0+)
+### Task 6: Add fal.ai credential detection (post-v1.0)
 
 **Objective:** Let the app know whether fal.ai can be used without requiring the token for Replicate-only use.
 
@@ -387,7 +387,9 @@ History should keep provider job links separate from output links.
 
 **Verification:** App starts with only `REPLICATE_API_TOKEN`, only `FAL_KEY`, both, or neither; unavailable providers are shown/hidden clearly.
 
-### Task 7: Add NVIDIA Cosmos 3 Super as the first fal.ai model (v1.0.0+)
+### Task 7: Add NVIDIA Cosmos 3 Super as the first fal.ai model (post-v1.0)
+
+> Meshy is also a post-v1.0 fal.ai/provider-expansion candidate, but it must get its own model-page/OpenAPI/pricing verification pass before implementation.
 
 **Objective:** Add `nvidia/cosmos-3-super/image-to-video` as the first fal.ai pilot model rather than adding many unverified endpoints.
 
@@ -484,7 +486,7 @@ History should keep provider job links separate from output links.
 
 ### Task 10: Update docs after implementation
 
-**Objective:** Keep version docs consistent after v1.0.0+ fal.ai support lands.
+**Objective:** Keep version docs consistent after post-v1.0 fal.ai support lands.
 
 **Files:**
 - Modify: `README.md`

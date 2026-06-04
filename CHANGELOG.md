@@ -2,9 +2,35 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## v0.5.9 — UI/UX Baseline and Gallery History Complete
+## v0.5.10 — History Preview and Layout Hardening
 
 **Status**: Current
+
+### Changed
+
+- Replaced top-level Streamlit tabs with query-param-backed segmented page navigation so History preview links stay on the History page instead of resetting to Video.
+- Changed History Gallery / Records from concurrently rendered internal tabs to a segmented selector that redraws the page as one view or the other.
+- Kept History Gallery as the default visual view while Records remains available for troubleshooting and lookup.
+
+### Fixed
+
+- Fixed the post-generation preview experience so completed results stay in an always-visible inline preview/result panel instead of requiring the user to expand a collapsed status area.
+- Fixed existing local video rows not showing in Gallery by backfilling missing thumbnails from local output files where ffmpeg is available, then re-querying History.
+- Confirmed Gallery recency uses `ORDER BY timestamp DESC, id DESC` from `get_all_generations()`.
+- Added native Streamlit card actions for thumbnail preview, local download, and opening local outputs in the file finder.
+
+### Verification
+
+- Ran `python -m compileall -q app.py src`.
+- Ran `uv run ruff check .`.
+- Browser QA confirmed `?page=history` opens History directly and Gallery/Records render as separate views.
+- No paid Replicate prediction was created.
+
+---
+
+## v0.5.9 — UI/UX Baseline and Gallery History Complete
+
+**Status**: Superseded by v0.5.10
 
 ### Added
 
@@ -13,7 +39,7 @@ All notable project changes are tracked here using SemVer-style versions.
 - Reworked the 3D tab into a focused generation/result panel with clearer upload/help text and result presentation.
 - Added human-readable media-role metadata and Hunyuan 3D 3.1 mode metadata in the model catalogue.
 - Added gallery-first History rendering with richer local-file awareness, thumbnails/previews, and a split between gallery and records views.
-- Added a new implementation/version note for the v0.5.0–v0.5.9 UI pass.
+- Added a new implementation/version note for the v0.5.0–v0.5.10 UI pass.
 
 ### Fixed
 
@@ -35,7 +61,7 @@ All notable project changes are tracked here using SemVer-style versions.
 
 ## v0.4.9 — Architecture Stabilization Complete
 
-**Status**: Superseded by v0.5.9
+**Status**: Superseded by v0.5.10
 
 ### Added
 

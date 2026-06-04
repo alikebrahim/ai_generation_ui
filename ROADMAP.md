@@ -4,7 +4,7 @@ This roadmap is the source of truth for product direction. It separates what sho
 
 ## Product framing
 
-This is a personal local Streamlit UI for hosted video and 3D generation, currently Replicate-powered, with fal.ai development intentionally deferred until v1.0.0 or later, not a production SaaS. The roadmap should prioritize:
+This is a personal local Streamlit UI for hosted video and 3D generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
 
 - Avoiding invalid or wasteful paid provider calls.
 - A clear, pleasant UI for the project owner and a non-technical household user.
@@ -18,9 +18,9 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.5.9 — UI/UX Baseline and Gallery History Complete**
+**Current version: v0.5.10 — History Preview and Layout Hardening Complete**
 
-Why v0.5.9:
+Why v0.5.10:
 
 - v0.1.0 represented the first working Streamlit + Replicate scaffold.
 - v0.2.0 represented the post-review reliability/UX baseline: safer upload handling, Replicate output URL normalization, status polling, improved validation, cost display, and usable History filtering/links.
@@ -29,7 +29,7 @@ Why v0.5.9:
 - v0.4.0 added Hunyuan 3D 3.1 plus local-output/history scaffolding.
 - v0.4.1 fixed the durable-history persistence bug, tightened Hunyuan 3D 3.1 prompt/image validation, and improved local-file History UX.
 - v0.4.2 fixed Hunyuan 3D 3.1 image uploads by sending explicit image MIME data URIs instead of extensionless provider file URLs.
-- v0.5.0–v0.5.9 completed the UI stabilization series: shared shell styling, focused Video/3D generation panels, human-readable media-role metadata, gallery-first History, and docs alignment.
+- v0.5.0–v0.5.10 completed the UI stabilization series: shared shell styling, focused Video/3D generation panels, human-readable media-role metadata, gallery-first History, separate Gallery/Records redraw views, inline History previews, and docs alignment.
 - This remains pre-1.0 because live paid model QA is manual and generation safety/dry-run tooling is the next planned milestone.
 
 ---
@@ -58,9 +58,12 @@ These are required for the app to feel like a dependable personal tool:
    - For Replicate, track whether a model uses `model=`/versionless prediction creation or `version=` prediction creation.
    - Surface endpoint/model errors in plain English.
 
-2. **Provider-aware model catalogue**
+2. **Provider-aware model catalogue and metadata audit**
    - Keep model selection workflow-first rather than provider-first.
+   - Keep current Replicate model metadata accurate for endpoint mode, input schema, output schema, capability flags, media roles, defaults, and pricing.
+   - Before adding any model, fetch current provider facts from the official model page/API docs rather than relying on memory or marketing summaries.
    - Include the newer Replicate `tencent/hunyuan-3d-3.1` model in v0.4.0 with all current schema parameters exposed.
+   - Add the planned v0.6.5 Replicate 3D/texture models only after their current schemas, endpoint modes, outputs, and pricing are verified.
 
 3. **Durable local output storage**
    - Preserve successful outputs after Replicate delivery URLs expire.
@@ -84,26 +87,27 @@ These are required for the app to feel like a dependable personal tool:
      - text-to-video
      - image-to-video
      - image-to-3D
+     - text-to-3D
 
 ### Nice to have before v1.0 if time allows
 
 These improve the experience but should not block v1.0 if the must-haves are complete:
 
-- Rerun/remix from History.
-- Favorites or simple notes in History.
 - Better loading-stage copy and “taking longer than usual” messaging.
-- A small model/schema diagnostics panel for development use.
+- Small copy-only History actions such as copy prompt / copy seed / copy settings, if they are easy and do not delay v1.0 readiness.
 - Basic prompt helper examples or starter prompts.
 
 ### Post-1.0 exploration
 
 These are valuable but should wait until the core product is stable:
 
+- Rerun/remix from History.
+- Favorites or simple notes in History.
+- fal.ai provider implementation and additional provider/catalog expansion, including Meshy.
 - Masking/inpainting workflows for models that support masks.
 - Local mask creation or segmentation helper, possibly using a local model such as SAM/SAM2 or another lightweight background/object segmentation option.
 - Batch generation.
 - Side-by-side output comparison.
-- fal.ai provider implementation and additional provider/catalog expansion.
 - Advanced prompt builder/templates.
 - CSV/JSON export.
 - Per-model quirks database.
@@ -217,7 +221,7 @@ Investigation found that `tencent/hunyuan3d-2` exists but its Replicate API page
 
 **Status**: Implemented / superseded by v0.4.1
 
-**Goal**: Add the newer Replicate Hunyuan 3D 3.1 model safely and make successful generations reusable after provider delivery URLs expire. fal.ai implementation is deferred until v1.0.0 or later.
+**Goal**: Add the newer Replicate Hunyuan 3D 3.1 model safely and make successful generations reusable after provider delivery URLs expire. fal.ai implementation is deferred until after the v1.0.0 Replicate-only baseline.
 
 ### Implemented
 
@@ -402,7 +406,7 @@ No online research is required for v0.4.3–v0.4.9. This is an internal refactor
 - Typed dataclasses for generation results and output assets.
 - Repository-style SQLite history access.
 
-Use online/provider docs only when a future task depends on current external facts, such as Replicate schema drift diagnostics, pricing refreshes, or v1.0.0+ fal.ai implementation.
+Use online/provider docs only when a future task depends on current external facts, such as Replicate schema drift diagnostics, pricing refreshes, or post-v1.0 fal.ai implementation.
 
 ### v0.4.3 — UI Module Split
 
@@ -539,7 +543,7 @@ Acceptance criteria met:
 
 ---
 
-## v0.5.0–v0.5.9 — Minimal UI/UX + Gallery History Series
+## v0.5.0–v0.5.10 — Minimal UI/UX + Gallery History Series
 
 **Priority**: Complete
 
@@ -564,9 +568,10 @@ Acceptance criteria met:
 - Completed result remains visible until the next generation replaces it.
 - Use explicit mode selection for multi-mode models.
 - Label media inputs by role: start frame, end frame, subject image, reference image.
-- History becomes gallery-first with internal `Gallery` and `Records` tabs.
+- History becomes gallery-first with `Gallery` and `Records` as separate redraw views, not concurrently rendered internal tabs.
 - Use ffmpeg for first-frame video thumbnails when available, with graceful fallback.
 - 3D cards use static/provider previews when available; interactive viewer stays in result/detail view.
+- Inline History previews stay on the History page through query-param-backed navigation.
 - If a 3D prediction returns multiple useful assets, download/link all of them to the same generation/prediction.
 
 ### v0.5.0 — Minimal UI shell, layout reliability, and nicer tabs
@@ -669,7 +674,7 @@ Delivered work:
 
 Delivered work:
 
-- Added internal `Gallery` and `Records` tabs inside History.
+- Added `Gallery` and `Records` views inside History.
 - Kept summary cards and filter controls available.
 - Improved copy around local files, temporary links, and download actions.
 
@@ -704,18 +709,47 @@ Acceptance criteria:
 - Compile and Ruff checks pass.
 - Docs agree on v0.5.x behavior and remaining known limitations.
 
+### v0.5.10 — History preview/layout hardening
+
+**Status**: Done
+
+**Goal**: Apply the user-provided layout sketches and live-prediction feedback to make previews and History browsing behave reliably.
+
+Delivered work:
+
+- Replaced top-level tabs with query-param-backed segmented navigation for `Video`, `3D`, and `History`, so preview links can stay on History.
+- Changed History `Gallery` / `Records` from concurrently rendered tabs to a segmented selector that redraws exactly one view body.
+- Kept the History preview area inline and always visible when a gallery item is selected.
+- Backfilled missing video thumbnails for existing local files when ffmpeg is available, then re-queried History so Gallery reflects the repaired metadata.
+- Confirmed History recency ordering is newest first by timestamp and id.
+- Added native Streamlit card actions for thumbnail preview, local downloads, and opening local files in the desktop file finder.
+
+Acceptance criteria:
+
+- `?page=history` opens History directly.
+- Gallery and Records behave as separate redraw views.
+- Existing local video generations with repairable thumbnails appear in Gallery.
+- Completed generation previews do not require expanding a collapsed status widget.
+
+
 ---
 
-## v0.6.0 — Generation Safety, Dry-Run Payloads, and Schema Drift Checks
+## v0.6.0 — Safety, Metadata Audit, Dry-Run, and Schema Diagnostics
 
 **Priority**: High before v1.0, after v0.5.x UI/UX baseline
 
 **Status**: Planned
 
-**Goal**: Use the v0.4.9 request-preparation hook to make paid calls safer and make model/schema problems easy to diagnose without spending money.
+**Goal**: Use the v0.4.9 request-preparation hook and a current model-metadata audit to make paid calls safer and make model/schema problems easy to diagnose without spending money.
 
 ### Planned work
 
+- Audit every implemented Replicate model against current provider facts before extending the catalogue:
+  - model page URL and provider model ID;
+  - endpoint mode (`model=` versionless vs `version=` latest-version path);
+  - input schema, required/optional fields, ranges, enums, defaults, and nullable values;
+  - output schema and whether the model can return multiple useful assets;
+  - hardware/pricing source and date checked.
 - Add optional “Preview request” / dry-run payload visibility where useful for debugging.
 - Show a concise request summary and copyable technical payload in a collapsed/debug area.
 - Add small non-paid schema/model diagnostics for current Replicate models.
@@ -726,6 +760,46 @@ Acceptance criteria:
 - Default local checks run without spending money and without creating predictions.
 - Paid smoke checks require explicit opt-in and clear cost/scope.
 - Dry-run output is useful enough to debug payload problems without cluttering the normal UI.
+- Every current model has verified schema constraints, endpoint mode handling, output metadata, and pricing notes.
+
+---
+
+## v0.6.5 — Replicate 3D and Texture Model Expansion
+
+**Priority**: High before v1.0, after v0.6 safety/metadata foundations
+
+**Status**: Planned
+
+**Goal**: Add the next Replicate-hosted 3D/texture models using the v0.6 metadata and dry-run safeguards, without creating paid predictions during development.
+
+### Planned model candidates
+
+- `tencent/hunyuan3d-2mv`
+- `adirik/text2tex`
+- `adirik/texture`
+- `hyper3d/rodin`
+
+### Planned work
+
+- For each candidate, fetch current authoritative facts from Replicate before implementation:
+  - `replicate.com` model page and model/API metadata;
+  - current input schema and available parameters;
+  - output schema and all useful downloadable assets;
+  - endpoint mode/version requirements;
+  - hardware and pricing/cost-estimation basis;
+  - example payloads only when they match the current schema.
+- Add the models to `src/models_config.py` with provider metadata, capability flags, media-role metadata, defaults, constraints, and pricing notes.
+- Add generation wrapper/registry entries only after dry-run payloads can be inspected locally.
+- Preserve output assets locally and store provider/job/output metadata in History.
+- Keep model-specific UI copy plain-English and avoid exposing raw API names when friendly labels are available.
+
+### Acceptance criteria
+
+- Each added model has documented source URLs/date checked for schema and pricing.
+- Local validation blocks missing/invalid inputs before any paid call.
+- Dry-run/request preview shows the exact payload that would be sent.
+- Compile, Ruff, model registry, metadata, and History/output probes pass.
+- No paid Replicate prediction is created unless explicitly authorized with scope and expected cost.
 
 ---
 
@@ -753,49 +827,41 @@ Acceptance criteria:
 
 ---
 
-## v0.8.0 — History Reuse and Creative Iteration
+## v0.8.0 — v1.0 Readiness and Authorized Smoke QA
 
-**Priority**: Nice to have before v1.0; can move post-1.0 if needed
-
-**Status**: Planned
-
-**Goal**: Make iterative creative workflows faster once gallery-first History exists.
-
-### Planned work
-
-- Add “use these settings again” from History.
-- Add copy prompt / copy seed / copy settings actions.
-- Add simple favorites and optional notes.
-- Consider lightweight presets such as fast draft / balanced / detailed only if they do not clutter the main flow.
-
-### Acceptance criteria
-
-- A good prior result can be reused without manually re-entering prompt/settings.
-- History helps compare and continue creative experiments.
-- The feature remains lightweight and local.
-
----
-
-## v0.9.0 — Model Capability Metadata Hardening
-
-**Priority**: Medium before v1.0 if any metadata gaps remain after v0.5.x
+**Priority**: Final pre-v1.0 milestone
 
 **Status**: Planned
 
-**Goal**: Finish any model metadata hardening not completed during the v0.5 media-role and mode-selection work.
+**Goal**: Verify the Replicate-only personal baseline end to end before declaring v1.0 stable.
 
 ### Planned work
 
-- Fill remaining media-role metadata gaps.
-- Add output-type metadata for all models.
-- Make conditional requirements explicit where schema/config supports them.
-- Prepare model metadata for future reference-media/mask fields without implementing those features yet.
+- Run visible browser QA for:
+  - Video page;
+  - 3D page;
+  - History Gallery view;
+  - History Records view;
+  - validation errors and empty states.
+- With explicit user authorization and expected cost/scope, run one successful live smoke generation for each supported workflow:
+  - text-to-video;
+  - image-to-video;
+  - image-to-3D;
+  - text-to-3D.
+- After each authorized smoke, verify:
+  - completed result preview remains visible;
+  - local output is saved when possible;
+  - Gallery card appears with thumbnail/preview or clear placeholder;
+  - Records row stores provider/job/local/output metadata;
+  - cost/status messaging is honest.
+- Do final docs/version alignment for README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation notes.
 
 ### Acceptance criteria
 
-- Adding a model no longer requires guessing media roles from generic image flags.
-- Future reference-media and mask fields have an obvious metadata home.
-- Local validation remains schema-safe before paid calls.
+- Browser QA covers all current pages/views and major states.
+- Authorized live smoke checks pass or blockers are documented honestly.
+- Lightweight local checks pass without paid calls.
+- Docs and code agree on current scope, supported workflows, known limitations, and post-1.0 provider expansion.
 
 ---
 
@@ -808,22 +874,23 @@ Acceptance criteria:
 ### Release criteria
 
 - Durable output storage and permanent History/gallery behavior are implemented or explicitly documented as out of scope.
-- Minimal UI/UX pass is complete for tabs, forms, generation panels, controls, and History gallery/records.
+- Minimal UI/UX pass is complete for page navigation, forms, generation panels, controls, History Gallery, and History Records.
 - Dry-run payload preview or equivalent request summary is available where useful before paid generation/debugging.
 - All implemented models have verified schema constraints and endpoint mode handling.
 - At least one user-authorized live successful smoke generation has been run for each supported workflow:
   - text-to-video
   - image-to-video
   - image-to-3D
-- Browser visual QA is complete for Video, 3D, and History tabs.
+  - text-to-3D
+- Browser visual QA is complete for Video, 3D, History Gallery, and History Records views.
 - Lightweight local checks cover core utility, validation, pricing, history, output normalization, and endpoint-mode behavior.
 - README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation docs agree on scope, version, model IDs, storage behavior, and known limitations.
 
-### fal.ai development begins at v1.0.0
+### fal.ai development begins after v1.0.0
 
-No fal.ai implementation work is planned for v0.x. Starting at v1.0.0 or later, add fal.ai through the provider-adapter plan in `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`, not through direct branches in `app.py`.
+No fal.ai implementation work is planned for v0.x or for the v1.0.0 Replicate-only release target. After v1.0.0, add fal.ai through the provider-adapter plan in `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`, not through direct branches in `app.py`.
 
-The first documented fal.ai candidate remains NVIDIA Cosmos 3 Super Image to Video:
+The first documented fal.ai candidates include NVIDIA Cosmos 3 Super Image to Video and Meshy:
 
 - fal.ai model page: `https://fal.ai/models/nvidia/cosmos-3-super/image-to-video`
 - Endpoint URL: `https://fal.run/nvidia/cosmos-3-super/image-to-video`
@@ -833,10 +900,15 @@ The first documented fal.ai candidate remains NVIDIA Cosmos 3 Super Image to Vid
 - OpenAPI schema URL: `https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=nvidia/cosmos-3-super/image-to-video`
 - Output schema: `video` object with downloadable URL plus returned `seed`.
 
+Meshy note:
+
+- Meshy should be treated as post-1.0 fal.ai/provider-expansion work.
+- Before implementation, fetch the current fal.ai/Meshy model pages, OpenAPI schemas, endpoint IDs, available parameters, output shapes, and pricing directly from fal.ai; do not rely on stale notes or provider marketing summaries.
+
 Acceptance criteria before any paid fal.ai call:
 
 - fal.ai credentials are optional and never block Replicate-only use.
-- Cosmos appears as a fal.ai image-to-video candidate with all schema parameters exposed through plain-English labels/help.
+- Cosmos and any Meshy model candidates appear only after their current fal.ai schema parameters and pricing have been verified and exposed through plain-English labels/help.
 - Cosmos cost estimate accounts for generated duration and warns that agentic generation can multiply candidate renders/spend.
 - Prompt and start-frame image are required before a paid fal.ai request.
 - Uploaded images are converted into a fal-accessible URL/request payload through a verified path.
@@ -846,35 +918,76 @@ Acceptance criteria before any paid fal.ai call:
 
 # Post-1.0 roadmap
 
-Post-1.0 work should expand creative power only after the core local app is dependable.
+Post-1.0 work should expand creative power only after the core Replicate-only local app is dependable.
 
-## v1.1 — Masking and Inpainting Exploration
+## v1.1 — History Reuse and Creative Iteration
 
-**Priority**: High post-1.0 exploration
+**Priority**: High post-1.0 quality-of-life
+
+**Goal**: Make iterative creative workflows faster once the stable Replicate-only baseline is complete.
+
+### Planned work
+
+- Add “use these settings again” from History.
+- Add copy prompt / copy seed / copy settings actions if not already added before v1.0.
+- Add simple favorites and optional notes.
+- Consider lightweight presets such as fast draft / balanced / detailed only if they do not clutter the main flow.
+
+### Acceptance criteria
+
+- A good prior result can be reused without manually re-entering prompt/settings.
+- History helps compare and continue creative experiments.
+- The feature remains lightweight and local.
+
+---
+
+## v1.2 — fal.ai Provider Expansion and Meshy Exploration
+
+**Priority**: High post-1.0 provider expansion
+
+**Goal**: Add fal.ai through the provider-adapter architecture after the Replicate-only v1.0 baseline is stable.
+
+### Candidate fal.ai work
+
+- NVIDIA Cosmos 3 Super Image to Video as the first documented image-to-video candidate.
+- Meshy as a post-1.0 3D/provider-expansion candidate once exact fal.ai schemas, pricing, and outputs are verified.
+
+### Guardrails
+
+- fal.ai credentials remain optional and never block Replicate-only use.
+- Every fal.ai model must have current model-page/OpenAPI schema, endpoint ID, available parameters, output shape, pricing, and cost multipliers verified before implementation.
+- fal.ai models are added through provider adapters and shared model metadata, not direct UI branches.
+- Paid fal.ai smoke checks require explicit user authorization and expected cost/scope.
+
+---
+
+## v1.3 — Masking and Inpainting Exploration
+
+**Priority**: Medium post-1.0 exploration
 
 **Goal**: Explore mask-based workflows for models that support inpainting or region-specific edits.
 
 ### Ideas to evaluate
 
-- Identify Replicate video/image/3D-adjacent models that accept mask inputs.
+- Identify Replicate/fal.ai video, image, and 3D-adjacent models that accept mask inputs.
 - Add model metadata for mask support:
-  - required mask format
-  - image dimensions/alignment requirements
-  - whether mask is binary, grayscale, alpha, or model-specific
-  - whether mask is combined with start/reference image roles
+  - required mask format;
+  - image dimensions/alignment requirements;
+  - whether mask is binary, grayscale, alpha, or model-specific;
+  - whether mask is combined with start/reference image roles.
 - Explore local mask creation helpers:
-  - local segmentation model such as SAM/SAM2 or a lightweight background/object segmentation option
-  - simple brush-based mask editor if feasible in Streamlit
-  - background removal as a simpler first step
+  - local segmentation model such as SAM/SAM2 or a lightweight background/object segmentation option;
+  - simple brush-based mask editor if feasible in Streamlit;
+  - background removal as a simpler first step.
 - Keep local mask tooling optional and lightweight; do not turn the project into a local inference stack unless the workflow proves useful.
 - Consider storing masks alongside generation history for reproducibility.
 
 ### Open questions
 
-- Which supported/future Replicate models actually accept masks with useful inpainting behavior?
+- Which supported/future provider models actually accept masks with useful inpainting behavior?
 - Is a local SAM/SAM2-style helper fast and simple enough on the target machine?
 - Is Streamlit adequate for mask drawing/editing, or should mask creation be done by uploading external mask files first?
-- Should mask generation be a separate utility tab or embedded only when a selected model supports masks?
+- Should mask generation be a separate utility page or embedded only when a selected model supports masks?
 
 ### Acceptance criteria for moving from exploration to implementation
 
@@ -885,7 +998,7 @@ Post-1.0 work should expand creative power only after the core local app is depe
 
 ---
 
-## v1.2 — Model Catalogue Expansion
+## v1.4 — Model Catalogue Expansion
 
 **Priority**: Medium post-1.0
 
@@ -894,7 +1007,7 @@ Post-1.0 work should expand creative power only after the core local app is depe
 ### Candidate video models
 
 - Kling Video 3.0 — premium multi-shot/audio workflows.
-- Runway Gen-4.5 — top visual fidelity if available/priced reasonably through Replicate.
+- Runway Gen-4.5 — top visual fidelity if available/priced reasonably through supported providers.
 - Grok Imagine Video — social-media style clips.
 - Hailuo 2.3 — balanced cost/quality.
 - Google Veo 3.1 — native audio if available through supported APIs.
@@ -902,7 +1015,7 @@ Post-1.0 work should expand creative power only after the core local app is depe
 ### Candidate 3D models
 
 - Tripo 2.5 — fast prototyping.
-- Rodin — sharp geometry/characters.
+- Additional Rodin variants only after the v0.6.5 `hyper3d/rodin` implementation is verified.
 - DreamGaussian — fast multi-view.
 - Zero123++ — multi-view from single image.
 
@@ -914,7 +1027,7 @@ Post-1.0 work should expand creative power only after the core local app is depe
 
 ---
 
-## v1.3 — Comparison, Batch, and Export Tools
+## v1.5 — Comparison, Batch, and Export Tools
 
 **Priority**: Medium/low post-1.0
 
@@ -936,7 +1049,7 @@ Post-1.0 work should expand creative power only after the core local app is depe
 
 ---
 
-## v1.4 — Pricing Refresh Workflow
+## v1.6 — Pricing Refresh Workflow
 
 **Priority**: Low post-1.0
 
@@ -973,14 +1086,16 @@ Post-1.0 work should expand creative power only after the core local app is depe
 | v0.4.6 | Replicate adapter extraction | Done | Architecture stabilization |
 | v0.4.7 | Output asset + storage service | Done | Architecture stabilization |
 | v0.4.8 | Provider-aware History service | Done | Architecture stabilization |
-| v0.4.9 | Integration hardening + dry-run foundation | Superseded | Prepares v0.5 UI work and later safety work |
-| v0.5.0-v0.5.9 | Minimal UI/UX + gallery History series | Complete | UI stabilization milestone |
-| v0.6.0 | Generation safety, dry-run payloads, schema drift checks | High | Next major milestone |
+| v0.4.9 | Integration hardening + dry-run foundation | Superseded | Prepares safety and UI work |
+| v0.5.0-v0.5.10 | Minimal UI/UX + gallery History series | Complete | UI stabilization milestone |
+| v0.6.0 | Safety, metadata audit, dry-run, schema diagnostics | High | Next major milestone |
+| v0.6.5 | Replicate 3D and texture model expansion | High | Add verified Replicate models |
 | v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |
-| v0.8.0 | History reuse and creative iteration | Medium | Nice-to-have v1.0 |
-| v0.9.0 | Model capability metadata hardening | Medium | Finish remaining metadata gaps |
-| v1.0.0 | Stable personal local release | Release | Release target |
-| v1.1 | Masking and inpainting exploration | High | Post-1.0 |
-| v1.2 | Model catalogue expansion | Medium | Post-1.0 |
-| v1.3 | Comparison, batch, and export tools | Medium/low | Post-1.0 |
-| v1.4 | Pricing refresh workflow | Low | Post-1.0 |
+| v0.8.0 | v1.0 readiness and authorized smoke QA | Highest | Final pre-v1.0 milestone |
+| v1.0.0 | Stable Replicate-only personal local release | Release | Release target |
+| v1.1 | History reuse and creative iteration | High | Post-1.0 quality-of-life |
+| v1.2 | fal.ai provider expansion and Meshy exploration | High | Post-1.0 provider expansion |
+| v1.3 | Masking and inpainting exploration | Medium | Post-1.0 exploration |
+| v1.4 | Model catalogue expansion | Medium | Post-1.0 |
+| v1.5 | Comparison, batch, and export tools | Medium/low | Post-1.0 |
+| v1.6 | Pricing refresh workflow | Low | Post-1.0 |

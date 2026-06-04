@@ -1,4 +1,4 @@
-# UI Decisions for v0.5.0-v0.5.9
+# UI Decisions for v0.5.0-v0.5.10
 
 Purpose: define the agreed UI direction for the v0.5.x patch series before implementation begins.
 
@@ -63,20 +63,20 @@ Implication:
 
 ---
 
-## 3. Top-level tabs
+## 3. Top-level navigation
 
-Decision: improve the presentation of the `Video`, `3D`, and `History` tabs with minimal styling.
+Decision: keep the same three top-level destinations — `Video`, `3D`, and `History` — but use query-param-backed segmented navigation instead of top-level `st.tabs`.
 
-The tabs should feel more polished and easier to scan, without turning the app into a custom frontend.
+The navigation should feel polished and easy to scan, without turning the app into a custom frontend. Query params are preferred because History preview selections and direct links such as `?page=history` must remain on the correct page after Streamlit reruns.
 
 Implication:
 - Keep the same three top-level destinations: `Video`, `3D`, `History`.
-- Add minimal styling around the tab/header area if Streamlit allows it cleanly.
-- Consider subtle visual separation, icons already in use, spacing, and active-tab polish.
-- Do not add extra navigation layers.
+- Use minimal styling around the header/navigation area.
+- Preserve simple icon labels and active-page clarity.
+- Avoid nested top-level navigation layers.
 
 Implementation note:
-- If Streamlit's native tab styling is too limited, use a small app-level CSS helper; keep it localized and documented.
+- Streamlit `st.tabs` renders all tab bodies and can reset preview/deep-link behavior on rerun; use segmented controls plus query params for page-level navigation.
 
 ---
 
@@ -257,11 +257,11 @@ Implication:
 
 Decision: History should become gallery-first.
 
-Decision: History should have two internal tabs:
+Decision: History should have two separate redraw views:
 - `Gallery`
 - `Records`
 
-`Gallery` is the default visual browsing view. `Records` is the table/detail view.
+`Gallery` is the default visual browsing view. `Records` is the table/detail view. These are selected with a segmented control and only one body renders at a time; they should not behave as nested/concurrent tab content.
 
 Decision: show all history cards, with pagination or lazy loading added when needed.
 
@@ -272,6 +272,7 @@ Cards should include:
 - date/time;
 - cost/time when available;
 - local/temporary/missing status;
+- preview action;
 - open/download action.
 
 Implication:
@@ -279,6 +280,7 @@ Implication:
 - Existing `None` prompt display should become a friendly fallback.
 - Empty search/filter states need clear minimal messages.
 - Detailed records stay available without dominating the default experience.
+- A selected Gallery item should preview inline on History, and direct preview links should not reset the app to another page.
 
 ---
 
@@ -483,7 +485,7 @@ Verification:
 ### v0.5.7 — History Gallery/Records split and copy polish
 
 Goals:
-- Add `Gallery` and `Records` internal tabs in History.
+- Add `Gallery` and `Records` views in History.
 - Make Gallery the default visual browsing view.
 - Keep table/details in Records.
 - Replace `None` prompt with a fallback.
@@ -534,6 +536,27 @@ Verification:
 - `python -m compileall -q app.py src`
 - `uv run ruff check .`
 - Visible browser QA screenshots for each page/state.
+- No paid provider predictions unless explicitly approved.
+
+
+### v0.5.10 — History preview/layout hardening
+
+Goals:
+- Keep generation and History previews visible instead of collapsed.
+- Make `Gallery` and `Records` redraw as separate History views.
+- Keep preview selections on History using query-param-backed navigation.
+- Backfill missing thumbnails from existing local video outputs when possible.
+- Preserve newest-first gallery ordering.
+
+Candidate files:
+- `app.py`
+- `src/ui/history_tab.py`
+- docs as needed
+
+Verification:
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- Browser QA for `?page=history`, Gallery preview, Records view, and local thumbnail/card actions.
 - No paid provider predictions unless explicitly approved.
 
 ---
