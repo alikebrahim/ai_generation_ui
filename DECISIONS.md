@@ -207,10 +207,14 @@ Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 3. `bytedance/seedance-2.0` — T2V + I2V (multi-reference); current Replicate
 4. `nvidia/cosmos-3-super/image-to-video` — Image-to-Video; planned post-v1.0 fal.ai pilot
 
-### 3D Models (current + planned)
-4. `tencent/hunyuan3d-2` — Image-to-3D; current; Replicate versioned prediction path
-5. `fishwowater/trellis2` — Image-to-3D (PBR); current; Replicate versioned prediction path
-6. `tencent/hunyuan-3d-3.1` — Text-to-3D or Image-to-3D; current; Replicate versionless prediction path
+### 3D Models (current Replicate)
+4. `tencent/hunyuan3d-2` — Image-to-3D; versioned
+5. `tencent/hunyuan3d-2mv` — Multiview image-to-3D; versioned (v0.6.5)
+6. `fishwowater/trellis2` — Image-to-3D (PBR + preview video); versioned
+7. `tencent/hunyuan-3d-3.1` — Text-to-3D or Image-to-3D; versionless
+8. `adirik/text2tex` — Mesh texturing (.obj + prompt); versioned (v0.6.5)
+9. `adirik/texture` — Mesh texturing (mesh + prompt); versioned (v0.6.5)
+10. `hyper3d/rodin` — Text-to-3D (+ optional reference images); versioned (v0.6.5)
 
 ---
 
@@ -247,3 +251,19 @@ Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 18. Error handling: toast + inline errors, retry logic for transient failures
 19. Test end-to-end with sample prompts for each model
 20. Verify cost tracking accuracy
+
+---
+
+## Decision: v0.6.10 deferred video UI → post-1.0.0
+
+**Date**: 2026-06-04 (recorded after v0.6.10 completion)
+
+**Deferred intentionally (not v1.0.0 blockers)**:
+
+1. **Multi-reference uploads** — full UI for `reference_images`, `reference_videos`, and `reference_audios` on multimodal video models (Seedance family, Kling Omni, Kling O1). v0.6.10 ships a single reference image/video stub only.
+
+2. **Aleph 2.0 keyframes** — UI for paired `keyframe_images` + `keyframe_positions`. v0.6.10 ships source video + edit prompt only.
+
+**Rationale**: Reduce risk of invalid paid calls and UI clutter before the Replicate-only personal baseline (v1.0.0). Models remain usable without these controls; power-user flows can wait until after v1.0.
+
+**Planned milestone**: Post-1.0 — see `ROADMAP.md` section “Advanced video inputs (deferred from v0.6.10)”. Not part of v0.7.0–v0.8.0 unless explicitly reprioritized.

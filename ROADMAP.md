@@ -18,9 +18,9 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.5.10 — History Preview and Layout Hardening Complete**
+**Current version: v0.6.10 — Video Model Expansion + Workflow-Aware UI Complete**
 
-Why v0.5.10:
+Version history (summary):
 
 - v0.1.0 represented the first working Streamlit + Replicate scaffold.
 - v0.2.0 represented the post-review reliability/UX baseline: safer upload handling, Replicate output URL normalization, status polling, improved validation, cost display, and usable History filtering/links.
@@ -30,7 +30,11 @@ Why v0.5.10:
 - v0.4.1 fixed the durable-history persistence bug, tightened Hunyuan 3D 3.1 prompt/image validation, and improved local-file History UX.
 - v0.4.2 fixed Hunyuan 3D 3.1 image uploads by sending explicit image MIME data URIs instead of extensionless provider file URLs.
 - v0.5.0–v0.5.10 completed the UI stabilization series: shared shell styling, focused Video/3D generation panels, human-readable media-role metadata, gallery-first History, separate Gallery/Records redraw views, inline History previews, and docs alignment.
-- This remains pre-1.0 because live paid model QA is manual and generation safety/dry-run tooling is the next planned milestone.
+- v0.6.0 added dry-run/request preview, shared payload builders, schema diagnostics, metadata audit fields, and opt-in paid smoke scripts.
+- v0.6.5 added Hunyuan3D 2 Multiview, Text2Tex, Adirik Texture, and Rodin Gen-2 with mesh/multiview file upload UI.
+- v0.6.10 added eight Replicate video models, workflow filter on the Video tab, archetype-specific forms, and video file uploads.
+- **Next planned**: v0.7.0 — better errors, progress messaging, and recovery.
+- This remains pre-1.0 because authorized live workflow smoke QA (v0.8.0) is still pending.
 
 ---
 
@@ -63,7 +67,7 @@ These are required for the app to feel like a dependable personal tool:
    - Keep current Replicate model metadata accurate for endpoint mode, input schema, output schema, capability flags, media roles, defaults, and pricing.
    - Before adding any model, fetch current provider facts from the official model page/API docs rather than relying on memory or marketing summaries.
    - Include the newer Replicate `tencent/hunyuan-3d-3.1` model in v0.4.0 with all current schema parameters exposed.
-   - Add the planned v0.6.5 Replicate 3D/texture models only after their current schemas, endpoint modes, outputs, and pricing are verified.
+   - Additional Replicate 3D/texture models require verified schemas before addition (v0.6.5 added four models; see `IMPLEMENTATION_VER-0.6.5.md`).
 
 3. **Durable local output storage**
    - Preserve successful outputs after Replicate delivery URLs expire.
@@ -81,13 +85,15 @@ These are required for the app to feel like a dependable personal tool:
    - Provide non-paid request/payload inspection where useful for debugging.
    - Keep cost estimates honest: approximate or unknown is better than misleading precision.
 
-6. **Minimal live smoke validation**
+6. **Minimal live smoke validation** (see v0.8.0)
    - Run live paid tests only with explicit user authorization and expected cost/scope.
-   - Before v1.0, verify at least one successful generation for each supported workflow:
+   - Use `ALLOW_PAID_REPLICATE_SMOKE=1` and `scripts/paid_smoke.py` when authorized.
+   - Before v1.0, verify at least one successful generation for each core workflow:
      - text-to-video
      - image-to-video
      - image-to-3D
      - text-to-3D
+   - Optionally extend smoke coverage to v0.6.5 workflows (multiview 3D, mesh texturing, Rodin).
 
 ### Nice to have before v1.0 if time allows
 
@@ -738,7 +744,9 @@ Acceptance criteria:
 
 **Priority**: High before v1.0, after v0.5.x UI/UX baseline
 
-**Status**: Planned
+**Status**: Complete
+
+**Source of truth**: `IMPLEMENTATION_VER-0.6.0.md`
 
 **Goal**: Use the v0.4.9 request-preparation hook and a current model-metadata audit to make paid calls safer and make model/schema problems easy to diagnose without spending money.
 
@@ -768,20 +776,24 @@ Acceptance criteria:
 
 **Priority**: High before v1.0, after v0.6 safety/metadata foundations
 
-**Status**: Planned
+**Status**: Complete
+
+**Source of truth**: `IMPLEMENTATION_VER-0.6.5.md`
 
 **Goal**: Add the next Replicate-hosted 3D/texture models using the v0.6 metadata and dry-run safeguards, without creating paid predictions during development.
 
-### Planned model candidates
+### Delivered (v0.6.5)
 
-- `tencent/hunyuan3d-2mv`
-- `adirik/text2tex`
-- `adirik/texture`
-- `hyper3d/rodin`
+- `tencent/hunyuan3d-2mv` — multiview image-to-3D (`front_image` required)
+- `adirik/text2tex` — `.obj` + prompt → textured mesh
+- `adirik/texture` — mesh upload + prompt → textured output(s)
+- `hyper3d/rodin` — text-to-3D with optional reference image mode
+- Mesh/multiview file upload UI (`file_input_params` on `ModelConfig`)
+- Payload builders, registry handlers, and dry-run support for all four models
 
-### Planned work
+### Original planned work (completed)
 
-- For each candidate, fetch current authoritative facts from Replicate before implementation:
+- For each candidate, fetched authoritative facts from Replicate before implementation:
   - `replicate.com` model page and model/API metadata;
   - current input schema and available parameters;
   - output schema and all useful downloadable assets;
@@ -800,6 +812,99 @@ Acceptance criteria:
 - Dry-run/request preview shows the exact payload that would be sent.
 - Compile, Ruff, model registry, metadata, and History/output probes pass.
 - No paid Replicate prediction is created unless explicitly authorized with scope and expected cost.
+
+---
+
+## v0.6.10 — Video Model Expansion + Workflow-Aware UI
+
+**Priority**: High before v1.0 (after v0.6.5, alongside or before v0.7.0)
+
+**Status**: Complete (v0.6.10)
+
+**Source of truth**: `IMPLEMENTATION_VER-0.6.10.md`
+
+**Goal**: Add eight Replicate video models with verified schemas and reshape the Video tab so users can pick a **workflow** (text-to-video, image-to-video, motion transfer, video edit, multimodal) and see only the inputs that model supports — without turning the UI into an API dashboard.
+
+**Prerequisite**: v0.6.0 dry-run/safety tooling and v0.6.5 file-upload patterns (extend uploads to **video** files for motion/edit models).
+
+### Models to add (schema-checked 2026-06-04)
+
+| Planned slug | Replicate ID | User-facing intent |
+|--------------|--------------|-------------------|
+| `happyhorse-1.0` | `alibaba/happyhorse-1.0` | Text-to-video or animate one image (3–15s) |
+| `kling-v3-omni` | `kwaivgi/kling-v3-omni-video` | Multimodal generation (refs, start/end, quality tier) |
+| `seedance-2.0-fast` | `bytedance/seedance-2.0-fast` | Faster Seedance-style multimodal (480p/720p) |
+| `gen-4.5` | `runwayml/gen-4.5` | High-quality T2V/I2V (5s or 10s only) |
+| `dreamactor-m2.0` | `bytedance/dreamactor-m2.0` | Character image + driving video → animation |
+| `aleph-2` | `runwayml/aleph-2` | Edit an uploaded clip with a text instruction |
+| `kling-v3-motion` | `kwaivgi/kling-v3-motion-control` | Transfer motion from reference video to character image |
+| `kling-o1` | `kwaivgi/kling-o1` | Natural-language video modification (optional refs) |
+
+**Already in catalogue (unchanged)**: `bytedance/seedance-2.0` — keep; `seedance-2.0-fast` is a separate faster variant.
+
+Replicate pages: `https://replicate.com/<owner>/<model>` for each ID above.
+
+### Why the UI must change
+
+Current Video tab layout works for **prompt + optional single image** models. New models introduce distinct media roles:
+
+| Capability | Models | UI impact |
+|------------|--------|-----------|
+| Driving / source **video** upload | Dreamactor, Kling motion, Aleph | New upload type; required fields |
+| **Motion transfer** (image + video) | Dreamactor, Kling motion | Two labeled uploads; not “optional image” |
+| **Video edit** (video + prompt) | Aleph, Kling O1 | Copy and layout say “edit”, not “generate” |
+| **Multimodal references** (arrays) | Kling Omni, Kling O1, Seedance Fast | Sections for refs / start-end; array upload strategy |
+| **Mode / tier** enums | Kling family | Plain labels in Advanced (“Quality tier”, etc.) |
+| **Strict duration enums** | Gen-4.5 (5/10), Happyhorse (3–15) | Dropdowns, not generic sliders |
+
+### Planned UI direction (summary)
+
+Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
+
+1. **Workflow-first filter** (top of Video tab)  
+   User picks: *Make from text* | *Animate image* | *Motion from video* | *Edit video* | *All models*  
+   → Model dropdown lists only matching models (11+ total when “All” selected).
+
+2. **`workflow_archetype` on `ModelConfig`**  
+   Drives which form layout renders: `text_or_image_video`, `multimodal_video`, `motion_transfer`, `video_edit`.
+
+3. **Per-archetype form sections** (minimal creative-tool feel)  
+   - **Text/image**: mode radio like Hunyuan 3D 3.1 where needed.  
+   - **Multimodal**: prompt + start frame + optional end frame + collapsed “Reference media”.  
+   - **Motion transfer**: side-by-side or stacked **Character image** + **Driving video**.  
+   - **Video edit**: **Source video** + **Edit instructions** prompt; keyframes in Advanced (phase decision).
+
+4. **Extend `file_input_params` to video** (`mp4`, `mov`, `webm`) — reuse v0.6.5 upload plumbing and dry-run previews.
+
+5. **Keep** Preview request (no charge), validation, payload builders, and `model_diagnostics` probes per model.
+
+6. **Defer or phase** multi-file reference arrays (`reference_images`, `reference_videos`, `reference_audios`) — document decision in implementation (minimum: one reference image vs full multi-upload).
+
+### Suggested implementation phases
+
+| Phase | Scope |
+|-------|--------|
+| 1 | Catalogue + Happyhorse + Gen-4.5 (familiar T2V/I2V patterns) |
+| 2 | Dreamactor + Kling motion (video upload + motion layout) |
+| 3 | Aleph + Kling O1 edit paths (single source video + prompt) |
+| 4 | Seedance Fast + Kling Omni multimodal (array/reference UI) |
+| 5 | Workflow filter + docs/version alignment |
+
+### Acceptance criteria
+
+- Each model: verified schema, endpoint mode, `media_roles`, constraints, pricing notes, dry-run payload.
+- Workflow filter correctly narrows models; “All” still exposes full list.
+- Motion/edit models show **required** video upload with plain-English labels.
+- Invalid combinations blocked before paid calls; dry-run matches live payload builders.
+- `uv run python scripts/model_diagnostics.py` passes without creating predictions.
+- Paid smoke only with explicit authorization (`ALLOW_PAID_REPLICATE_SMOKE=1`).
+
+### Resolved decisions (v0.6.10)
+
+- Reference **arrays**: single-file MVP shipped; **full multi-upload UI → post-1.0** (see below).
+- **Aleph keyframes**: **post-1.0**; v0.6.10 ships prompt + source video only.
+- **Two-step** model picker: not required; workflow filter is enough for v1.0.
+- **Seedance 2.0 vs 2.0 Fast**: both remain in catalogue (Fast capped at 720p).
 
 ---
 
@@ -919,6 +1024,49 @@ Acceptance criteria before any paid fal.ai call:
 # Post-1.0 roadmap
 
 Post-1.0 work should expand creative power only after the core Replicate-only local app is dependable.
+
+## Post-1.0 — Advanced video inputs (deferred from v0.6.10)
+
+**Priority**: Medium post-1.0 (Replicate-only; not part of v1.0.0 scope)
+
+**Status**: Planned
+
+**Explicitly out of v1.0.0**: These were scoped out of v0.6.10 so motion/edit and basic multimodal paths could ship without risky multi-file UI. v1.0.0 does **not** require them.
+
+### 1. Multi-reference uploads (multimodal video models)
+
+**Models affected**: Seedance 2.0 / 2.0 Fast, Kling 3 Omni, Kling O1 (and similar array params).
+
+**Goal**: Replace the single-file “Reference image or video (optional)” MVP with validated multi-upload:
+
+- Multiple reference images (per-model caps, e.g. up to 7 / 9)
+- Multiple reference videos and audios where the schema allows (duration/count limits)
+- Plain-English labels (“Reference 1”, “Reference 2”) and prompt-tag hints (`[Image1]`, `<<<image_1>>>`, etc.)
+- Pre-submit validation for mutual exclusion (e.g. Seedance start frame vs reference arrays; Kling audio vs reference video)
+
+**Acceptance criteria**:
+
+- Dry-run payload matches live multi-file payloads; invalid combos blocked before paid calls.
+- `model_diagnostics` and docs updated when shipped.
+
+### 2. Aleph 2.0 keyframe editor UI
+
+**Model affected**: `runwayml/aleph-2` (`aleph-2`).
+
+**Goal**: Expose optional `keyframe_images` + `keyframe_positions` (up to 5 pairs) in plain English:
+
+- Upload keyframe stills; set position per image (`first`, `last`, or seconds)
+- Enforce parallel array lengths and file/size limits from Replicate schema
+- Keep simple “video + edit prompt” path as the default entry
+
+**Acceptance criteria**:
+
+- Keyframe path optional; simple edit path unchanged.
+- Documented in README/CHANGELOG when complete.
+
+**Source**: `IMPLEMENTATION_VER-0.6.10.md` (v0.6.10 completion notes).
+
+---
 
 ## v1.1 — History Reuse and Creative Iteration
 
@@ -1088,8 +1236,9 @@ Post-1.0 work should expand creative power only after the core Replicate-only lo
 | v0.4.8 | Provider-aware History service | Done | Architecture stabilization |
 | v0.4.9 | Integration hardening + dry-run foundation | Superseded | Prepares safety and UI work |
 | v0.5.0-v0.5.10 | Minimal UI/UX + gallery History series | Complete | UI stabilization milestone |
-| v0.6.0 | Safety, metadata audit, dry-run, schema diagnostics | High | Next major milestone |
-| v0.6.5 | Replicate 3D and texture model expansion | High | Add verified Replicate models |
+| v0.6.0 | Safety, metadata audit, dry-run, schema diagnostics | Complete | Done in v0.6.0 |
+| v0.6.5 | Replicate 3D and texture model expansion | Complete | Done in v0.6.5 |
+| v0.6.10 | Video model expansion + workflow-aware UI | Complete | Done in v0.6.10 |
 | v0.7.0 | Better errors, progress, and recovery | Medium | Strong v1.0 candidate |
 | v0.8.0 | v1.0 readiness and authorized smoke QA | Highest | Final pre-v1.0 milestone |
 | v1.0.0 | Stable Replicate-only personal local release | Release | Release target |

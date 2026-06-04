@@ -14,7 +14,7 @@ This document defines conventions, defaults, and constraints for this project. F
 
 **IN SCOPE:**
 - Video generation: Text-to-Video (T2V), Image-to-Video (I2V)
-- 3D generation: Image-to-3D (I23D), Text-to-3D (T23D), and hosted 3D texture/model workflows when reliable provider schemas are verified. Current text-to-3D starts with Replicate `tencent/hunyuan-3d-3.1`; v0.6.5 plans additional verified Replicate 3D/texture models.
+- 3D generation: Image-to-3D (I23D), Text-to-3D (T23D), multiview-to-3D, and mesh texturing via Replicate (`hunyuan3d-2`, `hunyuan3d-2mv`, `hunyuan-3d-3.1`, `trellis2`, `text2tex`, `texture`, `rodin`).
 - Replicate API integration today; fal.ai provider integration, including Meshy exploration, is post-v1.0.0 work
 - Streamlit-based web interface
 - Cost tracking and generation history
@@ -123,6 +123,27 @@ Use lightweight pre-1.0 versioning as a personal planning aid:
 
 A version is complete when implemented behavior, local verification, and docs
 agree.
+
+### Docs on every patch or minor completion
+
+When finishing a **patch (0.x.y)** or **minor (0.x.0)** version — not only majors —
+update the documentation set in the same pass as the version bump. Do not leave
+code at a new version while README/CHANGELOG/ROADMAP still describe the previous
+release.
+
+Minimum updates when declaring a patch or minor done:
+
+- `pyproject.toml` — `version`
+- `README.md` — current version, status, and quick-start accuracy if behavior changed
+- `CHANGELOG.md` — new entry marked **Current**; prior entry marked superseded
+- `ROADMAP.md` — milestone status and version table row
+- `IMPLEMENTATION_VER-*.md` — add or update the version note when the milestone has
+  substantial scope (typical for minors; use judgment for tiny patches)
+
+Optional unless the topic changed: `DECISIONS.md`, `REFERENCE.md`, `AGENTS.md`.
+
+Patch-only releases can use a short CHANGELOG entry; minors should also refresh
+README status and ROADMAP “current version” wording.
 
 ## Tooling & Dependencies
 
@@ -246,8 +267,10 @@ black = ">=24.0.0"           # Code formatter
 - Do not add a model from memory, stale notes, provider marketing summaries, or another model's schema. Record source URLs and date checked in the relevant roadmap/implementation notes when adding model support.
 - Keep pricing honest: if current pricing cannot be verified, display “Cost unknown” or an explicit approximate estimate rather than pretending precision.
 - Never create a paid provider prediction just to discover schema or pricing. Use provider docs/API metadata, dry-run payload inspection, and local validation probes unless the user explicitly authorizes a paid smoke test with expected cost/scope.
-- Planned v0.6.5 Replicate candidates are `tencent/hunyuan3d-2mv`, `adirik/text2tex`, `adirik/texture`, and `hyper3d/rodin`; treat their params/pricing/output shapes as unknown until verified from Replicate at implementation time.
+- v0.6.5 added `tencent/hunyuan3d-2mv`, `adirik/text2tex`, `adirik/texture`, and `hyper3d/rodin` (schemas verified 2026-06-04; see `IMPLEMENTATION_VER-0.6.5.md`).
+- v0.6.10 (planned) adds eight Replicate video models and workflow-aware Video tab UI; see `IMPLEMENTATION_VER-0.6.10.md` before implementing motion-transfer or video-edit layouts.
 - Meshy is planned as post-v1.0 fal.ai/provider-expansion work; treat its params/pricing/output shapes as unknown until verified from fal.ai at implementation time.
+- **Live smoke QA** (v0.8.0): optional real paid Replicate runs, one per workflow, with explicit user authorization — not part of routine dev. Use `ALLOW_PAID_REPLICATE_SMOKE=1` and `scripts/paid_smoke.py` only when authorized.
 
 ## Naming Conventions
 

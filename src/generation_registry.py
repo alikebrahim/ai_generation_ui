@@ -21,10 +21,15 @@ GENERATION_HANDLERS: dict[str, GenerationHandler] = {
     "wan-2.7-t2v": video_gen.generate_wan_2_7_t2v,
     "wan-2.5-i2v-fast": video_gen.generate_wan_2_5_i2v,
     "seedance-2.0": video_gen.generate_seedance_2_0,
+    **video_gen.V06_VIDEO_HANDLERS,
     # 3D models
     "hunyuan3d-2": threed_gen.generate_hunyuan3d_2,
+    "hunyuan3d-2mv": threed_gen.generate_hunyuan3d_2mv,
     "trellis-2": threed_gen.generate_trellis_2,
     "hunyuan-3d-3.1": threed_gen.generate_hunyuan_3d_3_1,
+    "text2tex": threed_gen.generate_text2tex,
+    "adirik-texture": threed_gen.generate_adirik_texture,
+    "rodin": threed_gen.generate_rodin,
 }
 
 

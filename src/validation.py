@@ -18,11 +18,25 @@ class ValidationError(Exception):
 _VALIDATION_SKIP = frozenset(
     {
         "_uploaded_image",
+        "_uploaded_images",
         "image",
         "progress_callback",
         "reference_images",
         "reference_videos",
         "reference_audios",
+        "obj_file",
+        "shape_path",
+        "front_image",
+        "back_image",
+        "left_image",
+        "right_image",
+        "images",
+        "video",
+        "start_image",
+        "end_image",
+        "last_frame_image",
+        "reference_video",
+        "keyframe_images",
     }
 )
 
@@ -63,8 +77,10 @@ def validate_params(model: ModelConfig, kwargs: dict) -> None:
             group_label = " or ".join(repr(p) for p in group)
             errors.append(f"Only one of {group_label} can be provided; got {labels}.")
 
+    file_params = frozenset(getattr(model, "file_input_params", {}).keys())
+
     for pname, value in kwargs.items():
-        if pname in _VALIDATION_SKIP:
+        if pname in _VALIDATION_SKIP or pname in file_params:
             continue
 
         constraints = model.param_constraints.get(pname, {})

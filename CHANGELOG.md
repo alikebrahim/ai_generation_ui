@@ -2,9 +2,96 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## v0.5.10 — History Preview and Layout Hardening
+## v0.6.10 — Video Model Expansion + Workflow-Aware UI
 
 **Status**: Current
+
+### Added
+
+- **Eight Replicate video models**: Happy Horse 1.0, Runway Gen-4.5, Seedance 2.0 Fast,
+  Kling 3 Omni, Dreamactor M2.0, Runway Aleph 2.0, Kling 3 Motion Control, Kling O1.
+- **Workflow filter** on the Video tab (text, image, motion transfer, edit, multimodal, all).
+- **`workflow_archetype` / `workflow_tags`** on `ModelConfig` with archetype-specific form
+  layouts (motion transfer, video edit, multimodal references).
+- **Video file uploads** for driving/source clips (`mp4`, `mov`, `webm`).
+- Shared `generate_video_model()` pipeline and payload builders for all new models.
+- Per-output-second pricing estimates for new models in `src/pricing.py`.
+
+### Changed
+
+- Video catalogue: **11 models** (3 existing + 8 new). Model selector moved above the
+  generation workspace; workflow filter narrows the list by intent.
+- Multimodal models support single reference image/video uploads (full multi-upload deferred).
+
+### Documentation
+
+- `IMPLEMENTATION_VER-0.6.10.md` marked complete; API/pricing snapshots on disk.
+
+### Verification
+
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- `uv run python scripts/model_diagnostics.py`
+- No paid Replicate prediction was created.
+
+---
+
+## v0.6.5 — Replicate 3D and Texture Model Expansion
+
+**Status**: Superseded by v0.6.10
+
+### Added
+
+- **Hunyuan3D 2 Multiview** (`tencent/hunyuan3d-2mv`) — front view required; optional back/left/right views.
+- **Text2Tex** (`adirik/text2tex`) — texture an uploaded `.obj` from a text prompt.
+- **Adirik Texture** (`adirik/texture`) — texture an uploaded mesh from a text prompt.
+- **Rodin Gen-2** (`hyper3d/rodin`) — text-to-3D with optional reference image mode.
+- File/mesh upload support in the 3D generation form (`file_input_params` on `ModelConfig`).
+
+### Documentation
+
+- Aligned README, REFERENCE, AGENTS, ROADMAP, DECISIONS, and implementation
+  version notes with the v0.6.5 model catalogue and v0.6.x safety tooling.
+
+### Verification
+
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- `uv run python scripts/model_diagnostics.py`
+- No paid Replicate prediction was created.
+
+---
+
+## v0.6.0 — Safety, Dry-Run, and Schema Diagnostics
+
+**Status**: Superseded by v0.6.5
+
+### Added
+
+- Shared Replicate payload builders in `src/replicate_payload.py` so dry-run previews match live generation input.
+- Enhanced `prepare_generation_request()` with endpoint summary, cost label, copyable JSON payload, and schema diagnostics.
+- “Preview request (no charge)” expander on Video and 3D generation forms.
+- Non-paid schema diagnostics (`src/schema_diagnostics.py`) and `scripts/model_diagnostics.py`.
+- Opt-in paid smoke helper `scripts/paid_smoke.py` (requires `ALLOW_PAID_REPLICATE_SMOKE=1`).
+- Per-model metadata audit fields: verified date, Replicate page URL, pricing/output notes.
+
+### Changed
+
+- Video and 3D generation handlers build inputs through shared payload builders.
+- All six models re-verified against Replicate OpenAPI on 2026-06-04.
+
+### Verification
+
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- `uv run python scripts/model_diagnostics.py`
+- No paid Replicate prediction was created.
+
+---
+
+## v0.5.10 — History Preview and Layout Hardening
+
+**Status**: Superseded by v0.6.0
 
 ### Changed
 

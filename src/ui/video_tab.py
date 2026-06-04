@@ -12,6 +12,12 @@ from src.generation_service import get_generation_service
 from src.models_config import VIDEO_MODELS
 from src.ui.forms import render_generation_form
 from src.ui.result_views import render_video_result
+from src.ui.video_workflow import (
+    filter_models_for_workflow,
+    model_caption,
+    render_workflow_filter,
+    resolve_video_model_selection,
+)
 from src.validation import validate_params
 
 format_duration = app_utils.format_duration
@@ -22,16 +28,26 @@ def render_video_tab() -> None:
     """Render the video generation tab."""
     st.header("Video Generation")
     st.caption(
-        "Choose a model, tune the prompt, and keep the result in one focused panel."
+        "Pick what you want to do, choose a matching model, then generate in the "
+        "preview panel."
     )
 
-    video_idx = int(st.session_state.get("video_model", 0))
-    if video_idx < 0 or video_idx >= len(VIDEO_MODELS):
-        video_idx = 0
-    model = VIDEO_MODELS[video_idx]
-    result_key = f"video_generation_result_{model.name}"
+    workflow_key = render_workflow_filter()
+    filtered_models = filter_models_for_workflow(VIDEO_MODELS, workflow_key)
+    if not filtered_models:
+        st.warning("No models match this workflow filter. Try “All models”.")
+        filtered_models = list(VIDEO_MODELS)
 
     st.divider()
+
+    with st.container(border=True):
+        st.markdown("#### Model")
+        model = resolve_video_model_selection(filtered_models)
+        caption = model_caption(model)
+        if caption:
+            st.caption(caption)
+
+    result_key = f"video_generation_result_{model.name}"
 
     preview_handles: dict[str, DeltaGenerator] = {}
 
@@ -51,27 +67,26 @@ def render_video_tab() -> None:
                 "open here."
             )
 
-    def render_model_selector() -> None:
-        st.markdown("#### Model")
-        st.selectbox(
-            "Choose a model",
-            range(len(VIDEO_MODELS)),
-            format_func=lambda i: VIDEO_MODELS[i].display_name,
-            key="video_model",
-            help="Pick the model before writing prompts or adding reference media.",
-        )
-
     kwargs = render_generation_form(
         model,
         preview_renderer=render_preview_panel,
-        model_selector_renderer=render_model_selector,
     )
 
     if kwargs is not None:
         validation_kwargs = dict(kwargs)
-        uploaded_for_validation = validation_kwargs.pop("_uploaded_image", None)
-        if uploaded_for_validation is not None:
-            validation_kwargs["image"] = uploaded_for_validation
+        for upload_key, param in (
+            ("_uploaded_image", "image"),
+            ("_uploaded_video", "video"),
+            ("_uploaded_start_image", "start_image"),
+        ):
+            uploaded = validation_kwargs.pop(upload_key, None)
+            if uploaded is not None:
+                validation_kwargs[param] = uploaded
+        for key in list(validation_kwargs.keys()):
+            if key.startswith("_uploaded_"):
+                param = key.removeprefix("_uploaded_")
+                if validation_kwargs[key] is not None:
+                    validation_kwargs[param] = validation_kwargs[key]
 
         try:
             validate_params(model, validation_kwargs)
@@ -86,11 +101,6 @@ def render_video_tab() -> None:
             f"Generating with {model.display_name}… the preview will appear here."
         )
         try:
-            uploaded = kwargs.pop("_uploaded_image", None)
-            if uploaded is not None and model.supports_image:
-                uploaded.seek(0)
-                kwargs["image"] = uploaded
-
             start_time = monotonic()
 
             def progress_callback(event: str, prediction: object) -> None:
@@ -98,34 +108,25 @@ def render_video_tab() -> None:
                 pred_id = getattr(prediction, "id", "")
                 pred_status = getattr(prediction, "status", event)
                 progress_line.write(
-                    f"Replicate status: `{pred_status}` · elapsed {elapsed}"
-                    + (f" · prediction `{pred_id}`" if pred_id else "")
+                    f"Status: **{pred_status}** · {elapsed} elapsed · id `{pred_id}`"
                 )
 
-            kwargs["progress_callback"] = progress_callback
-            with st.spinner("Waiting for Replicate to finish…"):
-                result = get_generation_service().generate(
-                    model.name,
-                    model.model_type,
-                    **kwargs,
-                )
+            result = get_generation_service().generate(
+                model.name,
+                "video",
+                progress_callback=progress_callback,
+                **kwargs,
+            )
             st.session_state[result_key] = result
-
-            if result["success"]:
-                status_line.success("Generation complete — preview ready.")
+            progress_line.empty()
+            if result.get("success"):
+                status_line.success("Generation complete.")
+                with result_area.container():
+                    render_video_result(result)
             else:
-                status_line.error("Generation failed — details below.")
-            with result_area.container():
-                render_video_result(result)
+                status_line.error(
+                    friendly_error_message(result.get("error", "Generation failed"))
+                )
         except Exception as exc:
-            result = {
-                "success": False,
-                "error": friendly_error_message(exc),
-                "predict_time": 0,
-                "estimated_cost": 0,
-            }
-            st.session_state[result_key] = result
-            status_line.error("Generation error — details below.")
-            with result_area.container():
-                st.error(f"Unexpected error: {friendly_error_message(exc)}")
-
+            progress_line.empty()
+            status_line.error(friendly_error_message(exc))

@@ -1,0 +1,342 @@
+{
+  "alibaba/happyhorse-1.0": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.013",
+    "output_duration_tiers": [
+      {
+        "group_title": "720p",
+        "tier_description": "720p resolution",
+        "criteria": [
+          {
+            "field": "target resolution",
+            "description": "720p",
+            "value": "720p"
+          }
+        ],
+        "usd_per_output_second": 0.14
+      },
+      {
+        "group_title": "1080p",
+        "tier_description": "1080p resolution",
+        "criteria": [
+          {
+            "field": "target resolution",
+            "description": "1080p",
+            "value": "1080p"
+          }
+        ],
+        "usd_per_output_second": 0.28
+      }
+    ]
+  },
+  "kwaivgi/kling-v3-omni-video": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.014",
+    "output_duration_tiers": [
+      {
+        "group_title": "standard",
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "with audio",
+            "description": "no",
+            "value": false
+          },
+          {
+            "field": "model variant",
+            "description": "standard",
+            "value": "standard"
+          }
+        ],
+        "usd_per_output_second": 0.168
+      },
+      {
+        "group_title": "standard-audio",
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "with audio",
+            "description": "yes",
+            "value": true
+          },
+          {
+            "field": "model variant",
+            "description": "standard",
+            "value": "standard"
+          }
+        ],
+        "usd_per_output_second": 0.224
+      },
+      {
+        "group_title": "pro",
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "with audio",
+            "description": "no",
+            "value": false
+          },
+          {
+            "field": "model variant",
+            "description": "pro",
+            "value": "pro"
+          }
+        ],
+        "usd_per_output_second": 0.224
+      },
+      {
+        "group_title": "pro-audio",
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "with audio",
+            "description": "yes",
+            "value": true
+          },
+          {
+            "field": "model variant",
+            "description": "pro",
+            "value": "pro"
+          }
+        ],
+        "usd_per_output_second": 0.28
+      },
+      {
+        "group_title": "fourk-no-audio",
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "with audio",
+            "description": "no",
+            "value": false
+          },
+          {
+            "field": "model variant",
+            "description": "4k",
+            "value": "4k"
+          }
+        ],
+        "usd_per_output_second": 0.42
+      },
+      {
+        "group_title": "fourk-audio",
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "with audio",
+            "description": "yes",
+            "value": true
+          },
+          {
+            "field": "model variant",
+            "description": "4k",
+            "value": "4k"
+          }
+        ],
+        "usd_per_output_second": 0.42
+      }
+    ]
+  },
+  "bytedance/seedance-2.0-fast": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.013",
+    "output_duration_tiers": [
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "video_in",
+            "value": "video_in"
+          },
+          {
+            "field": "target resolution",
+            "description": "480p",
+            "value": "480p"
+          }
+        ],
+        "usd_per_output_second": 0.08
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "non_video_in",
+            "value": "non_video_in"
+          },
+          {
+            "field": "target resolution",
+            "description": "480p",
+            "value": "480p"
+          }
+        ],
+        "usd_per_output_second": 0.07
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "video_in",
+            "value": "video_in"
+          },
+          {
+            "field": "target resolution",
+            "description": "720p",
+            "value": "720p"
+          }
+        ],
+        "usd_per_output_second": 0.17
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "non_video_in",
+            "value": "non_video_in"
+          },
+          {
+            "field": "target resolution",
+            "description": "720p",
+            "value": "720p"
+          }
+        ],
+        "usd_per_output_second": 0.15
+      }
+    ]
+  },
+  "runwayml/gen-4.5": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.012",
+    "output_duration_tiers": [
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [],
+        "usd_per_output_second": 0.12
+      }
+    ]
+  },
+  "bytedance/dreamactor-m2.0": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.014",
+    "output_duration_tiers": [
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [],
+        "usd_per_output_second": 0.05
+      }
+    ]
+  },
+  "runwayml/aleph-2": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": null,
+    "output_duration_tiers": [
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [],
+        "usd_per_output_second": 0.336
+      }
+    ]
+  },
+  "kwaivgi/kling-v3-motion-control": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.035",
+    "output_duration_tiers": [
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "std",
+            "value": "std"
+          }
+        ],
+        "usd_per_output_second": 0.07
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "pro",
+            "value": "pro"
+          }
+        ],
+        "usd_per_output_second": 0.12
+      }
+    ]
+  },
+  "kwaivgi/kling-o1": {
+    "hardware": "CPU",
+    "compute_time_rate": "$0.0001 per second",
+    "p50_median_run_usd": "$0.016",
+    "output_duration_tiers": [
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "std",
+            "value": "std"
+          }
+        ],
+        "usd_per_output_second": 0.084
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "std-with-video-input",
+            "value": "std-with-video-input"
+          }
+        ],
+        "usd_per_output_second": 0.126
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "pro",
+            "value": "pro"
+          }
+        ],
+        "usd_per_output_second": 0.112
+      },
+      {
+        "group_title": null,
+        "tier_description": null,
+        "criteria": [
+          {
+            "field": "model variant",
+            "description": "pro-with-video-input",
+            "value": "pro-with-video-input"
+          }
+        ],
+        "usd_per_output_second": 0.168
+      }
+    ]
+  }
+}

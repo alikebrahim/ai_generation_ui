@@ -25,9 +25,21 @@ MODEL_HARDWARE = {
     "wan-video/wan-2.7-t2v": "a100-80gb",
     "wan-video/wan-2.5-i2v-fast": "a100-80gb",
     "bytedance/seedance-2.0": "a100-80gb",
+    "bytedance/seedance-2.0-fast": "a100-80gb",
+    "alibaba/happyhorse-1.0": "cpu",
+    "runwayml/gen-4.5": "cpu",
+    "bytedance/dreamactor-m2.0": "cpu",
+    "runwayml/aleph-2": "cpu",
+    "kwaivgi/kling-v3-omni-video": "cpu",
+    "kwaivgi/kling-v3-motion-control": "cpu",
+    "kwaivgi/kling-o1": "cpu",
     "tencent/hunyuan3d-2": "l40s",
+    "tencent/hunyuan3d-2mv": "l40s",
     "fishwowater/trellis2": "a100-80gb",
     "tencent/hunyuan-3d-3.1": "cpu",  # Replicate shows CPU hardware
+    "adirik/text2tex": "l40s",
+    "adirik/texture": "l40s",
+    "hyper3d/rodin": "l40s",
 }
 
 # Per-second video output pricing (where applicable)
@@ -36,6 +48,14 @@ PER_SECOND_OUTPUT_PRICING = {
     "wan-video/wan-2.7-t2v": 0.10,  # $0.10 per second of output video
     "wan-video/wan-2.5-i2v-fast": 0.05,  # approx — exact depends on resolution
     "bytedance/seedance-2.0": 0.15,  # approx
+    "bytedance/seedance-2.0-fast": 0.15,  # approx mid-tier 720p
+    "alibaba/happyhorse-1.0": 0.28,  # 1080p default; 720p is $0.14/s
+    "runwayml/gen-4.5": 0.12,
+    "bytedance/dreamactor-m2.0": 0.05,
+    "runwayml/aleph-2": 0.336,
+    "kwaivgi/kling-v3-omni-video": 0.224,  # pro tier approx
+    "kwaivgi/kling-v3-motion-control": 0.12,  # pro tier
+    "kwaivgi/kling-o1": 0.112,  # pro tier approx
 }
 
 

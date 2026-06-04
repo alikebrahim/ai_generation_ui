@@ -2,14 +2,18 @@
 
 A Streamlit-based interface for video and 3D generation using Replicate API today. fal.ai development is intentionally deferred until after the v1.0.0 Replicate-only baseline.
 
-**Current version**: v0.5.10 — History preview/layout hardening complete.
+**Current version**: v0.6.10 — Eleven Replicate video models + seven 3D/texture models, workflow-aware Video tab, dry-run previews.
 
 ## Purpose
 
 This project provides a clean, simple web interface for:
-- **Video generation**: Text-to-video (T2V), image-to-video (I2V)
-- **3D generation**: Image-to-3D (I23D) and Hunyuan 3D 3.1 text-to-3D
-  (T23D) via Replicate
+
+- **Video** (3 models): Wan 2.7 T2V, Wan 2.5 I2V Fast, Seedance 2.0
+- **3D / texture** (7 models): Hunyuan3D 2.0, Hunyuan3D 2 Multiview, TRELLIS 2,
+  Hunyuan 3D 3.1, Text2Tex, Adirik Texture, Rodin Gen-2
+
+Workflows include text-to-video, image-to-video, image-to-3D, text-to-3D,
+multiview-to-3D, and mesh texturing — all via Replicate today.
 
 Image generation is handled separately via ComfyUI workflows (not in this project).
 
@@ -21,7 +25,10 @@ The intended user flow remains workflow-first: choose Video or 3D, pick a model
 by practical outcome/use case, then see the provider as secondary context for
 setup, pricing, status, and troubleshooting.
 
-v0.4.3–v0.5.10 completed the UI stabilization series: the app shell now uses shared styling, the Video and 3D pages are focused generation/result panels, the model catalogue carries human-readable media-role metadata, History is gallery-first with local file awareness, Gallery and Records redraw as separate History views, and preview selections stay inside History through query-param-backed navigation.
+v0.4.3–v0.5.10 completed UI stabilization (focused panels, gallery-first History).
+v0.6.0 added **Preview request (no charge)**, shared payload builders, and schema
+diagnostics. v0.6.5 expanded the 3D catalogue with multiview and mesh-texturing
+models plus mesh/multiview file uploads in the form.
 
 Future fal.ai/provider-aware design details are documented in
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` and scheduled after v1.0.0 in
@@ -51,7 +58,7 @@ The `comfyui-replicate` custom node doesn't support video or 3D outputs because 
 ┌──────────────▼──────────────────────┐
 │   Generation / Provider Services    │
 │  Current behavior: Replicate         │
-│  v0.4.9: adapter/service layer done  │
+│  v0.6.x: dry-run + payload builders │
 │  fal.ai: post-v1.0 planned         │
 └──────────────┬──────────────────────┘
                │
@@ -137,10 +144,13 @@ ai_generation_ui/
 │   ├── models_config.py   # Model IDs, provider metadata, param schemas
 │   ├── cost_tracker.py    # Backward-compatible SQLite history API
 │   ├── history_service.py # Provider-aware typed history service
-│   ├── generation_service.py # UI generation entry point + dry-run hook
+│   ├── generation_service.py # UI entry point + dry-run / safety probes
+│   ├── generation_registry.py # Model name → handler dispatch
+│   ├── replicate_payload.py  # Shared Replicate input builders
+│   ├── schema_diagnostics.py # Non-paid schema drift checks
 │   ├── storage_service.py # Centralized local output downloads
 │   ├── video_gen.py       # Replicate video workflow wrappers
-│   ├── threed_gen.py      # Replicate 3D workflow wrappers
+│   ├── threed_gen.py      # Replicate 3D/texture workflow wrappers
 │   ├── providers/         # Provider adapters; Replicate implemented
 │   ├── ui/                # Streamlit tabs/forms/result views
 │   └── utils.py           # Formatting, validation helpers, output utilities
@@ -151,7 +161,16 @@ ai_generation_ui/
 │   ├── models_3d/
 │   └── thumbnails/
 ├── assets/               # Reserved for future static assets
+├── scripts/
+│   ├── model_diagnostics.py # Non-paid schema/registry probe (CLI)
+│   └── paid_smoke.py        # Opt-in paid smoke (ALLOW_PAID_REPLICATE_SMOKE=1)
 └── IMPLEMENTATION_PLAN.md # Original step-by-step build guide
+```
+
+Non-paid local checks:
+
+```bash
+uv run python scripts/model_diagnostics.py
 ```
 
 The completed v0.4.x architecture refactor is documented in
@@ -171,20 +190,26 @@ The app loads this automatically using python-dotenv.
 
 ## Status
 
-**v0.5.10 personal local beta.** The app now has shared shell styling, focused Video and 3D generation/result panels, human-readable media-role metadata, gallery-first History, separate Gallery/Records redraw views, inline History preview selection, and durable local output awareness. Core UI/UX polish is in place for the current Replicate-only workflow.
+**v0.6.10 personal local beta.** The app supports eleven video models and seven 3D/texture workflows on Replicate, with a workflow filter on the Video tab, gallery-first History, durable local outputs, and v0.6.x generation safety (preview request, payload builders, schema diagnostics).
 
 This is intentionally a personal-use app rather than a production product. The
 focus is a robust local UI/UX that avoids obvious invalid paid provider calls and
 keeps useful generation history with local file persistence. It remains pre-1.0
-because browser/live model QA is manual, plain-English UX for non-technical
-users is pending, and generation safety/dry-run tooling is not yet implemented.
-fal.ai is deliberately deferred until after the v1.0.0 Replicate-only baseline.
+because authorized live workflow smoke QA (v0.8.0) and plain-English UX for
+non-technical users are still pending. fal.ai is deliberately deferred until after
+the v1.0.0 Replicate-only baseline.
 
-The next planned work is v0.6.0 generation safety: visible dry-run/request
-previews, schema drift diagnostics, and stronger no-paid-call validation probes.
+The next planned work is **v0.7.0** (errors, progress messaging, recovery). See
+`ROADMAP.md`. Release **v0.6.10** added eight video models and workflow-aware Video
+tab UI — see `IMPLEMENTATION_VER-0.6.10.md`. **Known limitations (post-1.0)**: multimodal
+models use single-file reference uploads only; Aleph has no keyframe UI yet — see
+`ROADMAP.md` “Advanced video inputs”.
 
 See `ITER_1_IMPLEMENTATION.md` for the as-built reference,
 `IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md` for the completed v0.4.x refactor,
 `IMPLEMENTATION_VER-0.5.0-TO-0.5.10.md` for the completed v0.5 UI/UX pass,
+`IMPLEMENTATION_VER-0.6.0.md` for the v0.6.0 safety/dry-run pass,
+`IMPLEMENTATION_VER-0.6.5.md` for the v0.6.5 3D/texture expansion,
+`IMPLEMENTATION_VER-0.6.10.md` for the v0.6.10 video expansion and UI plan,
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` for the v1.0.0+ Replicate + fal.ai
 provider plan, and `ROADMAP.md` for the versioned plan toward v1.0.0 and post-v1.0 provider expansion.

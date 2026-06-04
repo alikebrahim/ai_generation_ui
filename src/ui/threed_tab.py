@@ -10,7 +10,7 @@ from streamlit.delta_generator import DeltaGenerator
 from src import utils as app_utils
 from src.generation_service import get_generation_service
 from src.models_config import THREED_MODELS
-from src.ui.forms import render_generation_form
+from src.ui.forms import normalize_file_kwargs, render_generation_form
 from src.ui.result_views import render_3d_result
 from src.validation import validate_params
 
@@ -68,11 +68,7 @@ def render_3d_tab() -> None:
     )
 
     if kwargs_3d is not None:
-        validation_kwargs = dict(kwargs_3d)
-        uploaded_for_validation = validation_kwargs.pop("_uploaded_image", None)
-        if uploaded_for_validation is not None and model_3d.supports_image:
-            validation_kwargs["image"] = uploaded_for_validation
-
+        validation_kwargs = normalize_file_kwargs(model_3d, kwargs_3d)
         try:
             validate_params(model_3d, validation_kwargs)
         except Exception as exc:
@@ -86,11 +82,6 @@ def render_3d_tab() -> None:
             f"Generating with {model_3d.display_name}… the preview will appear here."
         )
         try:
-            uploaded = kwargs_3d.pop("_uploaded_image", None)
-            if uploaded is not None and model_3d.supports_image:
-                uploaded.seek(0)
-                kwargs_3d["image"] = uploaded
-
             start_time = monotonic()
 
             def progress_callback(event: str, prediction: object) -> None:

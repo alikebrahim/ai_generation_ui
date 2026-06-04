@@ -182,5 +182,5 @@ The work kept the Replicate-only product scope intact while making the visible U
 
 ## Notes
 
-- The next planned milestone is v0.6.0: safety, metadata audit, dry-run payloads, and schema drift checks, followed by v0.6.5 verified Replicate 3D/texture model expansion.
+- v0.6.0 and v0.6.5 are complete. The next planned milestone is v0.7.0 (errors/progress/recovery); see `ROADMAP.md`.
 - v0.x remains Replicate-only by design.

@@ -1,0 +1,824 @@
+{
+  "alibaba/happyhorse-1.0": {
+    "url": "https://replicate.com/alibaba/happyhorse-1.0",
+    "description": "Alibaba's Happy Horse 1.0 generates videos from text prompts or animates a single image into video. Supports 720p and 1080p, 3-15 second durations, and five aspect ratios.",
+    "visibility": "public",
+    "latest_version_id": "d867e39d045d6449a05b8dd3bc10ea3acca69b99aebc34b831809c09cd523527",
+    "created_at": "2026-04-25 17:50:48.423564+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Random seed for reproducible generation. Range: 0-2147483647"
+      },
+      "image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "First-frame image to animate. When provided, the model runs in image-to-video mode. Accepts jpg/png/bmp/webp, \u226410MB, aspect ratio between 1:2.5 and 2.5:1, each side \u2265300px."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "",
+        "maxLength": null,
+        "description": "Text prompt for video generation. Optional when an image is provided."
+      },
+      "duration": {
+        "type": "integer",
+        "enum": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 5,
+        "maxLength": null,
+        "description": "Duration of the generated video in seconds"
+      },
+      "resolution": {
+        "type": "string",
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "1080p",
+        "maxLength": null,
+        "description": "Output video resolution"
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "16:9",
+        "maxLength": null,
+        "description": "Aspect ratio of the generated video. Only applies to text-to-video \u2014 when an image is provided, the image's aspect ratio is used."
+      }
+    },
+    "cog_version": "0.18.0"
+  },
+  "kwaivgi/kling-v3-omni-video": {
+    "url": "https://replicate.com/kwaivgi/kling-v3-omni-video",
+    "description": "Kling Video 3.0 Omni: Unified multimodal video generation with reference images, video editing, native audio, and multi-shot control",
+    "visibility": "public",
+    "latest_version_id": "460d4f46adf3c29abbcd8f42cf5434570da6b50a39ec4593f2006486b1dd3fba",
+    "created_at": "2026-04-23 16:59:12.314884+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "pro",
+          "4k"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "pro",
+        "maxLength": null,
+        "description": "'standard' generates 720p, 'pro' generates 1080p, '4k' generates 4K. 4K does not support reference_video."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt for video generation. Supports <<<image_1>>>, <<<video_1>>> template references. Max 2500 characters."
+      },
+      "duration": {
+        "type": "integer",
+        "enum": null,
+        "min": 3,
+        "max": 15,
+        "nullable": null,
+        "default": 5,
+        "maxLength": null,
+        "description": "Video duration in seconds (3-15). Ignored for video editing (base)."
+      },
+      "end_image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Last frame image. Requires start_image. Supports .jpg/.jpeg/.png, max 10MB, min 300px."
+      },
+      "start_image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "First frame image. Supports .jpg/.jpeg/.png, max 10MB, min 300px, aspect ratio 1:2.5 to 2.5:1."
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "16:9",
+        "maxLength": null,
+        "description": "Aspect ratio. Required when not using start frame or video editing."
+      },
+      "multi_prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "JSON array of shot definitions for multi-shot mode. Each shot: {\"prompt\": \"...\", \"duration\": N}. Max 6 shots, min duration 1s per shot, total must equal duration. Example: [{\"prompt\":\"A cat jumps\",\"duration\":3},{\"prompt\":\"It lands\",\"duration\":2}]"
+      },
+      "generate_audio": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": false,
+        "maxLength": null,
+        "description": "Generate native audio. Mutually exclusive with reference video."
+      },
+      "reference_video": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Reference video (.mp4/.mov). Duration 3-10s, resolution 720-2160px per side, max 200MB."
+      },
+      "reference_images": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Reference images for elements, scenes, or styles. Supports .jpg/.jpeg/.png. Max 7 without video, 4 with video."
+      },
+      "keep_original_sound": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": true,
+        "maxLength": null,
+        "description": "Keep original sound from reference video."
+      },
+      "video_reference_type": {
+        "type": "string",
+        "enum": [
+          "feature",
+          "base"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "feature",
+        "maxLength": null,
+        "description": "How to use reference video: 'feature' for style/camera reference, 'base' for video editing."
+      }
+    },
+    "cog_version": "0.18.0"
+  },
+  "bytedance/seedance-2.0-fast": {
+    "url": "https://replicate.com/bytedance/seedance-2.0-fast",
+    "description": "A faster variant of Seedance 2.0 for quicker video generation with multimodal inputs and native audio.",
+    "visibility": "public",
+    "latest_version_id": "8a876cb913d631d9a4d47b3f777df7326d5571f37c49ed020fdcf4103240b158",
+    "created_at": "2026-04-22 10:27:33.515373+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Random seed. Set for reproducible generation."
+      },
+      "image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Input image for image-to-video generation (first frame). Cannot be combined with reference images."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt for video generation"
+      },
+      "duration": {
+        "type": "integer",
+        "enum": null,
+        "min": -1,
+        "max": 15,
+        "nullable": null,
+        "default": 5,
+        "maxLength": null,
+        "description": "Video duration in seconds. Set to -1 for intelligent duration (model picks the best length)."
+      },
+      "resolution": {
+        "type": "string",
+        "enum": [
+          "480p",
+          "720p"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "720p",
+        "maxLength": null,
+        "description": "Video resolution."
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "enum": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "9:21",
+          "adaptive"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "16:9",
+        "maxLength": null,
+        "description": "Video aspect ratio. Set to 'adaptive' to let the model choose the best ratio based on inputs."
+      },
+      "generate_audio": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": true,
+        "maxLength": null,
+        "description": "Generate synchronized audio with the video, including dialogue (use double quotes in prompt), sound effects, and background music."
+      },
+      "last_frame_image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Input image for last frame generation. Only works if a first frame image is also provided. Cannot be combined with reference images."
+      },
+      "reference_audios": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": [],
+        "maxLength": null,
+        "description": "Reference audio files (up to 3, total duration max 15s) for audio-driven generation and lip-sync. Requires at least one reference image or video. Reference them in your prompt as [Audio1], [Audio2], etc."
+      },
+      "reference_images": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": [],
+        "maxLength": null,
+        "description": "Reference images (up to 9) for character consistency, style guidance, and scene composition. Cannot be used together with first/last frame images. You can reference them in your prompt as [Image1], [Image2], etc."
+      },
+      "reference_videos": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": [],
+        "maxLength": null,
+        "description": "Reference videos (up to 3, total duration max 15s) for motion transfer, style reference, and editing. Reference them in your prompt as [Video1], [Video2], etc."
+      }
+    },
+    "cog_version": "0.18.0"
+  },
+  "runwayml/gen-4.5": {
+    "url": "https://replicate.com/runwayml/gen-4.5",
+    "description": "State-of-the-art video motion quality, prompt adherence and visual fidelity",
+    "visibility": "public",
+    "latest_version_id": "2e10d5ae08888b39ed31c828003f4a5ddc89a7cdec3bc7a9926661e0d22cb034",
+    "created_at": "2026-02-18 01:00:02.056189+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Random seed. Set for reproducible generation"
+      },
+      "image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Optional initial image for video generation (first frame). If not provided, video will be generated from text only."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt for video generation"
+      },
+      "duration": {
+        "type": "integer",
+        "enum": [
+          5,
+          10
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 5,
+        "maxLength": null,
+        "description": "Duration of the output video in seconds"
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "enum": [
+          "16:9",
+          "9:16",
+          "4:3",
+          "3:4",
+          "1:1",
+          "21:9"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "16:9",
+        "maxLength": null,
+        "description": "Video aspect ratio"
+      }
+    },
+    "cog_version": "0.16.11"
+  },
+  "bytedance/dreamactor-m2.0": {
+    "url": "https://replicate.com/bytedance/dreamactor-m2.0",
+    "description": "Animate any character, humans, cartoons, animals, even non-humans, from a single image + driving video",
+    "visibility": "public",
+    "latest_version_id": "b23bf8e6d5f31dd67ad219fac057fd43d3ac38fc58343025ab557be74a9450ca",
+    "created_at": "2026-02-10 03:07:13.805234+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "image",
+      "video"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Input image containing a human subject. Supported formats: JPEG, JPG, PNG. Max size: 4.7 MB. Resolution: 480x480 to 1920x1080."
+      },
+      "video": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Template video whose motion, facial expressions, and lip movements will be applied to the image subject. Supported formats: MP4, MOV, WebM. Max duration: 30 seconds. Resolution: 200x200 to 2048x1440."
+      },
+      "cut_first_second": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": true,
+        "maxLength": null,
+        "description": "Whether to crop the first second of the output video (removes the 1-second transition at the beginning)."
+      }
+    },
+    "cog_version": "0.16.11"
+  },
+  "runwayml/aleph-2": {
+    "url": "https://replicate.com/runwayml/aleph-2",
+    "description": "Edit one frame to update an entire video. Aleph 2.0 is Runway's in-context video editor: longer clips (up to 30s), multi-shot edits, and image-level precision via keyframe references.",
+    "visibility": "public",
+    "latest_version_id": "67a723556e73936d6b4a1de17f10e033c94ee4310f8f80225511869b386a82e1",
+    "created_at": "2026-06-02 20:52:23.380342+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "prompt",
+      "video"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "seed": {
+        "type": "integer",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": true,
+        "default": null,
+        "maxLength": null,
+        "description": "Random seed. Set for reproducible generation"
+      },
+      "video": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Input video to edit. Videos must be between 2 and 30 seconds and less than 16MB."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt describing the edit to be applied to the input video."
+      },
+      "keyframe_images": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": [],
+        "maxLength": null,
+        "description": "Up to 5 optional keyframe images used as more precise control over edits. The position of each keyframe is given by keyframe_positions."
+      },
+      "keyframe_positions": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": [],
+        "maxLength": null,
+        "description": "Position of each keyframe in keyframe_images. One entry per image. Each value must be 'first', 'last', or a timestamp in seconds (e.g. '1.67')."
+      }
+    },
+    "cog_version": "0.20.0"
+  },
+  "kwaivgi/kling-v3-motion-control": {
+    "url": "https://replicate.com/kwaivgi/kling-v3-motion-control",
+    "description": "Kling 3.0 motion control: transfer motion from a reference video to any character image with improved consistency and quality.",
+    "visibility": "public",
+    "latest_version_id": "15430b300f8c044e8f9e3567fd6daadf6d62e9bb0cee23fdb7969d3b26542f40",
+    "created_at": "2026-03-05 17:43:02.383880+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "image",
+      "video"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "std",
+          "pro"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "pro",
+        "maxLength": null,
+        "description": "Video generation mode. 'std': Standard mode (720p, cost-effective). 'pro': Professional mode (1080p, higher quality)."
+      },
+      "image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Reference image. The characters, backgrounds, and other elements in the generated video are based on the reference image. Supports .jpg/.jpeg/.png, max 10MB, dimensions 340px-3850px, aspect ratio 1:2.5 to 2.5:1."
+      },
+      "video": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Reference video. The character actions in the generated video are consistent with the reference video. Supports .mp4/.mov, max 100MB, 3-30 seconds duration depending on character_orientation."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "",
+        "maxLength": null,
+        "description": "Text prompt for video generation. You can add elements to the screen and achieve motion effects through prompt words."
+      },
+      "keep_original_sound": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": true,
+        "maxLength": null,
+        "description": "Whether to keep the original sound of the reference video"
+      },
+      "character_orientation": {
+        "type": "string",
+        "enum": [
+          "image",
+          "video"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "image",
+        "maxLength": null,
+        "description": "Orientation of the character in the generated video. 'image': same orientation as the person in the picture (max 10s video). 'video': consistent with the orientation of the characters in the video (max 30s video). When binding elements, only 'video' orientation is supported."
+      }
+    },
+    "cog_version": "0.16.12"
+  },
+  "kwaivgi/kling-o1": {
+    "url": "https://replicate.com/kwaivgi/kling-o1",
+    "description": "Modify an existing video through natural-language commands, changing subjects, environments, and visual style while preserving the original motion and timing.",
+    "visibility": "public",
+    "latest_version_id": "6d5f2d4becc7f734d190d17f13f776229c359cafc1c1898d78945e8d87c57538",
+    "created_at": "2026-02-12 23:43:44.460844+00:00",
+    "hardware": null,
+    "billing": null,
+    "required": [
+      "prompt"
+    ],
+    "output_schema": {
+      "type": "string",
+      "title": "Output",
+      "format": "uri"
+    },
+    "params": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "std",
+          "pro"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "pro",
+        "maxLength": null,
+        "description": "Video generation mode. 'std' is cost-effective, 'pro' has higher quality."
+      },
+      "prompt": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Text prompt for video generation. Can include references like <<<image_1>>>, <<<video_1>>> to reference inputs."
+      },
+      "duration": {
+        "type": "integer",
+        "enum": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": 5,
+        "maxLength": null,
+        "description": "Video duration in seconds. For text/image-to-video: 5 or 10. With video reference (feature type): 3-10. Ignored for video editing (base type)."
+      },
+      "end_image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Last frame image for the video. Requires start_image to be set. Supports .jpg/.jpeg/.png, max 10MB."
+      },
+      "start_image": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "First frame image for the video. Supports .jpg/.jpeg/.png, max 10MB."
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "16:9",
+        "maxLength": null,
+        "description": "Aspect ratio of the generated video. Required for text-to-video. Ignored when using first frame image or video editing."
+      },
+      "reference_video": {
+        "type": "string",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Reference video for style, camera movement, or as base for editing. Supports .mp4/.mov, 3-10s duration, max 200MB."
+      },
+      "reference_images": {
+        "type": "array",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": null,
+        "maxLength": null,
+        "description": "Reference images for elements, scenes, or styles (up to 7 without video, 4 with video). Supports .jpg/.jpeg/.png."
+      },
+      "keep_original_sound": {
+        "type": "boolean",
+        "enum": null,
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": true,
+        "maxLength": null,
+        "description": "Whether to keep the original sound from the reference video."
+      },
+      "video_reference_type": {
+        "type": "string",
+        "enum": [
+          "feature",
+          "base"
+        ],
+        "min": null,
+        "max": null,
+        "nullable": null,
+        "default": "feature",
+        "maxLength": null,
+        "description": "How to use the reference video: 'feature' for style/camera reference, 'base' for video editing."
+      }
+    },
+    "cog_version": "0.16.11"
+  }
+}
