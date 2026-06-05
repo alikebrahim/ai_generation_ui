@@ -61,16 +61,15 @@ def render_3d_workflow_filter() -> str:
     default = st.session_state.get("threed_workflow_filter", "all")
     if default not in options:
         default = "all"
-    selected = st.radio(
+    selected = st.segmented_control(
         "What kind of 3D?",
         options=options,
-        index=options.index(default),
+        default=default,
         format_func=lambda key: labels[key],
-        horizontal=True,
         key="threed_workflow_filter",
         help="Narrows the 3D models to matching capabilities.",
     )
-    return selected
+    return selected or default
 
 
 def render_3d_tab() -> None:
@@ -88,38 +87,19 @@ def render_3d_tab() -> None:
         st.warning("No models match this filter. Showing all.")
         filtered_models = list(THREED_MODELS)
 
-    names = [m.name for m in filtered_models]
-    current = st.session_state.get("3d_model_name")
-    if current not in names:
-        current = names[0]
-        st.session_state["3d_model_name"] = current
-    model_3d = next(
-        (m for m in filtered_models if m.name == current), filtered_models[0]
-    )
-    result_key = f"threed_generation_result_{model_3d.name}"
-
-    model_caption = model_3d.output_notes or model_3d.pricing_notes or ""
-    if model_caption:
-        st.caption(model_caption)
-
     st.divider()
 
-    preview_handles, render_preview_panel = build_preview_panel(
-        result_key=result_key,
-        model_type="3d",
-        render_result=render_3d_result,
-    )
-
-    def render_model_selector() -> None:
+    with st.container(border=True):
         st.markdown("#### Model")
-        current_names = [m.name for m in filtered_models]
-        cur = st.session_state.get("3d_model_name") or current_names[0]
-        if cur not in current_names:
-            cur = current_names[0]
-        idx = current_names.index(cur)
+        names = [m.name for m in filtered_models]
+        current = st.session_state.get("3d_model_name")
+        if current not in names:
+            current = names[0]
+            st.session_state["3d_model_name"] = current
+        idx = names.index(current)
         chosen = st.selectbox(
             "Choose a model",
-            options=current_names,
+            options=names,
             index=idx,
             format_func=lambda n: next(
                 (m.display_name for m in THREED_MODELS if m.name == n), n
@@ -127,13 +107,29 @@ def render_3d_tab() -> None:
             key="3d_model_name",
             help="Pick the model before writing prompts or adding subject images.",
         )
-        if chosen != cur:
+        if chosen != current:
             st.session_state["3d_model_name"] = chosen
+            current = chosen
+        model_3d = next(
+            (m for m in filtered_models if m.name == current), filtered_models[0]
+        )
+        cap = model_3d.output_notes or model_3d.pricing_notes or ""
+        if cap:
+            st.caption(cap)
 
+    result_key = f"threed_generation_result_{model_3d.name}"
+
+    preview_handles, render_preview_panel = build_preview_panel(
+        result_key=result_key,
+        model_type="3d",
+        render_result=render_3d_result,
+    )
+
+    # Unified call (model card is now always rendered in the tab before the form,
+    # matching video + audio patterns; renderer callback removed).
     kwargs_3d = render_generation_form(
         model_3d,
         preview_renderer=render_preview_panel,
-        model_selector_renderer=render_model_selector,
     )
 
     if kwargs_3d is not None:

@@ -34,4 +34,4 @@
 
 ## Next milestone
 
-**v0.9.0** — browser QA and authorized smoke (video, 3D, music, speech). See `IMPLEMENTATION_VER-0.9.0.md`.
+**v1.0.0** — stable Replicate-only personal baseline when behavior and docs agree through normal app use. See `ROADMAP.md`.

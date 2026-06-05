@@ -302,16 +302,21 @@ def _render_input_mode_selector(model: ModelConfig) -> str | None:
 def render_generation_form(
     model: ModelConfig,
     preview_renderer: Callable[[], None] | None = None,
-    model_selector_renderer: Callable[[], None] | None = None,
 ) -> dict | None:
-    """Render the generation workspace for a model."""
+    """Render the generation workspace for a model.
+
+    Primary creative inputs (prompt + key media) are rendered inside the
+    left (preview) column above the live result area for better flow and
+    to group "my input + my result" in the main visual pane. Right column
+    is dedicated to settings + generate (readjustment per UI assessment).
+    The late `with controls_box:` pattern is preserved.
+    """
     if model.model_type == "audio":
         from src.ui.audio_forms import render_audio_generation_form
 
         return render_audio_generation_form(
             model,
             preview_renderer=preview_renderer,
-            model_selector_renderer=model_selector_renderer,
         )
 
     st.subheader(f"Generate with {model.display_name}")
@@ -340,30 +345,8 @@ def render_generation_form(
     elif archetype == "multimodal_video":
         image_visible = False
     rodin_reference_visible = model.name == "rodin" and selected_mode == "reference"
-    preview_col, controls_col = st.columns([2.2, 1.3], vertical_alignment="top")
 
-    with preview_col:
-        with st.container(border=True):
-            st.markdown(
-                "<span class='ai-prediction-preview-anchor'></span>",
-                unsafe_allow_html=True,
-            )
-            if media_in_preview:
-                render_archetype_media_wide(model, kwargs)
-            if preview_renderer is not None:
-                preview_renderer()
-            else:
-                st.markdown("#### Prediction status / preview")
-                st.info("Run a generation and the preview will stay open here.")
-
-    controls_box = controls_col.container(border=True)
-
-    st.markdown("<div style='height: 0.7rem'></div>", unsafe_allow_html=True)
-    if model_selector_renderer is not None:
-        with st.container(border=True):
-            model_selector_renderer()
-        st.markdown("<div style='height: 0.7rem'></div>", unsafe_allow_html=True)
-
+    # Define prompt/image renderers early (called from inside preview_col)
     def render_text_prompt() -> None:
         with st.container(border=True):
             st.markdown("#### Text prompt")
@@ -379,20 +362,6 @@ def render_generation_form(
                 label_visibility="collapsed",
                 key=f"prompt_{model.name}",
             )
-
-            # Basic prompt helpers / starter examples (pre-0.7 UX polish)
-            with st.expander("💡 Example prompts (click to load)", expanded=False):
-                examples = [
-                    "Eagle soaring over snowy mountains at dawn, cinematic pan",
-                    "Cyberpunk racer on rainy neon street, low tracking shot",
-                ]
-                for i, ex in enumerate(examples):
-                    if st.button(f"Use example {i + 1}", key=f"ex_{model.name}_{i}"):
-                        st.session_state[f"prompt_{model.name}"] = ex
-                        st.rerun()
-                st.caption(
-                    "Tip: concrete subject, action, camera, style, lighting, mood."
-                )
 
     def render_image_prompts() -> None:
         with st.container(border=True):
@@ -424,39 +393,62 @@ def render_generation_form(
                 size_mb = (meta.get("size_bytes") or 0) / 1_000_000
                 st.caption(f"{meta.get('filename')} · {size_mb:.2f} MB")
 
-    if prompt_visible and image_visible:
-        col_left, col_right = st.columns([1.1, 1.9], vertical_alignment="top")
-        with col_left:
+    preview_col, controls_col = st.columns([1.9, 1.6], vertical_alignment="top")
+
+    with preview_col:
+        # Creative inputs (prompt + primary image + special multimodal/rodin sections)
+        # now live in the left workspace column, stacked above the live preview/result.
+        # This fixes the previous "empty preview before you write the prompt" flow
+        # and groups input + result together (per UI assessment readjustment).
+        if prompt_visible and image_visible:
+            col_left, col_right = st.columns([1.1, 1.9], vertical_alignment="top")
+            with col_left:
+                render_text_prompt()
+            with col_right:
+                render_image_prompts()
+        elif prompt_visible:
             render_text_prompt()
-        with col_right:
+        elif image_visible:
             render_image_prompts()
-    elif prompt_visible:
-        render_text_prompt()
-    elif image_visible:
-        render_image_prompts()
-    if archetype == "multimodal_video":
-        render_multimodal_media_sections(model, kwargs)
-    elif rodin_reference_visible:
-        with st.container(border=True):
-            st.markdown("#### Reference image")
-            uploaded = st.file_uploader(
-                friendly_label("images", model),
-                type=model.file_input_params.get(
-                    "images", ["png", "jpg", "jpeg", "webp"]
-                ),
-                key=f"img_{model.name}_reference",
-                help="Optional likeness guide — text prompt is still required.",
-                accept_multiple_files=True,
-            )
-            kwargs["_uploaded_images"] = uploaded if uploaded else None
-            if uploaded:
-                st.caption(f"{len(uploaded)} ref image(s)")
+        if archetype == "multimodal_video":
+            render_multimodal_media_sections(model, kwargs)
+        elif rodin_reference_visible:
+            with st.container(border=True):
+                st.markdown("#### Reference image")
+                uploaded = st.file_uploader(
+                    friendly_label("images", model),
+                    type=model.file_input_params.get(
+                        "images", ["png", "jpg", "jpeg", "webp"]
+                    ),
+                    key=f"img_{model.name}_reference",
+                    help="Optional likeness guide — text prompt is still required.",
+                    accept_multiple_files=True,
+                )
+                kwargs["_uploaded_images"] = uploaded if uploaded else None
                 if uploaded:
-                    st.image(uploaded[0], caption="First ref", width="stretch")
-    elif not model.supports_text and not model.file_input_params:
-        st.info("This model uses image input only (no text prompt).")
-    else:
-        st.caption("No prompt inputs are needed for the selected mode.")
+                    st.caption(f"{len(uploaded)} ref image(s)")
+                    if uploaded:
+                        st.image(uploaded[0], caption="First ref", width="stretch")
+        elif not model.supports_text and not model.file_input_params:
+            st.info("This model uses image input only (no text prompt).")
+        else:
+            st.caption("No prompt inputs are needed for the selected mode.")
+
+        # The actual prediction status / result preview (border + anchor for CSS)
+        with st.container(border=True):
+            st.markdown(
+                "<span class='ai-prediction-preview-anchor'></span>",
+                unsafe_allow_html=True,
+            )
+            if media_in_preview:
+                render_archetype_media_wide(model, kwargs)
+            if preview_renderer is not None:
+                preview_renderer()
+            else:
+                st.markdown("#### Prediction status / preview")
+                st.info("Run a generation and the preview will stay open here.")
+
+    controls_box = controls_col.container(border=True)
 
     with controls_box:
         # Per-model presets for creative starting points (v0.6.6+)
@@ -504,7 +496,10 @@ def render_generation_form(
                 st.session_state[preset_key] = "Custom (manual)"
                 st.rerun()
 
-        st.markdown("#### Balanced controls")
+        # Plain-English guidance per AGENTS.md + UI assessment readjustment
+        if getattr(model, "high_impact_params", None):
+            st.caption("★ = high-impact (affects quality, time, or cost)")
+        st.markdown("#### Main settings")
         skip_balanced = {"prompt", "image", "images", "video"}
         if archetype == "multimodal_video":
             skip_balanced |= {
@@ -564,7 +559,7 @@ def render_generation_form(
             advanced_params = [p for p in advanced_params if p != "images"]
         skipped_params = [p for p in model.advanced_params if p not in advanced_params]
         if advanced_params or skipped_params:
-            with st.expander("Advanced controls", expanded=False):
+            with st.expander("More settings (optional)", expanded=False):
                 non_media_skipped = [
                     p
                     for p in skipped_params

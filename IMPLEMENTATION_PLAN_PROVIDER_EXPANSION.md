@@ -23,7 +23,7 @@ This is not a general marketplace for every generation API. This expansion start
   - image-to-video, starting fal.ai with NVIDIA Cosmos 3 Super Image to Video
   - image-to-3D
 - Keep image generation and local inference out of scope unless separately requested.
-- Standalone music/speech via Replicate is **in scope for v0.9.0** (before v1.0.0); see `IMPLEMENTATION_VER-0.9.0.md`. fal.ai audio remains post-v1.0.
+- Standalone music/speech via Replicate shipped in **v0.8.0**; see `IMPLEMENTATION_VER-0.8.0.md`. fal.ai audio remains post-v1.0.
 - Video-to-video transformations remain a future consideration.
 
 The user-facing mental model should be:
@@ -69,7 +69,7 @@ Provider names matter for trust, pricing, debugging, and account setup, but they
 
 5. **No paid calls without explicit user action**
    - Dry-run payload previews and provider diagnostics should be non-paid by default.
-   - Live smoke tests for either provider require explicit authorization and expected cost/scope.
+   - Live paid tests for either provider require explicit authorization and expected cost/scope.
 
 ---
 
@@ -435,7 +435,7 @@ History should keep provider job links separate from output links.
 
 **Validation:** Require prompt and start-frame image; enforce numeric ranges, prompt/negative prompt lengths, image_size enum/object shape, and warn clearly that agentic generation can multiply cost.
 
-**Verification:** Dry-run payload matches fal.ai docs/schema. Paid smoke test only after explicit user authorization.
+**Verification:** Dry-run payload matches fal.ai docs/schema. Paid live test only after explicit user authorization.
 
 
 ### Task 7A: Add Hunyuan 3D 3.1 as the Replicate pilot for text-or-image 3D

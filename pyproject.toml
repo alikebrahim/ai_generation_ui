@@ -1,6 +1,6 @@
 [project]
 name = "ai-generation-ui"
-version = "0.8.0"
+version = "1.0.0"
 description = "Streamlit interface for video, 3D, and audio generation via Replicate API"
 readme = "README.md"
 requires-python = ">=3.11"

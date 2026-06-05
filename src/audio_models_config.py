@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from src.models_config import ModelConfig
+from src.domain import ModelConfig
+
+# (imported from domain.py, not models_config.py, to avoid the circular import that
+# occurred when models_config pulled AUDIO_MODELS at the bottom of its body)
 
 MUSIC_2_5 = ModelConfig(
     name="music-2.5",

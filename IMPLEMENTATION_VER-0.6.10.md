@@ -366,7 +366,7 @@ Store which workflow filter was active for troubleshooting.
 - [x] Motion and edit models expose **video** upload in plain English
 - [x] Dry-run preview shows exact payload per archetype
 - [x] `scripts/model_diagnostics.py` passes without paid calls
-- [x] No paid prediction unless user explicitly authorizes smoke test
+- [x] No paid prediction unless user explicitly authorizes a live run
 - [x] Single-file reference MVP for multimodal models; Aleph keyframes deferred
 
 ---
@@ -384,9 +384,8 @@ Store which workflow filter was active for troubleshooting.
 
 ## Next after v0.6.10
 
-1. **v0.7.0** — errors/progress/recovery
-2. **v0.9.0** — Replicate audio (music + speech); see `IMPLEMENTATION_VER-0.9.0.md`
-3. **v0.8.0** — smoke QA (video, 3D, audio)
-4. **v1.0.0** — release
+1. **v0.7.0** — errors/progress/recovery (complete)
+2. **v0.8.0** — Replicate audio (music + speech); see `IMPLEMENTATION_VER-0.8.0.md` (complete)
+3. **v1.0.0** — release
 
 Post-1.0 video UI deferral after v0.6.11: Aleph keyframes (`ROADMAP.md`). Multi-reference upload controls were completed in v0.6.11 for metadata-marked multi-file params.

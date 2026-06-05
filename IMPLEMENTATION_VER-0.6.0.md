@@ -16,7 +16,7 @@ Make paid Replicate calls safer and make model/schema problems easy to diagnose 
 | Dry-run service | `UnifiedGenerationService.prepare_generation_request()` — validation, endpoint summary, cost label, JSON payload preview |
 | Schema diagnostics | `src/schema_diagnostics.py` — local vs remote OpenAPI comparison (optional fetch with token) |
 | UI preview | `src/ui/request_preview.py` + Video/3D forms — “Preview request (no charge)” expander |
-| CLI probes | `scripts/model_diagnostics.py`, `scripts/paid_smoke.py` (requires `ALLOW_PAID_REPLICATE_SMOKE=1`) |
+| CLI probes | `scripts/model_diagnostics.py` |
 | Metadata audit | All six models: `metadata_verified_date`, `replicate_page_url`, `pricing_notes`, `output_notes` |
 
 ## Verification (non-paid)
@@ -32,7 +32,7 @@ No paid Replicate prediction was created during implementation.
 ## Known limitations
 
 - Remote schema warnings for `requires_image` vs Replicate `required: []` on some 3D models are informational (Replicate allows optional image in schema while the app enforces image in UI).
-- Paid smoke remains manual via `scripts/paid_smoke.py` with explicit env opt-in (v0.8.0 will run full workflow QA).
+- Live workflow verification is through the Streamlit app, not a separate CLI gate.
 
 ## Next milestone
 

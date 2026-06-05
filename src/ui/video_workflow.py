@@ -27,22 +27,21 @@ def filter_models_for_workflow(
 
 
 def render_workflow_filter() -> str:
-    """Render workflow radio and return selected filter key."""
+    """Render workflow segmented control and return selected filter key."""
     labels = {key: label for key, label in VIDEO_WORKFLOW_FILTERS}
     options = [key for key, _ in VIDEO_WORKFLOW_FILTERS]
     default = st.session_state.get("video_workflow_filter", "all")
     if default not in options:
         default = "all"
-    selected = st.radio(
+    selected = st.segmented_control(
         "What do you want to do?",
         options=options,
-        index=options.index(default),
+        default=default,
         format_func=lambda key: labels[key],
-        horizontal=True,
         key="video_workflow_filter",
         help="Narrows the model list to ones that support this kind of task.",
     )
-    return selected
+    return selected or default
 
 
 def _file_uploader(

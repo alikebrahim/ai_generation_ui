@@ -283,12 +283,12 @@ black = ">=24.0.0"           # Code formatter
   `start_image`.
 - Do not add a model from memory, stale notes, provider marketing summaries, or another model's schema. Record source URLs and date checked in the relevant roadmap/implementation notes when adding model support.
 - Keep pricing honest: if current pricing cannot be verified, display “Cost unknown” or an explicit approximate estimate rather than pretending precision.
-- Never create a paid provider prediction just to discover schema or pricing. Use provider docs/API metadata, dry-run payload inspection, and local validation probes unless the user explicitly authorizes a paid smoke test with expected cost/scope.
+- Never create a paid provider prediction just to discover schema or pricing. Use provider docs/API metadata, dry-run payload inspection, and local validation probes unless the user explicitly authorizes a live test with expected cost/scope.
 - v0.6.5 added `tencent/hunyuan3d-2mv`, `adirik/text2tex`, `adirik/texture`, and `hyper3d/rodin` (schemas verified 2026-06-04; see `IMPLEMENTATION_VER-0.6.5.md`).
 - v0.6.10 added eight Replicate video models and workflow-aware Video tab UI (`IMPLEMENTATION_VER-0.6.10.md`).
 - v0.8.0 added nine Replicate audio models and an Audio tab; see `IMPLEMENTATION_VER-0.8.0.md`.
 - Meshy is planned as post-v1.0 fal.ai/provider-expansion work; treat its params/pricing/output shapes as unknown until verified from fal.ai at implementation time.
-- **Live smoke QA** (v0.8.0): optional real paid Replicate runs, one per workflow, with explicit user authorization — not part of routine dev. Use `ALLOW_PAID_REPLICATE_SMOKE=1` and `scripts/paid_smoke.py` only when authorized.
+- **Live verification**: use the Streamlit app for real generations; routine dev uses non-paid checks (`compileall`, `ruff`, `scripts/model_diagnostics.py`, preview request / dry-run).
 
 ## Naming Conventions
 

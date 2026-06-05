@@ -9,88 +9,27 @@ Each ModelConfig captures:
   starting points) for better discoverability of model capabilities.
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Literal, TypedDict
+# Re-export the supporting types (and ModelConfig) so the public surface of
+# `from src.models_config import ModelConfig, ModelType, ...` remains 100%
+# unchanged after moving the dataclass definition to domain.py for cycle
+# breaking. The aliases are not referenced by name in the remaining body of
+# this file (they were only used inside the moved dataclass), hence noqa.
+from src.domain import (  # noqa: F401
+    ModelConfig,
+    ModelType,
+    ParamConstraint,
+    ProviderEndpointMode,
+    ProviderName,
+    WorkflowArchetype,
+)
 
-ModelType = Literal["video", "3d", "audio"]
-ProviderName = Literal["replicate", "fal"]
-ProviderEndpointMode = Literal["versionless", "versioned"]
-WorkflowArchetype = Literal[
-    "text_or_image_video",
-    "multimodal_video",
-    "motion_transfer",
-    "video_edit",
-]
-
-
-class ParamConstraint(TypedDict, total=False):
-    """Validated per-parameter constraint from live Replicate schema.
-
-    All values in this project's model configs were verified against the live
-    Replicate OpenAPI schema (model.latest_version.openapi_schema); see
-    metadata_verified_date on each ModelConfig.
-    """
-
-    min: int | float
-    max: int | float
-    enum: list[str | int | float]
-    ui_type: str  # "slider", "dropdown", "number", "checkbox"
-    nullable: bool
-
-
-@dataclass
-class ModelConfig:
-    """Configuration for a Replicate model."""
-
-    name: str  # Short slug, e.g. "wan-2.7-t2v"
-    display_name: str  # Human-readable, e.g. "Wan 2.7 T2V"
-    model_type: ModelType
-    replicate_id: str  # Replicate model identifier
-    supports_text: bool
-    supports_image: bool
-    supports_audio: bool = False
-    requires_text: bool = False
-    requires_image: bool = False
-    # Provider metadata (v0.4.5+)
-    provider: ProviderName = "replicate"
-    # Can differ from replicate_id for future fal.ai integration
-    provider_model_id: str | None = None
-    provider_endpoint: ProviderEndpointMode = "versionless"
-    # Human-readable media role labels and mode selectors
-    media_roles: dict[str, str] = field(default_factory=dict)
-    generation_modes: list[tuple[str, str]] = field(default_factory=list)
-    default_generation_mode: str | None = None
-    # Parameter groups
-    balanced_params: list[str] = field(default_factory=list)
-    advanced_params: list[str] = field(default_factory=list)
-    # Default values per parameter
-    defaults: dict = field(default_factory=dict)
-    # Per-parameter schema constraints (live-validated against Replicate OpenAPI)
-    param_constraints: dict[str, ParamConstraint] = field(default_factory=dict)
-    # Groups of parameters that are mutually exclusive (at most one can be set)
-    mutual_exclusion: list[tuple[str, ...]] = field(default_factory=list)
-    # Groups where at least one parameter must be provided.
-    required_one_of: list[tuple[str, ...]] = field(default_factory=list)
-    # v0.6 metadata audit (source: Replicate model page + OpenAPI, date in field)
-    metadata_verified_date: str = ""
-    replicate_page_url: str = ""
-    pricing_notes: str = ""
-    output_notes: str = ""
-    multi_output: bool = False
-    # Param name → allowed file extensions for st.file_uploader (v0.6.5+)
-    file_input_params: dict[str, list[str]] = field(default_factory=dict)
-    required_file_params: list[str] = field(default_factory=list)
-    # v0.6.10 video workflow UI
-    workflow_archetype: WorkflowArchetype | None = None
-    workflow_tags: list[str] = field(default_factory=list)
-    # v0.6.6+ creative param exposure & UX
-    param_help: dict[str, str] = field(default_factory=dict)
-    high_impact_params: list[str] = field(default_factory=list)
-    advanced_param_groups: list[tuple[str, list[str]]] = field(default_factory=list)
-    # Per-model presets for quick creative starting points (e.g. "Fast preview").
-    # Value = partial {param: value} applied to session keys for the widgets.
-    presets: dict[str, dict[str, Any]] = field(default_factory=dict)
-
+# ModelConfig (and the supporting type aliases + ParamConstraint) live in
+# src/domain.py. This breaks the circular import with src/audio_models_config.py
+# (which only needs the dataclass to construct its 9 audio models) while
+# models_config.py still does the bottom `from ...audio... import AUDIO_MODELS`
+# and builds ALL_MODELS. The names are re-exported here so that every caller
+# using `from src.models_config import ModelConfig, VIDEO_MODELS, ...` (and the
+# get_* helpers) continues to work with zero changes.
 
 # ═══════════════════════════════════════════════
 #  VIDEO MODELS

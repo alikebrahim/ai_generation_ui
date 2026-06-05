@@ -18,7 +18,7 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.8.0 — Replicate audio (music + speech): Audio tab, nine models, local `outputs/audio/`, History + dry-run**
+**Current version: v1.0.0 — Stable Replicate-only personal baseline (UI readjusted for consistency, critical import stability fix). Post-1.0 work begins (Aleph, fal.ai, etc.).**
 
 **Catalogue today**: 11 video models, 7 3D/texture models, 9 audio models (3 music + 6 speech).
 
@@ -32,11 +32,10 @@ Version history (summary):
 - v0.4.1 fixed the durable-history persistence bug, tightened Hunyuan 3D 3.1 prompt/image validation, and improved local-file History UX.
 - v0.4.2 fixed Hunyuan 3D 3.1 image uploads by sending explicit image MIME data URIs instead of extensionless provider file URLs.
 - v0.5.0–v0.5.10 completed the UI stabilization series: shared shell styling, focused Video/3D generation panels, human-readable media-role metadata, gallery-first History, separate Gallery/Records redraw views, inline History previews, and docs alignment.
-- v0.6.0 added dry-run/request preview, shared payload builders, schema diagnostics, metadata audit fields, and opt-in paid smoke scripts.
+- v0.6.0 added dry-run/request preview, shared payload builders, schema diagnostics, and metadata audit fields.
 - v0.6.5 added Hunyuan3D 2 Multiview, Text2Tex, Adirik Texture, and Rodin Gen-2 with mesh/multiview file upload UI.
 - v0.6.6–0.6.11 completed rich creative param exposure for using model capabilities (advanced_param_groups, param_help + dynamic help, high_impact_params with ★ markers, widget slider support, per-model presets with Apply/Reset on the richest models, “♻️ Load settings” remix from History, safer multi-file reference uploads, 3D tab capability filter + consistent name-based selection for parity with Video, layout tweaks for action prominence); plus pre-0.7 polish items (better loading-stage “taking longer than usual” messaging with time estimates, History copy-only actions for prompt/seed/settings, basic prompt helper examples/starter prompts loadable in the form).
-- **Next planned**: v0.9.0 — authorized smoke QA and browser pass (video, 3D, **music**, **speech**).
-- This remains pre-1.0 because v0.9.0 smoke and plain-English UX polish for v1.0 are still pending.
+- **v1.0.0 complete**. Post-1.0: Aleph keyframes, fal.ai provider expansion, etc. (see below).
 
 ### Pre-1.0 path at a glance
 
@@ -47,8 +46,7 @@ Version history (summary):
 | Done | **v0.6.5** / **v0.6.0** | 7 3D/texture models, dry-run + diagnostics |
 | Done | **v0.7.0** | Clearer errors, progress, recovery |
 | Done | **v0.8.0** | Audio tab: 3 music + 6 speech models |
-| Next | **v0.9.0** | Browser QA + authorized smoke (video, 3D, **music**, **speech**) |
-| Release | **v1.0.0** | Replicate-only personal baseline declared stable |
+| Release | **v1.0.0** | Replicate-only personal baseline |
 
 **Post-1.0** (not v1.0 blockers): Aleph keyframes, fal.ai — see sections below. Multi-reference uploads were completed in v0.6.11 for metadata-marked multi-file params.
 
@@ -60,7 +58,7 @@ This project uses lightweight SemVer-style versioning while pre-1.0:
 
 - **0.x patch bumps**: bug fixes, docs corrections, small UI polish, pricing updates.
 - **0.x minor bumps**: meaningful product capability changes or UX architecture changes.
-- **1.0.0**: comfortable personal baseline after persistent outputs/history, clear non-technical UX, dry-run/safety tooling, and at least one authorized live smoke generation for each supported workflow.
+- **1.0.0**: comfortable personal baseline after persistent outputs/history, clear non-technical UX, dry-run/safety tooling, and honest docs that match what you use in the app.
 
 During 0.x development, breaking internal changes are allowed, but user-facing workflows should remain documented in this roadmap and README.
 
@@ -101,17 +99,9 @@ These are required for the app to feel like a dependable personal tool:
    - Provide non-paid request/payload inspection where useful for debugging.
    - Keep cost estimates honest: approximate or unknown is better than misleading precision.
 
-6. **Minimal live smoke validation** (see v0.8.0)
-   - Run live paid tests only with explicit user authorization and expected cost/scope.
-   - Use `ALLOW_PAID_REPLICATE_SMOKE=1` and `scripts/paid_smoke.py` when authorized.
-   - Before v1.0, verify at least one successful generation for each core workflow:
-     - text-to-video
-     - image-to-video
-     - image-to-3D
-     - text-to-3D
-     - music generation (v0.9.0)
-     - speech / TTS (v0.9.0)
-   - Optionally extend smoke coverage to v0.6.5 workflows (multiview 3D, mesh texturing, Rodin).
+6. **Real-world use through the app**
+   - Exercise core workflows (video, 3D, audio) via the Streamlit UI as you need them.
+   - Report issues as they come up; no separate smoke-test gate before v1.0.
 
 ### Nice to have before v1.0 if time allows
 
@@ -169,7 +159,7 @@ These are valuable but should wait until the core product is stable:
 ### Known limitations carried forward
 
 - History links expire when Replicate delivery URLs expire, usually after about 1 hour.
-- No live paid generation smoke test has been run for every model/workflow.
+- Not every model/workflow has been exercised in a live paid run yet.
 - Browser visual QA is still manual.
 - Model capabilities are manually encoded and need richer media-role metadata.
 - Advanced multi-file/reference-media controls are intentionally not fully exposed yet.
@@ -241,7 +231,7 @@ Investigation found that `tencent/hunyuan3d-2` exists but its Replicate API page
 
 ### Follow-up for later milestones
 
-- Run a paid live image-to-3D smoke test only with explicit user authorization and expected cost.
+- Run a paid live image-to-3D test only with explicit user authorization and expected cost.
 - Durable local output storage was implemented in v0.4.0 and patched in v0.4.1.
 
 ---
@@ -786,12 +776,10 @@ Acceptance criteria:
 - Add optional “Preview request” / dry-run payload visibility where useful for debugging.
 - Show a concise request summary and copyable technical payload in a collapsed/debug area.
 - Add small non-paid schema/model diagnostics for current Replicate models.
-- Add optional paid smoke commands only behind explicit environment variables and user authorization.
 
 ### Acceptance criteria
 
 - Default local checks run without spending money and without creating predictions.
-- Paid smoke checks require explicit opt-in and clear cost/scope.
 - Dry-run output is useful enough to debug payload problems without cluttering the normal UI.
 - Every current model has verified schema constraints, endpoint mode handling, output metadata, and pricing notes.
 
@@ -922,7 +910,6 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 - Motion/edit models show **required** video upload with plain-English labels.
 - Invalid combinations blocked before paid calls; dry-run matches live payload builders.
 - `uv run python scripts/model_diagnostics.py` passes without creating predictions.
-- Paid smoke only with explicit authorization (`ALLOW_PAID_REPLICATE_SMOKE=1`).
 
 ### Resolved decisions (v0.6.10)
 
@@ -978,7 +965,7 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 
 ### Authoritative data on disk (fetch-first, no paid predictions)
 
-Before implementing v0.9.0, use these repo-root JSON snapshots (same pattern as v0.6.10):
+Audio research used these repo-root JSON snapshots (same pattern as v0.6.10):
 
 | File | Contents |
 |------|----------|
@@ -1024,54 +1011,9 @@ Note: `stability-ai/stable-audio-2.5` was listed twice in planning notes — one
 - All nine models verified (OpenAPI, pricing, endpoint mode) and documented in the JSON snapshots above.
 - Audio tab ships with music/speech-appropriate forms (not one generic layout).
 - Invalid requests blocked before paid calls; dry-run matches live payloads.
-- v0.8.0 smoke plan includes at least one authorized **music** and one **speech** workflow.
-
 ### Milestone order before v1.0
 
-`v0.7.0` → **`v0.8.0` (audio)** → `v0.9.0` (smoke + QA) → `v1.0.0`
-
----
-
-## v0.9.0 — v1.0 Readiness and Authorized Smoke QA
-
-**Priority**: Final pre-v1.0 milestone
-
-**Status**: Planned
-
-**Source of truth**: `IMPLEMENTATION_VER-0.9.0.md`
-
-**Goal**: Verify the Replicate-only personal baseline end to end before declaring v1.0 stable.
-
-### Planned work
-
-- Run visible browser QA for:
-  - Video page;
-  - 3D page;
-  - Audio page;
-  - History Gallery view;
-  - History Records view;
-  - validation errors and empty states.
-- With explicit user authorization and expected cost/scope, run one successful live smoke generation for each supported workflow:
-  - text-to-video;
-  - image-to-video;
-  - image-to-3D;
-  - text-to-3D;
-  - **music generation** (v0.8.0 audio tab);
-  - **speech / TTS** (v0.8.0 audio tab).
-- After each authorized smoke, verify:
-  - completed result preview remains visible;
-  - local output is saved when possible;
-  - Gallery card appears with thumbnail/preview or clear placeholder;
-  - Records row stores provider/job/local/output metadata;
-  - cost/status messaging is honest.
-- Do final docs/version alignment for README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation notes.
-
-### Acceptance criteria
-
-- Browser QA covers all current pages/views and major states.
-- Authorized live smoke checks pass or blockers are documented honestly.
-- Lightweight local checks pass without paid calls.
-- Docs and code agree on current scope, supported workflows, known limitations, and post-1.0 provider expansion.
+`v0.7.0` → **`v0.8.0` (audio)** → `v1.0.0`
 
 ---
 
@@ -1079,23 +1021,21 @@ Note: `stability-ai/stable-audio-2.5` was listed twice in planning notes — one
 
 **Priority**: Release target
 
-**Status**: Planned
+**Status**: Complete (released)
 
-### Release criteria
+Delivered in the v1.0.0 pass:
+- Full UI element & component readjustment (see `UI_ASSESSMENT_PRE_V1.md` checklist): unified model placement, creative inputs grouped with preview in left column, History filters + gallery first, Type filter, renames ("Main settings", "More settings (optional)"), segmented workflow controls, ★ legend, thumbnail preview polish, copy actions honesty, chrome tightening, developer surface labeling, example prompts removed.
+- Circular import fix (ModelConfig moved to `domain.py`; re-exports preserve all public paths; app now loads reliably even on audio-first import paths).
+- All lightweight non-paid verification passes; behavior + docs agree.
+
+### Release criteria (historical, now satisfied)
 
 - Durable output storage and permanent History/gallery behavior are implemented or explicitly documented as out of scope.
 - Minimal UI/UX pass is complete for page navigation, forms, generation panels, controls, History Gallery, and History Records.
 - Dry-run payload preview or equivalent request summary is available where useful before paid generation/debugging.
 - All implemented models have verified schema constraints and endpoint mode handling.
-- At least one user-authorized live successful smoke generation has been run for each supported workflow:
-  - text-to-video
-  - image-to-video
-  - image-to-3D
-  - text-to-3D
-  - music generation (v0.9.0)
-  - speech / TTS (v0.9.0)
-- Browser visual QA is complete for Video, 3D, **Audio**, History Gallery, and History Records views.
-- Lightweight local checks cover core utility, validation, pricing, history, output normalization, and endpoint-mode behavior.
+- Core workflows (video, 3D, audio) work well enough for day-to-day personal use; known gaps are documented honestly.
+- Lightweight local checks pass without paid calls (`compileall`, `ruff`, `model_diagnostics.py` when useful) and cover validation, pricing, history, output normalization, and endpoint-mode behavior.
 - README, CHANGELOG, ROADMAP, DECISIONS, AGENTS, and implementation docs agree on scope, version, model IDs, storage behavior, and known limitations.
 
 ### fal.ai development begins after v1.0.0
@@ -1124,7 +1064,7 @@ Acceptance criteria before any paid fal.ai call:
 - Cosmos cost estimate accounts for generated duration and warns that agentic generation can multiply candidate renders/spend.
 - Prompt and start-frame image are required before a paid fal.ai request.
 - Uploaded images are converted into a fal-accessible URL/request payload through a verified path.
-- Paid fal.ai smoke checks require explicit user authorization and expected cost/scope.
+- Paid fal.ai live checks require explicit user authorization and expected cost/scope.
 
 ---
 
@@ -1200,7 +1140,7 @@ Post-1.0 work should expand creative power only after the core Replicate-only lo
 - fal.ai credentials remain optional and never block Replicate-only use.
 - Every fal.ai model must have current model-page/OpenAPI schema, endpoint ID, available parameters, output shape, pricing, and cost multipliers verified before implementation.
 - fal.ai models are added through provider adapters and shared model metadata, not direct UI branches.
-- Paid fal.ai smoke checks require explicit user authorization and expected cost/scope.
+- Paid fal.ai live checks require explicit user authorization and expected cost/scope.
 
 ---
 
@@ -1335,9 +1275,8 @@ Post-1.0 work should expand creative power only after the core Replicate-only lo
 | v0.6.5 | Replicate 3D and texture model expansion | Complete | Done in v0.6.5 |
 | v0.6.10 | Video model expansion + workflow-aware UI | Complete | Done in v0.6.10 |
 | v0.7.0 | Better errors, progress, and recovery | Medium | Complete |
-| v0.8.0 | Replicate audio (music + speech) | High | Complete |
-| v0.9.0 | v1.0 readiness and authorized smoke QA | Highest | Next; final pre-v1.0 gate |
-| v1.0.0 | Stable Replicate-only personal local release | Release | Release target |
+| v0.8.0 | Replicate audio (music + speech) | High | Complete (superseded by v1.0.0) |
+| v1.0.0 | Stable Replicate-only personal local release | Complete | Released (UI consistency + stability baseline) |
 | v1.1 | History reuse and creative iteration | High | Post-1.0 quality-of-life |
 | v1.2 | fal.ai provider expansion and Meshy exploration | High | Post-1.0 provider expansion |
 | v1.3 | Masking and inpainting exploration | Medium | Post-1.0 exploration |

@@ -21,7 +21,7 @@ def render_request_preview(
     """Show request summary and payload when the user previews (no charge)."""
     session_key = f"request_preview_{model.name}{preview_key_suffix}"
 
-    with st.expander("Preview request (no charge)", expanded=False):
+    with st.expander("Preview request payload (advanced)", expanded=False):
         st.caption(
             "Checks your inputs and shows the Replicate payload that would be sent. "
             "This does not start a paid generation."

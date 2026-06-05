@@ -369,5 +369,5 @@ After this series, resume feature work:
 - v0.6.0: Safety, metadata audit, dry-run payloads, and schema diagnostics.
 - v0.6.5: Verified Replicate 3D/texture model expansion.
 - v0.7.0: Better errors, progress, and recovery.
-- v0.8.0: v1.0 readiness and authorized smoke QA.
+- v0.8.0: Replicate audio (music + speech); v1.0.0 personal baseline follows.
 - v1.0.0: Stable Replicate-only personal local release. fal.ai implementation begins after v1.0.0 through `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md`.

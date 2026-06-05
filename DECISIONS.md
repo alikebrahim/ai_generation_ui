@@ -40,7 +40,7 @@ All decisions have been made. This document records the final choices and ration
 
 **SELECTED: Top-level destinations with query-param-backed segmented navigation**
 
-Top-level destinations today: **Video** | **3D** | **History**. **v0.9.0** adds **Audio** (music + speech) before v1.0.0.
+Top-level destinations today: **Video** | **3D** | **Audio** | **History**.
 
 The app uses segmented navigation backed by query params instead of top-level `st.tabs`. This lets deep links such as `?page=history` and History preview selections stay on the correct page instead of resetting to Video on rerun.
 
@@ -201,7 +201,7 @@ Detailed plan: `IMPLEMENTATION_PLAN_ARCHITECTURE_REFACTOR.md`.
 
 ## Final Model List
 
-Authoritative counts: **CHANGELOG.md** (shipped), **IMPLEMENTATION_VER-0.9.0.md** (planned audio).
+Authoritative counts: **CHANGELOG.md** (shipped), **IMPLEMENTATION_VER-0.8.0.md** (audio).
 
 ### Video Models (11 — Replicate, v0.6.10)
 
@@ -235,7 +235,7 @@ Authoritative counts: **CHANGELOG.md** (shipped), **IMPLEMENTATION_VER-0.9.0.md*
 | `adirik/texture` | Mesh texturing (mesh + prompt); versioned (v0.6.5) |
 | `hyper3d/rodin` | Text-to-3D (+ optional reference); versioned (v0.6.5) |
 
-### Audio Models (9 — planned v0.9.0, not implemented)
+### Audio Models (9 — v0.8.0)
 
 **Music**: `minimax/music-2.5`, `stability-ai/stable-audio-2.5`, `google/lyria-2`.
 
@@ -295,11 +295,11 @@ Authoritative counts: **CHANGELOG.md** (shipped), **IMPLEMENTATION_VER-0.9.0.md*
 
 ---
 
-## Decision: Audio models before v1.0.0 (v0.9.0)
+## Decision: Audio models before v1.0.0 (v0.8.0)
 
 **Date**: 2026-06-04
 
-**Scope**: Add Replicate **music** and **speech** models before declaring v1.0.0, as milestone **v0.9.0** (after v0.7.0, before v0.8.0 smoke QA).
+**Scope**: Add Replicate **music** and **speech** models before declaring v1.0.0, as milestone **v0.8.0** (after v0.7.0).
 
 **Music**: `minimax/music-2.5`, `stability-ai/stable-audio-2.5`, `google/lyria-2`.
 
@@ -307,4 +307,4 @@ Authoritative counts: **CHANGELOG.md** (shipped), **IMPLEMENTATION_VER-0.9.0.md*
 
 **Rationale**: Personal studio should cover video, 3D, and audio before the Replicate-only v1.0 baseline; fal.ai remains post-1.0.
 
-**Details**: `IMPLEMENTATION_VER-0.9.0.md`, `ROADMAP.md` v0.9.0.
+**Details**: `IMPLEMENTATION_VER-0.8.0.md`, `ROADMAP.md` v0.8.0.

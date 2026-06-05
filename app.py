@@ -49,9 +49,6 @@ except RuntimeError as err:
 init_db()
 
 st.title("🎬 AI Generation Studio")
-st.caption(
-    "A personal Streamlit workspace for videos, 3D models, audio, and history."
-)
 
 if hasattr(st, "divider"):
     st.divider()

@@ -2,25 +2,48 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## Planned milestones (not released)
+## v1.0.0 — Stable Replicate-only personal baseline
 
-These are documented in `ROADMAP.md` and implementation notes; **no code yet** unless a version entry appears below.
+**Status**: Current
 
-| Version | Scope | Doc |
-|---------|--------|-----|
-| **v0.9.0** | Browser QA + authorized smoke (video, 3D, music, speech) | `IMPLEMENTATION_VER-0.9.0.md` |
-| **v1.0.0** | Stable Replicate-only personal baseline | `ROADMAP.md` |
-| **Post-1.0** | Aleph keyframes, fal.ai | `ROADMAP.md` |
+v1.0.0 completes the Replicate-only personal baseline: a comfortable, consistent local tool for video/3D/audio generation. The primary work was the UI element & component readjustment pass (per `UI_ASSESSMENT_PRE_V1.md`) plus critical reliability fixes so the app loads and runs cleanly for day-to-day personal use. fal.ai work remains post-1.0.
 
+### Added / Delivered for v1.0.0 "sane UI"
+- Unified generation tab layout across Video / 3D / Audio:
+  - Consistent top bordered "#### Model" card + selector on all three tabs.
+  - Primary creative inputs (prompt + key media) now live in the left (wider) workspace column, stacked above the live preview/result area. Right column is dedicated to settings + generate.
+  - Audio main input (lyrics/text/prompt) moved into left column for space and parity; preview styling (red border via `.ai-prediction-preview-anchor`) now applies to Audio.
+- Prompt/media ordering fixed (no more empty preview pane appearing before the user writes the prompt).
+- History information hierarchy fixed:
+  - Filters (search + new Type: Video/3D/Audio + model/provider/status) + Gallery/Records view render immediately after the segmented toggle.
+  - Aggregate stats + "By Model" breakdown moved to bottom collapsed "Usage stats" expander.
+- "📋 Copy actions" renamed to "View prompt & settings"; buttons to "Show prompt", "Show settings (JSON)", etc. (more honest about current behavior of revealing copyable blocks).
+- Thumbnail preview action made compact ("🔍 Preview", not full-width button under every card).
+- Workflow filters switched from horizontal `st.radio` to `st.segmented_control` for visual consistency with global nav and better selected affordance.
+- Section headings renamed for plain English: "#### Balanced controls" → "#### Main settings"; "Advanced controls" → "More settings (optional)".
+- One-line ★ high-impact legend added in controls area.
+- Top vertical chrome tightened (global page caption removed; tab headers + workflow questions are the primary call-to-action area).
+- Developer surface labeled more clearly ("Preview request payload (advanced)").
+- Existing example prompts / starters removed from the prompt UI (per explicit user direction; no need for them).
 
+### Changed / Fixed
+- Circular import bug resolved (ImportError on AUDIO_MODELS / ModelConfig when audio path loaded first). Root cause: `audio_models_config.py` imported `ModelConfig` from `models_config.py` while `models_config.py` did a bottom-of-file `from ... import AUDIO_MODELS`. Fixed by moving the pure `ModelConfig` dataclass + supporting types (`ModelType`, `ProviderName`, etc., `ParamConstraint`) to `src/domain.py` (natural shared types home). `audio_models_config.py` now imports from domain; `models_config.py` re-exports from domain so all existing `from src.models_config import ModelConfig, ...` paths (and relative imports) remain 100% compatible. `ALL_MODELS` aggregation and lookups are now reliably complete.
+- `ModelConfig` and related types now live in `domain.py`; catalogues stay in their files.
+- Minor: column ratios adjusted slightly (1.9:1.6), various docstrings/comments updated for the new layout.
+
+### Verification (lightweight, non-paid)
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- Targeted import probes exercising audio-first + full catalogue paths (`import app`, `from src.ui.audio_tab`, `generation_registry.verify_all_models_have_handlers()`, direct `AUDIO_MODELS` + `ALL_MODELS` + lookups).
+- Manual Streamlit form/History navigation smoke (no paid generations).
 
 ---
 
 ## v0.8.0 — Replicate audio (music + speech)
 
-**Status**: Current
+**Status**: Superseded
 
-Milestone numbering: **v0.8.0 = Audio** (this release). **v0.9.0 = smoke QA** (next). Research JSON files retain the `IMPLEMENTATION_VER-0.9.0-*.json` filenames from the original fetch.
+Research JSON files retain the `IMPLEMENTATION_VER-0.9.0-*.json` filenames from the original audio fetch (2026-06-04).
 
 ### Added
 
@@ -33,7 +56,7 @@ Milestone numbering: **v0.8.0 = Audio** (this release). **v0.9.0 = smoke QA** (n
 
 ### Changed
 
-- Pre-1.0 path: v0.8.0 audio → v0.9.0 smoke → v1.0.0 (swapped from earlier 0.9/0.8 order).
+- Pre-1.0 path: v0.7.0 → v0.8.0 audio → v1.0.0.
 - `ModelConfig.model_type` includes `"audio"`; catalogue is 11 video + 7 3D + 9 audio.
 
 ### Verification
@@ -186,7 +209,7 @@ This release finishes all planned work before v0.7.0 (better errors/progress/rec
 - Enhanced `prepare_generation_request()` with endpoint summary, cost label, copyable JSON payload, and schema diagnostics.
 - “Preview request (no charge)” expander on Video and 3D generation forms.
 - Non-paid schema diagnostics (`src/schema_diagnostics.py`) and `scripts/model_diagnostics.py`.
-- Opt-in paid smoke helper `scripts/paid_smoke.py` (requires `ALLOW_PAID_REPLICATE_SMOKE=1`).
+- Optional paid CLI helper `scripts/paid_smoke.py` (later removed; use the app for live runs).
 - Per-model metadata audit fields: verified date, Replicate page URL, pricing/output notes.
 
 ### Changed
@@ -482,7 +505,7 @@ This release finishes all planned work before v0.7.0 (better errors/progress/rec
 
 ### Known limitations
 
-- No live paid smoke generation has been run for every supported model.
+- Not every model/workflow has been exercised in a live paid run (personal use via the app).
 - Browser visual QA is not complete in the current agent environment.
 - Output URLs still expire after about 1 hour unless the user downloads them.
 - Model capability semantics are not yet fully schema-driven.

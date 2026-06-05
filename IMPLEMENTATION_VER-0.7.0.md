@@ -25,7 +25,7 @@ direction from v0.5.x–v0.6.11.
 
 - **Cancel button**: Replicate supports cancel, but Streamlit blocks during a sync
   generation run; no cancel UI added in v0.7.0.
-- **Audio tab**: v0.9.0.
+- **Audio tab**: v0.8.0 (complete).
 
 ## Acceptance criteria
 
@@ -47,4 +47,4 @@ No paid Replicate predictions.
 
 ## Next milestone
 
-**v0.8.0** — Replicate audio (complete); **v0.9.0** — smoke QA; see `IMPLEMENTATION_VER-0.9.0.md`.
+**v0.8.0** — Replicate audio (complete); **v1.0.0** — personal baseline. See `IMPLEMENTATION_VER-0.8.0.md` and `ROADMAP.md`.

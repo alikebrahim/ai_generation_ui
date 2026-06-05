@@ -1,8 +1,8 @@
 # AI Generation UI
 
-A Streamlit-based interface for **video**, **3D**, and (planned) **audio** generation using the Replicate API today. fal.ai development is intentionally deferred until after the v1.0.0 Replicate-only baseline.
+A Streamlit-based interface for **video**, **3D**, and **audio** generation using the Replicate API today. fal.ai development is intentionally deferred until after the v1.0.0 Replicate-only baseline.
 
-**Current version**: v0.8.0 — **Audio** tab with nine Replicate models (3 music + 6 speech), workflow filters, preview/download, History, and dry-run safety. Builds on v0.7.0 errors/progress UX. **11 video + 7 3D + 9 audio** models. Next: **v0.9.0** smoke QA before v1.0.0.
+**Current version**: v1.0.0 — **Stable Replicate-only personal baseline** (11 video + 7 3D + 9 audio models). Unified "sane UI" (consistent model cards, creative inputs grouped with preview in left workspace column, History filters-first, plain-English section names, segmented workflow controls, etc.). Critical import stability fix for reliable loading. Next: post-1.0 work (see ROADMAP).
 
 ## Purpose
 
@@ -13,19 +13,19 @@ This project provides a clean, simple web interface for:
   Kling 3 Motion Control, Kling O1
 - **3D / texture** (7 models): Hunyuan3D 2.0, Hunyuan3D 2 Multiview, TRELLIS 2,
   Hunyuan 3D 3.1, Text2Tex, Adirik Texture, Rodin Gen-2
-- **Audio** (9 models): MiniMax Music 2.5, Stable Audio 2.5, Lyria 2; Inworld TTS 2 & 1.5 Max, MiniMax Speech HD/Turbo, Chatterbox, ElevenLabs v3
+- **Audio** (9 models): MiniMax Music 2.5, Stable Audio 2.5, Lyria 2; Inworld TTS 2 & 1.5 Max, MiniMax Speech HD/Turbo, Chatterbox, ElevenLabs v3 (part of the v1.0.0 stable baseline)
 
 Workflows today include text-to-video, image-to-video, motion transfer, video edit,
-image-to-3D, text-to-3D, multiview-to-3D, and mesh texturing. Planned: **music
-generation** and **speech / TTS**.
+image-to-3D, text-to-3D, multiview-to-3D, mesh texturing, **music generation**,
+and **speech / TTS**.
 
 Image generation is handled separately via ComfyUI workflows (not in this project).
 
 ## Provider Direction
 
-Current implemented provider support is Replicate. fal.ai is not part of the v0.x implementation plan or the v1.0.0 release target;
+Current implemented provider support is Replicate (the v1.0.0 stable baseline). fal.ai development begins post-v1.0.0;
 it begins after the Replicate-only personal workflow is stable.
-The intended user flow remains workflow-first: choose **Video**, **3D**, or (after
+The intended user flow remains workflow-first: choose **Video**, **3D**, or
 **Audio**, pick a model by practical outcome, then use the provider only
 for setup, pricing, status, and troubleshooting.
 
@@ -34,7 +34,7 @@ v0.6.0 added **Preview request (no charge)**, shared payload builders, and schem
 diagnostics. v0.6.5 expanded the 3D catalogue with multiview and mesh-texturing
 models plus mesh/multiview file uploads. v0.6.6–0.6.11 focused on exposing creative parameters, presets, remix,
 multi-reference uploads, and UX parity. **v0.7.0** improved errors/progress.
-**v0.8.0** added the Audio tab (music + speech).
+**v0.8.0** added the Audio tab (music + speech). **v1.0.0** delivered the final UI element/component readjustment pass for a single polished product feel (unified layouts, prompt-in-workspace ordering, History hierarchy fix, renames, segmented controls, etc.) plus the circular import stability fix so the app loads reliably.
 
 Future fal.ai/provider-aware design details are documented in
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` and scheduled after v1.0.0 in
@@ -85,7 +85,7 @@ images or text. This project fills that gap by:
 
 - **Package Manager**: uv (fast, modern Python project management)
 - **Frontend**: Streamlit 1.58.0 (Python web framework)
-- **API Providers**: Replicate 1.0.7 today; fal.ai planned post-v1.0 via provider adapter
+- **API Providers**: Replicate (v1.0.0 stable baseline); fal.ai planned post-v1.0 via provider adapter
 - **Video Display**: Streamlit's built-in `st.video()`
 - **3D Display**: Google's `<model-viewer>` (via Streamlit custom HTML)
 - **Environment Variables**: python-dotenv 1.2.2
@@ -97,7 +97,7 @@ images or text. This project fills that gap by:
 
 - Python 3.11+ (managed by uv)
 - Replicate API token ([get one here](https://replicate.com/account/api-tokens))
-- fal.ai API token is not needed for v0.x or v1.0.0; it will be needed only once post-v1.0 fal.ai support is implemented
+- fal.ai API token is not needed for the v1.0.0 Replicate-only stable baseline; it will be needed only once post-v1.0 fal.ai support is implemented
 
 ### Installation
 
@@ -175,8 +175,7 @@ ai_generation_ui/
 │   └── thumbnails/
 ├── assets/               # Reserved for future static assets
 ├── scripts/
-│   ├── model_diagnostics.py # Non-paid schema/registry probe (CLI)
-│   └── paid_smoke.py        # Opt-in paid smoke (ALLOW_PAID_REPLICATE_SMOKE=1)
+│   └── model_diagnostics.py # Non-paid schema/registry probe (CLI)
 └── IMPLEMENTATION_PLAN.md # Original step-by-step build guide
 ```
 
@@ -209,14 +208,16 @@ pre-0.7 polish. The app supports eleven video, seven 3D/texture, and nine audio
 workflows on Replicate, with gallery-first History, durable local outputs, and
 generation safety (preview request, payload builders, schema diagnostics).
 
-This is intentionally a personal-use app rather than a production product. It
-remains pre-1.0 because **v0.9.0** authorized smoke QA and plain-English UX for
-v1.0 are still pending. fal.ai is deferred until after the v1.0.0 Replicate-only
-baseline.
+This is intentionally a personal-use app rather than a production product.
+**v1.0.0** is the comfortable Replicate-only personal baseline (UI consistency pass complete, app loads and runs reliably for daily use, docs agree). fal.ai provider expansion is post-1.0.
 
-The next planned work is **v0.9.0** (browser QA + authorized smoke — see
-`IMPLEMENTATION_VER-0.9.0.md`) before **v1.0.0**.
-See `ROADMAP.md`. v0.6.11 completes the creative param exposure and pre-0.7 UX polish on top of the v0.6.10 video models (see `IMPLEMENTATION_VER-0.6.10.md`). **Known limitation (post-1.0)**: Aleph has no keyframe UI yet — see
+Non-paid local checks:
+
+```bash
+uv run python scripts/model_diagnostics.py
+```
+
+v0.6.11 completes the creative param exposure and pre-0.7 UX polish on top of the v0.6.10 video models (see `IMPLEMENTATION_VER-0.6.10.md`). **Known limitation (post-1.0)**: Aleph has no keyframe UI yet — see
 `ROADMAP.md` “Advanced video inputs”.
 
 See `ITER_1_IMPLEMENTATION.md` for the as-built reference,
@@ -227,6 +228,5 @@ See `ITER_1_IMPLEMENTATION.md` for the as-built reference,
 `IMPLEMENTATION_VER-0.6.10.md` for the v0.6.10 video model additions (implemented),
 v0.6.11 changelog/ROADMAP for param exposure + presets + pre-0.7 polish (remix, multi-ref, 3D parity, copy actions, loading messages, starters),
 `IMPLEMENTATION_VER-0.8.0.md` for the v0.8.0 audio milestone,
-`IMPLEMENTATION_VER-0.9.0.md` for the planned v0.9.0 smoke QA milestone,
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` for the v1.0.0+ Replicate + fal.ai
 provider plan, and `ROADMAP.md` for the versioned plan toward v1.0.0 and post-v1.0 provider expansion.

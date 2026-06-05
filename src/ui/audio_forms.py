@@ -47,41 +47,50 @@ def _estimate_audio_cost_label(model: ModelConfig, kwargs: dict) -> str:
 def render_audio_generation_form(
     model: ModelConfig,
     preview_renderer: Callable[[], None] | None = None,
-    model_selector_renderer: Callable[[], None] | None = None,
 ) -> dict | None:
-    """Render music/speech generation workspace."""
+    """Render music/speech generation workspace.
+
+    Primary creative input (lyrics/text/prompt) lives in the left column above
+    the result preview for visual consistency with video/3D (left = workspace).
+    Right column is secondary settings + generate only.
+    """
     st.subheader(f"Generate with {model.display_name}")
     if model.pricing_notes:
         st.caption(model.pricing_notes)
 
     kwargs: dict = {}
-    preview_col, controls_col = st.columns([2.2, 1.3], vertical_alignment="top")
+    preview_col, controls_col = st.columns([1.9, 1.6], vertical_alignment="top")
 
     with preview_col:
+        # Main creative input (moved to left for space + consistency)
         with st.container(border=True):
+            st.markdown("#### Main input")
+            for param in _primary_text_params(model):
+                label = friendly_label(param, model)
+                help_text = (model.param_help or {}).get(param, "")
+                height = 140 if param == "lyrics" else 110
+                kwargs[param] = st.text_area(
+                    label,
+                    height=height,
+                    help=help_text or None,
+                    key=f"audio_{model.name}_{param}",
+                )
+
+        # Result preview / status area (anchor for red border CSS parity)
+        with st.container(border=True):
+            st.markdown(
+                "<span class='ai-prediction-preview-anchor'></span>",
+                unsafe_allow_html=True,
+            )
             if preview_renderer is not None:
                 preview_renderer()
             else:
                 st.info("Run a generation and the audio preview will appear here.")
 
     controls_box = controls_col.container(border=True)
-    if model_selector_renderer is not None:
-        model_selector_renderer()
 
     with controls_box:
-        st.markdown("#### Main input")
-        for param in _primary_text_params(model):
-            label = friendly_label(param, model)
-            help_text = (model.param_help or {}).get(param, "")
-            height = 140 if param == "lyrics" else 110
-            kwargs[param] = st.text_area(
-                label,
-                height=height,
-                help=help_text or None,
-                key=f"audio_{model.name}_{param}",
-            )
-
-        st.markdown("#### Settings")
+        st.markdown("#### Main settings")
         skip = set(_primary_text_params(model))
         for param_name in model.balanced_params:
             if param_name in skip:
@@ -91,7 +100,7 @@ def render_audio_generation_form(
                 kwargs[param_name] = value
 
         if model.advanced_params:
-            with st.expander("Advanced controls", expanded=False):
+            with st.expander("More settings (optional)", expanded=False):
                 for param_name in model.advanced_params:
                     value = render_param_widget(model, param_name, advanced=True)
                     if value is not None:

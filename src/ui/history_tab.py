@@ -190,15 +190,14 @@ def _select_gallery_preview(row_id: int) -> None:
 
 
 def _render_clickable_thumbnail(row: pd.Series, thumbnail_path: Path) -> None:
-    """Render thumbnail with a native Streamlit preview action."""
+    """Render thumbnail + compact preview action."""
     row_id = int(str(row["ID"]))
-    alt = f"Preview {str(row['Model'])} generation {row_id}"
-    st.image(str(thumbnail_path), width="stretch", caption="Thumbnail preview")
+    st.image(str(thumbnail_path), width="stretch", caption="Thumbnail")
     if st.button(
-        "Preview this thumbnail",
+        "🔍 Preview",
         key=f"preview_thumb_{row_id}",
-        help=alt,
-        use_container_width=True,
+        help=f"Show larger preview + details for generation {row_id}",
+        use_container_width=False,
     ):
         _select_gallery_preview(row_id)
 
@@ -284,27 +283,35 @@ def _backfill_missing_video_thumbnails(rows: list[tuple]) -> bool:
 
 
 def _apply_filters(df: pd.DataFrame) -> pd.DataFrame:
+    type_options = sorted(df["Type"].dropna().astype(str).unique())
     model_options = sorted(df["Model"].dropna().astype(str).unique())
     provider_options = sorted(df["Provider"].dropna().astype(str).unique())
     status_options = sorted(df["Status"].dropna().astype(str).unique())
 
-    filter_col_1, filter_col_2, filter_col_3, filter_col_4 = st.columns(
-        [2.2, 1.4, 1.1, 1.1]
+    # 5 filters (search + type + model + provider + status); early for browsing
+    filter_col_1, filter_col_2, filter_col_3, filter_col_4, filter_col_5 = st.columns(
+        [1.6, 0.9, 1.2, 1.0, 1.0]
     )
     with filter_col_1:
         search = st.text_input(
             "Search prompts", placeholder="camera move, robot, castle…"
         )
     with filter_col_2:
-        model_filter = st.multiselect("Model", model_options, default=model_options)
+        type_filter = st.multiselect("Type", type_options, default=type_options)
     with filter_col_3:
+        model_filter = st.multiselect("Model", model_options, default=model_options)
+    with filter_col_4:
         provider_filter = st.multiselect(
             "Provider", provider_options, default=provider_options
         )
-    with filter_col_4:
+    with filter_col_5:
         status_filter = st.multiselect("Status", status_options, default=status_options)
 
     filtered: pd.DataFrame = df.copy()
+    if type_filter:
+        filtered = cast(
+            pd.DataFrame, filtered[filtered["Type"].astype(str).isin(type_filter)]
+        )
     if model_filter:
         filtered = cast(
             pd.DataFrame, filtered[filtered["Model"].astype(str).isin(model_filter)]
@@ -370,17 +377,17 @@ def _render_history_card(row: pd.Series) -> None:
         )
         st.caption(_row_prompt(row.get("Prompt")))
 
-        with st.expander("📋 Copy actions", expanded=False):
+        with st.expander("View prompt & settings", expanded=False):
             prompt_text = _row_prompt(row.get("Prompt"))
             if st.button(
-                "Copy prompt", key=f"copy_prompt_{row['ID']}", use_container_width=True
+                "Show prompt", key=f"copy_prompt_{row['ID']}", use_container_width=True
             ):
                 st.toast("Prompt shown below — select to copy")
                 st.code(prompt_text, language="text")
             params_json = row.get("Params")
             if params_json:
                 if st.button(
-                    "Copy settings (JSON)",
+                    "Show settings (JSON)",
                     key=f"copy_settings_{row['ID']}",
                     use_container_width=True,
                 ):
@@ -391,7 +398,7 @@ def _render_history_card(row: pd.Series) -> None:
                 if isinstance(params, dict) and "seed" in params:
                     seed_val = params["seed"]
                     if st.button(
-                        f"Copy seed ({seed_val})",
+                        f"Show seed ({seed_val})",
                         key=f"copy_seed_{row['ID']}",
                         use_container_width=True,
                     ):
@@ -583,6 +590,10 @@ def render_history_tab() -> None:
     if rows and _backfill_missing_video_thumbnails(rows):
         rows = get_all_generations(limit=gallery_limit)
 
+    # Fetch stats early (rendered at bottom in expander after gallery/filters)
+    total_stats = get_total_stats()
+    model_stats = get_stats_by_model()
+
     history_view = st.segmented_control(
         "History view",
         options=["Gallery", "Records"],
@@ -591,38 +602,12 @@ def render_history_tab() -> None:
         label_visibility="collapsed",
     )
 
-    total_stats = get_total_stats()
-    if total_stats and total_stats[0] and total_stats[0] > 0:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.metric("Total Generations", total_stats[0])
-        with c2:
-            st.metric("Total Cost", format_cost(total_stats[1] or 0))
-        with c3:
-            st.metric("Avg Predict Time", format_duration(total_stats[2] or 0))
-    else:
-        st.info(
-            "No generations yet. Create your first video, 3D model, or audio clip!"
-        )
-
-    st.subheader("By Model")
-    model_stats = get_stats_by_model()
-    if model_stats:
-        for row in model_stats:
-            name, count, total_cost, avg_time = row
-            with st.expander(f"{name} ({count} generation{'s' if count != 1 else ''})"):
-                mc1, mc2 = st.columns(2)
-                with mc1:
-                    st.metric("Total Cost", format_cost(total_cost or 0))
-                with mc2:
-                    st.metric("Avg Time", format_duration(avg_time or 0))
-
     if not rows:
-        st.info("No history available yet.")
+        st.info("No history available yet. Create your first generation!")
         return
 
     df = _records_dataframe(rows)
-    filtered = _apply_filters(df)
+    filtered = _apply_filters(df)  # filters right after view (search/type/...)
 
     if history_view == "Gallery":
         _render_gallery_tab(filtered, len(df))
@@ -634,3 +619,23 @@ def render_history_tab() -> None:
                     st.rerun()
     else:
         _render_records_tab(filtered)
+
+    # Usage stats at bottom (filters + gallery first)
+    with st.expander("Usage stats", expanded=False):
+        if total_stats and total_stats[0] and total_stats[0] > 0:
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.metric("Total Generations", total_stats[0])
+            with c2:
+                st.metric("Total Cost", format_cost(total_stats[1] or 0))
+            with c3:
+                st.metric("Avg Predict Time", format_duration(total_stats[2] or 0))
+        if model_stats:
+            for row in model_stats:
+                name, count, total_cost, avg_time = row
+                with st.expander(f"{name} ({count} gen{'s' if count != 1 else ''})"):
+                    mc1, mc2 = st.columns(2)
+                    with mc1:
+                        st.metric("Total Cost", format_cost(total_cost or 0))
+                    with mc2:
+                        st.metric("Avg Time", format_duration(avg_time or 0))

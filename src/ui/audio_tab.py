@@ -32,15 +32,15 @@ def render_audio_workflow_filter() -> str:
     default = st.session_state.get("audio_workflow_filter", "all")
     if default not in options:
         default = "all"
-    return st.radio(
+    selected = st.segmented_control(
         "What do you want to create?",
         options=options,
-        index=options.index(default),
+        default=default,
         format_func=lambda key: labels[key],
-        horizontal=True,
         key="audio_workflow_filter",
         help="Narrows models to music or speech workflows.",
     )
+    return selected or default
 
 
 def _consume_pending_remix(expected_type: str) -> None:
