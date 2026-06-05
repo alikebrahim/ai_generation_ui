@@ -1,0 +1,157 @@
+{
+  "display_name": "Rodin Gen-2",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "addons": {
+        "description": "Additional features",
+        "items": {
+          "type": "string"
+        },
+        "nullable": true,
+        "title": "Addons",
+        "type": "array",
+        "x-order": 12
+      },
+      "bbox_condition": {
+        "description": "Bounding box condition [Width, Height, Length]",
+        "items": {
+          "type": "integer"
+        },
+        "nullable": true,
+        "title": "Bbox Condition",
+        "type": "array",
+        "x-order": 10
+      },
+      "geometry_file_format": {
+        "default": "glb",
+        "description": "Output geometry format",
+        "enum": [
+          "glb",
+          "usdz",
+          "fbx",
+          "obj",
+          "stl"
+        ],
+        "title": "geometry_file_format",
+        "type": "string",
+        "x-order": 5
+      },
+      "images": {
+        "default": [],
+        "description": "Input images for 3D generation (up to 5 images)",
+        "items": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "Images",
+        "type": "array",
+        "x-order": 1
+      },
+      "material": {
+        "default": "PBR",
+        "description": "Material type",
+        "enum": [
+          "PBR",
+          "Shaded",
+          "All"
+        ],
+        "title": "material",
+        "type": "string",
+        "x-order": 6
+      },
+      "mesh_mode": {
+        "default": "Quad",
+        "description": "Mesh face type",
+        "enum": [
+          "Quad",
+          "Raw"
+        ],
+        "title": "mesh_mode",
+        "type": "string",
+        "x-order": 11
+      },
+      "preview_render": {
+        "default": false,
+        "description": "Generate preview render",
+        "title": "Preview Render",
+        "type": "boolean",
+        "x-order": 13
+      },
+      "prompt": {
+        "description": "Text prompt for 3D model generation",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "quality": {
+        "default": "medium",
+        "description": "Generation quality",
+        "enum": [
+          "high",
+          "medium",
+          "low",
+          "extra-low"
+        ],
+        "title": "quality",
+        "type": "string",
+        "x-order": 7
+      },
+      "quality_override": {
+        "description": "Custom poly count for generation",
+        "nullable": true,
+        "title": "Quality Override",
+        "type": "integer",
+        "x-order": 8
+      },
+      "seed": {
+        "description": "Random seed for reproducible generation",
+        "nullable": true,
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 2
+      },
+      "tapose": {
+        "default": false,
+        "description": "Generate T/A pose for human-like models",
+        "title": "Tapose",
+        "type": "boolean",
+        "x-order": 9
+      },
+      "tier": {
+        "default": "Gen-2",
+        "description": "Generation tier",
+        "title": "Tier",
+        "type": "string",
+        "x-order": 3
+      },
+      "use_original_alpha": {
+        "default": false,
+        "description": "Use original transparency channel",
+        "title": "Use Original Alpha",
+        "type": "boolean",
+        "x-order": 4
+      }
+    },
+    "required": [
+      "prompt"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "rodin",
+  "model_type": "3d",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versioned",
+  "provider_model_id": "hyper3d/rodin",
+  "replicate_api_url": "https://replicate.com/hyper3d/rodin/api",
+  "replicate_page_url": "https://replicate.com/hyper3d/rodin",
+  "schema_card_version": 1
+}

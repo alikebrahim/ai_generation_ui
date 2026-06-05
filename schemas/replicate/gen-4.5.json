@@ -1,0 +1,75 @@
+{
+  "display_name": "Runway Gen-4.5",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "aspect_ratio": {
+        "default": "16:9",
+        "description": "Video aspect ratio",
+        "enum": [
+          "16:9",
+          "9:16",
+          "4:3",
+          "3:4",
+          "1:1",
+          "21:9"
+        ],
+        "title": "aspect_ratio",
+        "type": "string",
+        "x-order": 2
+      },
+      "duration": {
+        "default": 5,
+        "description": "Duration of the output video in seconds",
+        "enum": [
+          5,
+          10
+        ],
+        "title": "duration",
+        "type": "integer",
+        "x-order": 3
+      },
+      "image": {
+        "description": "Optional initial image for video generation (first frame). If not provided, video will be generated from text only.",
+        "format": "uri",
+        "nullable": true,
+        "title": "Image",
+        "type": "string",
+        "x-order": 1
+      },
+      "prompt": {
+        "description": "Text prompt for video generation",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "seed": {
+        "description": "Random seed. Set for reproducible generation",
+        "nullable": true,
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 4
+      }
+    },
+    "required": [
+      "prompt"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "gen-4.5",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "runwayml/gen-4.5",
+  "replicate_api_url": "https://replicate.com/runwayml/gen-4.5/api",
+  "replicate_page_url": "https://replicate.com/runwayml/gen-4.5",
+  "schema_card_version": 1
+}

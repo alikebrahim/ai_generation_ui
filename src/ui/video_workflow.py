@@ -110,17 +110,27 @@ def render_archetype_media_wide(
         return
 
 
+def _first_frame_param(model: ModelConfig) -> str | None:
+    """Return the provider schema key used for a start/first-frame upload."""
+    if "start_image" in model.file_input_params:
+        return "start_image"
+    if "image" in model.file_input_params:
+        return "image"
+    if model.supports_image:
+        return "image"
+    return None
+
+
 def render_multimodal_media_sections(model: ModelConfig, kwargs: dict) -> None:
     """Start/end frame and optional single reference uploads."""
     with st.container(border=True):
         st.markdown("#### Frames and references")
-        start = _file_uploader(model, "start_image")
-        if start is None and "image" in model.file_input_params:
-            start = _file_uploader(model, "image", key_suffix="_i2v")
-        if start is not None:
-            kwargs["_uploaded_start_image"] = start
-            kwargs["_uploaded_image"] = start
-            st.image(start, caption="Start frame", width="stretch")
+        first_param = _first_frame_param(model)
+        if first_param is not None:
+            start = _file_uploader(model, first_param)
+            if start is not None:
+                kwargs[f"_uploaded_{first_param}"] = start
+                st.image(start, caption="Start frame", width="stretch")
 
         if "end_image" in model.file_input_params or "last_frame_image" in (
             model.file_input_params

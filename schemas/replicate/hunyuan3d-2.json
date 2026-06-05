@@ -1,0 +1,85 @@
+{
+  "display_name": "Hunyuan3D 2.0",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "guidance_scale": {
+        "default": 5.5,
+        "description": "Guidance scale for generation",
+        "maximum": 20,
+        "minimum": 1,
+        "title": "Guidance Scale",
+        "type": "number",
+        "x-order": 2
+      },
+      "image": {
+        "description": "Input image for generating 3D shape",
+        "format": "uri",
+        "title": "Image",
+        "type": "string",
+        "x-order": 0
+      },
+      "octree_resolution": {
+        "default": 256,
+        "description": "Octree resolution for mesh generation",
+        "enum": [
+          256,
+          384,
+          512
+        ],
+        "title": "octree_resolution",
+        "type": "integer",
+        "x-order": 4
+      },
+      "remove_background": {
+        "default": true,
+        "description": "Whether to remove background from input image",
+        "title": "Remove Background",
+        "type": "boolean",
+        "x-order": 5
+      },
+      "seed": {
+        "default": 1234,
+        "description": "Random seed for generation",
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 3
+      },
+      "steps": {
+        "default": 50,
+        "description": "Number of inference steps",
+        "maximum": 50,
+        "minimum": 20,
+        "title": "Steps",
+        "type": "integer",
+        "x-order": 1
+      }
+    },
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "hunyuan3d-2",
+  "model_type": "3d",
+  "output_schema": {
+    "properties": {
+      "mesh": {
+        "format": "uri",
+        "title": "Mesh",
+        "type": "string"
+      }
+    },
+    "required": [
+      "mesh"
+    ],
+    "title": "Output",
+    "type": "object"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versioned",
+  "provider_model_id": "tencent/hunyuan3d-2",
+  "replicate_api_url": "https://replicate.com/tencent/hunyuan3d-2/api",
+  "replicate_page_url": "https://replicate.com/tencent/hunyuan3d-2",
+  "schema_card_version": 1
+}

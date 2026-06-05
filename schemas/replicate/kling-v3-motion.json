@@ -1,0 +1,79 @@
+{
+  "display_name": "Kling 3 Motion Control",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "character_orientation": {
+        "default": "image",
+        "description": "Orientation of the character in the generated video. 'image': same orientation as the person in the picture (max 10s video). 'video': consistent with the orientation of the characters in the video (max 30s video). When binding elements, only 'video' orientation is supported.",
+        "enum": [
+          "image",
+          "video"
+        ],
+        "title": "character_orientation",
+        "type": "string",
+        "x-order": 3
+      },
+      "image": {
+        "description": "Reference image. The characters, backgrounds, and other elements in the generated video are based on the reference image. Supports .jpg/.jpeg/.png, max 10MB, dimensions 340px-3850px, aspect ratio 1:2.5 to 2.5:1.",
+        "format": "uri",
+        "title": "Image",
+        "type": "string",
+        "x-order": 1
+      },
+      "keep_original_sound": {
+        "default": true,
+        "description": "Whether to keep the original sound of the reference video",
+        "title": "Keep Original Sound",
+        "type": "boolean",
+        "x-order": 5
+      },
+      "mode": {
+        "default": "pro",
+        "description": "Video generation mode. 'std': Standard mode (720p, cost-effective). 'pro': Professional mode (1080p, higher quality).",
+        "enum": [
+          "std",
+          "pro"
+        ],
+        "title": "mode",
+        "type": "string",
+        "x-order": 4
+      },
+      "prompt": {
+        "default": "",
+        "description": "Text prompt for video generation. You can add elements to the screen and achieve motion effects through prompt words.",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "video": {
+        "description": "Reference video. The character actions in the generated video are consistent with the reference video. Supports .mp4/.mov, max 100MB, 3-30 seconds duration depending on character_orientation.",
+        "format": "uri",
+        "title": "Video",
+        "type": "string",
+        "x-order": 2
+      }
+    },
+    "required": [
+      "image",
+      "video"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "kling-v3-motion",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "kwaivgi/kling-v3-motion-control",
+  "replicate_api_url": "https://replicate.com/kwaivgi/kling-v3-motion-control/api",
+  "replicate_page_url": "https://replicate.com/kwaivgi/kling-v3-motion-control",
+  "schema_card_version": 1
+}

@@ -1,0 +1,127 @@
+{
+  "display_name": "Text2Tex",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "ddim_steps": {
+        "default": 50,
+        "description": "Number of steps for DDIM",
+        "title": "Ddim Steps",
+        "type": "integer",
+        "x-order": 3
+      },
+      "negative_prompt": {
+        "default": "",
+        "description": "Negative prompt to generate a 3D object.",
+        "title": "Negative Prompt",
+        "type": "string",
+        "x-order": 2
+      },
+      "new_strength": {
+        "default": 1,
+        "description": "Amount of DDIM steps for the new view",
+        "maximum": 1,
+        "minimum": 0,
+        "title": "New Strength",
+        "type": "number",
+        "x-order": 4
+      },
+      "num_viewpoints": {
+        "default": 36,
+        "description": "Number of viewpoints",
+        "enum": [
+          1,
+          2,
+          4,
+          6,
+          12,
+          20,
+          36,
+          68
+        ],
+        "title": "num_viewpoints",
+        "type": "integer",
+        "x-order": 6
+      },
+      "obj_file": {
+        "description": "3D object (shape) file to generate the texture onto",
+        "format": "uri",
+        "title": "Obj File",
+        "type": "string",
+        "x-order": 0
+      },
+      "prompt": {
+        "description": "Prompt to generate a 3D object.",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 1
+      },
+      "seed": {
+        "description": "Seed",
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 10
+      },
+      "update_mode": {
+        "default": "heuristic",
+        "description": "Update mode",
+        "enum": [
+          "sequential",
+          "heuristic",
+          "random"
+        ],
+        "title": "update_mode",
+        "type": "string",
+        "x-order": 9
+      },
+      "update_steps": {
+        "default": 20,
+        "description": "Number of update steps",
+        "title": "Update Steps",
+        "type": "integer",
+        "x-order": 8
+      },
+      "update_strength": {
+        "default": 0.3,
+        "description": "Amount of DDIM steps for updating the view",
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Update Strength",
+        "type": "number",
+        "x-order": 5
+      },
+      "viewpoint_mode": {
+        "default": "predefined",
+        "description": "Viewpoint mode",
+        "enum": [
+          "predefined",
+          "hemisphere"
+        ],
+        "title": "viewpoint_mode",
+        "type": "string",
+        "x-order": 7
+      }
+    },
+    "required": [
+      "obj_file",
+      "prompt"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "text2tex",
+  "model_type": "3d",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versioned",
+  "provider_model_id": "adirik/text2tex",
+  "replicate_api_url": "https://replicate.com/adirik/text2tex/api",
+  "replicate_page_url": "https://replicate.com/adirik/text2tex",
+  "schema_card_version": 1
+}

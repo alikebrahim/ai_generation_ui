@@ -9,6 +9,9 @@ This document defines conventions, defaults, and constraints for this project. F
 - If a conversation drift suggests a change might be useful, ask before acting.
 - This overrides any tool's inclination to auto-fix or self-correct project files (e.g. auto-creating missing directories, auto-installing dependencies, auto-updating configs).
 - Routine operational commands that do not alter project state (e.g. reading files, checking syntax, inspecting logs) are always fine.
+- Do not edit `AGENTS.md` itself unless the user explicitly asks for a project
+  operating-convention change. Treat it as governing instructions, not a normal
+  implementation note.
 
 ## Project Scope
 
@@ -267,6 +270,16 @@ black = ">=24.0.0"           # Code formatter
 ### Adding or Updating Models
 - Before adding any Replicate model, fetch current authoritative facts from `replicate.com` and/or the Replicate API for the exact model ID. Verify available parameters, required fields, ranges/enums/defaults, endpoint mode (`model=` versionless vs `version=` latest-version path), output schema, hardware, and pricing.
 - Before adding any fal.ai model, fetch current authoritative facts from the fal.ai model page and OpenAPI schema for the exact endpoint ID. Verify available parameters, required fields, output schema, queue/endpoint behavior, pricing, and any cost multipliers such as duration, candidate count, or agentic generation.
+- Keep provider parameter schemas as canonical repo references under
+  `schemas/<provider>/<model-name>.json` (currently `schemas/replicate/*.json`).
+  Each schema card should include the exact provider model ID, source/API URL,
+  fetch timestamp, endpoint mode, input schema, and output schema when available.
+- When adding a new model or changing a model's payload/UI parameters, fetch or
+  refresh its schema card first and then make `src/models_config.py`, payload
+  builders, validation, and UI file-upload keys match that schema. Do not rename
+  provider parameters to friendlier terms in payloads; keep friendly labels in
+  `media_roles`/UI copy while preserving exact API keys such as `image` vs
+  `start_image`.
 - Do not add a model from memory, stale notes, provider marketing summaries, or another model's schema. Record source URLs and date checked in the relevant roadmap/implementation notes when adding model support.
 - Keep pricing honest: if current pricing cannot be verified, display “Cost unknown” or an explicit approximate estimate rather than pretending precision.
 - Never create a paid provider prediction just to discover schema or pricing. Use provider docs/API metadata, dry-run payload inspection, and local validation probes unless the user explicitly authorizes a paid smoke test with expected cost/scope.

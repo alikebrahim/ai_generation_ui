@@ -1,0 +1,94 @@
+{
+  "display_name": "Happy Horse 1.0",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "aspect_ratio": {
+        "default": "16:9",
+        "description": "Aspect ratio of the generated video. Only applies to text-to-video — when an image is provided, the image's aspect ratio is used.",
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "title": "aspect_ratio",
+        "type": "string",
+        "x-order": 3
+      },
+      "duration": {
+        "default": 5,
+        "description": "Duration of the generated video in seconds",
+        "enum": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "title": "duration",
+        "type": "integer",
+        "x-order": 4
+      },
+      "image": {
+        "description": "First-frame image to animate. When provided, the model runs in image-to-video mode. Accepts jpg/png/bmp/webp, ≤10MB, aspect ratio between 1:2.5 and 2.5:1, each side ≥300px.",
+        "format": "uri",
+        "nullable": true,
+        "title": "Image",
+        "type": "string",
+        "x-order": 1
+      },
+      "prompt": {
+        "default": "",
+        "description": "Text prompt for video generation. Optional when an image is provided.",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "resolution": {
+        "default": "1080p",
+        "description": "Output video resolution",
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "title": "resolution",
+        "type": "string",
+        "x-order": 2
+      },
+      "seed": {
+        "description": "Random seed for reproducible generation. Range: 0-2147483647",
+        "nullable": true,
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 5
+      }
+    },
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "happyhorse-1.0",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "alibaba/happyhorse-1.0",
+  "replicate_api_url": "https://replicate.com/alibaba/happyhorse-1.0/api",
+  "replicate_page_url": "https://replicate.com/alibaba/happyhorse-1.0",
+  "schema_card_version": 1
+}

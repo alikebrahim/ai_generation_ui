@@ -1,0 +1,97 @@
+{
+  "display_name": "Wan 2.7 T2V",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "aspect_ratio": {
+        "default": "16:9",
+        "description": "Aspect ratio of the generated video",
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "title": "aspect_ratio",
+        "type": "string",
+        "x-order": 4
+      },
+      "audio": {
+        "description": "Audio file (wav/mp3, 3-30s, ≤15MB) for voice/music synchronization. If not provided, the model auto-generates matching audio.",
+        "format": "uri",
+        "nullable": true,
+        "title": "Audio",
+        "type": "string",
+        "x-order": 2
+      },
+      "duration": {
+        "default": 5,
+        "description": "Duration of the generated video in seconds",
+        "maximum": 15,
+        "minimum": 2,
+        "title": "Duration",
+        "type": "integer",
+        "x-order": 5
+      },
+      "enable_prompt_expansion": {
+        "default": true,
+        "description": "Automatically expand and optimize the prompt for better results. Improves quality for short prompts but increases latency.",
+        "title": "Enable Prompt Expansion",
+        "type": "boolean",
+        "x-order": 6
+      },
+      "negative_prompt": {
+        "default": "",
+        "description": "Negative prompt — describes content that should not appear in the video",
+        "title": "Negative Prompt",
+        "type": "string",
+        "x-order": 1
+      },
+      "prompt": {
+        "description": "Text prompt for video generation",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "resolution": {
+        "default": "1080p",
+        "description": "Output video resolution",
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "title": "resolution",
+        "type": "string",
+        "x-order": 3
+      },
+      "seed": {
+        "description": "Random seed for reproducible generation. Range: 0-2147483647",
+        "nullable": true,
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 7
+      }
+    },
+    "required": [
+      "prompt"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "wan-2.7-t2v",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "wan-video/wan-2.7-t2v",
+  "replicate_api_url": "https://replicate.com/wan-video/wan-2.7-t2v/api",
+  "replicate_page_url": "https://replicate.com/wan-video/wan-2.7-t2v",
+  "schema_card_version": 1
+}

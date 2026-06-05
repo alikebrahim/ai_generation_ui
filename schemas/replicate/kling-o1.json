@@ -1,0 +1,123 @@
+{
+  "display_name": "Kling O1",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "aspect_ratio": {
+        "default": "16:9",
+        "description": "Aspect ratio of the generated video. Required for text-to-video. Ignored when using first frame image or video editing.",
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "title": "aspect_ratio",
+        "type": "string",
+        "x-order": 8
+      },
+      "duration": {
+        "default": 5,
+        "description": "Video duration in seconds. For text/image-to-video: 5 or 10. With video reference (feature type): 3-10. Ignored for video editing (base type).",
+        "enum": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "title": "duration",
+        "type": "integer",
+        "x-order": 9
+      },
+      "end_image": {
+        "description": "Last frame image for the video. Requires start_image to be set. Supports .jpg/.jpeg/.png, max 10MB.",
+        "format": "uri",
+        "title": "End Image",
+        "type": "string",
+        "x-order": 2
+      },
+      "keep_original_sound": {
+        "default": true,
+        "description": "Whether to keep the original sound from the reference video.",
+        "title": "Keep Original Sound",
+        "type": "boolean",
+        "x-order": 6
+      },
+      "mode": {
+        "default": "pro",
+        "description": "Video generation mode. 'std' is cost-effective, 'pro' has higher quality.",
+        "enum": [
+          "std",
+          "pro"
+        ],
+        "title": "mode",
+        "type": "string",
+        "x-order": 7
+      },
+      "prompt": {
+        "description": "Text prompt for video generation. Can include references like <<<image_1>>>, <<<video_1>>> to reference inputs.",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "reference_images": {
+        "description": "Reference images for elements, scenes, or styles (up to 7 without video, 4 with video). Supports .jpg/.jpeg/.png.",
+        "items": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "type": "array",
+        "x-order": 3
+      },
+      "reference_video": {
+        "description": "Reference video for style, camera movement, or as base for editing. Supports .mp4/.mov, 3-10s duration, max 200MB.",
+        "format": "uri",
+        "title": "Reference Video",
+        "type": "string",
+        "x-order": 4
+      },
+      "start_image": {
+        "description": "First frame image for the video. Supports .jpg/.jpeg/.png, max 10MB.",
+        "format": "uri",
+        "title": "Start Image",
+        "type": "string",
+        "x-order": 1
+      },
+      "video_reference_type": {
+        "default": "feature",
+        "description": "How to use the reference video: 'feature' for style/camera reference, 'base' for video editing.",
+        "enum": [
+          "feature",
+          "base"
+        ],
+        "title": "video_reference_type",
+        "type": "string",
+        "x-order": 5
+      }
+    },
+    "required": [
+      "prompt"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "kling-o1",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "kwaivgi/kling-o1",
+  "replicate_api_url": "https://replicate.com/kwaivgi/kling-o1/api",
+  "replicate_page_url": "https://replicate.com/kwaivgi/kling-o1",
+  "schema_card_version": 1
+}

@@ -96,6 +96,9 @@ class ModelConfig:
 #  VIDEO MODELS
 # ═══════════════════════════════════════════════
 
+_VIDEO_FILE_TYPES = ["mp4", "mov", "webm"]
+_IMAGE_FILE_TYPES = ["png", "jpg", "jpeg", "webp"]
+
 WAN_2_7_T2V = ModelConfig(
     name="wan-2.7-t2v",
     display_name="Wan 2.7 T2V",
@@ -275,6 +278,13 @@ SEEDANCE_2_0 = ModelConfig(
         "reference_videos": "Motion/style clips. Prompt tagging usually required.",
         "reference_audios": "Audio refs for sync or style.",
     },
+    file_input_params={
+        "image": _IMAGE_FILE_TYPES,
+        "last_frame_image": _IMAGE_FILE_TYPES,
+        "reference_images": _IMAGE_FILE_TYPES,
+        "reference_videos": _VIDEO_FILE_TYPES,
+        "reference_audios": ["mp3", "wav", "m4a", "aac"],
+    },
     high_impact_params=["generate_audio"],
     presets={
         "Fast T2V no audio": {
@@ -304,9 +314,6 @@ SEEDANCE_2_0 = ModelConfig(
     pricing_notes="Approx $0.15/s output; prompt max 4000 chars on Replicate.",
     output_notes="Single video URI; optional image for I2V.",
 )
-
-_VIDEO_FILE_TYPES = ["mp4", "mov", "webm"]
-_IMAGE_FILE_TYPES = ["png", "jpg", "jpeg", "webp"]
 
 HAPPYHORSE_1_0 = ModelConfig(
     name="happyhorse-1.0",

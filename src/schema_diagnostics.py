@@ -214,7 +214,12 @@ def compare_model_config(
         if model.supports_text:
             ui_params.add("prompt")
         if model.supports_image:
-            ui_params.add("image")
+            media_file_params = set(getattr(model, "file_input_params", {}))
+            if "image" in media_file_params or not any(
+                pname.endswith("image") or pname == "images"
+                for pname in media_file_params
+            ):
+                ui_params.add("image")
         for pname in sorted(ui_params):
             if pname in props or pname in {
                 "reference_images",

@@ -1,0 +1,50 @@
+{
+  "display_name": "Dreamactor M2.0",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "cut_first_second": {
+        "default": true,
+        "description": "Whether to crop the first second of the output video (removes the 1-second transition at the beginning).",
+        "title": "Cut First Second",
+        "type": "boolean",
+        "x-order": 2
+      },
+      "image": {
+        "description": "Input image containing a human subject. Supported formats: JPEG, JPG, PNG. Max size: 4.7 MB. Resolution: 480x480 to 1920x1080.",
+        "format": "uri",
+        "title": "Image",
+        "type": "string",
+        "x-order": 0
+      },
+      "video": {
+        "description": "Template video whose motion, facial expressions, and lip movements will be applied to the image subject. Supported formats: MP4, MOV, WebM. Max duration: 30 seconds. Resolution: 200x200 to 2048x1440.",
+        "format": "uri",
+        "title": "Video",
+        "type": "string",
+        "x-order": 1
+      }
+    },
+    "required": [
+      "image",
+      "video"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "dreamactor-m2.0",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "bytedance/dreamactor-m2.0",
+  "replicate_api_url": "https://replicate.com/bytedance/dreamactor-m2.0/api",
+  "replicate_page_url": "https://replicate.com/bytedance/dreamactor-m2.0",
+  "schema_card_version": 1
+}

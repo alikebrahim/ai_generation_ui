@@ -1,0 +1,236 @@
+{
+  "display_name": "TRELLIS 2",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "decimation_target": {
+        "default": 1000000,
+        "description": "Target number of faces for decimation (only used if generate_model=True)",
+        "maximum": 2000000,
+        "minimum": 100000,
+        "title": "Decimation Target",
+        "type": "integer",
+        "x-order": 20
+      },
+      "generate_model": {
+        "default": true,
+        "description": "Generate 3D model file (GLB)",
+        "title": "Generate Model",
+        "type": "boolean",
+        "x-order": 6
+      },
+      "generate_video": {
+        "default": true,
+        "description": "Generate rendered video preview",
+        "title": "Generate Video",
+        "type": "boolean",
+        "x-order": 5
+      },
+      "image": {
+        "description": "Input image to generate 3D asset from",
+        "format": "uri",
+        "title": "Image",
+        "type": "string",
+        "x-order": 0
+      },
+      "pipeline_type": {
+        "default": "1024_cascade",
+        "description": "Pipeline type for quality/speed tradeoff",
+        "enum": [
+          "512",
+          "1024",
+          "1024_cascade",
+          "1536_cascade"
+        ],
+        "title": "pipeline_type",
+        "type": "string",
+        "x-order": 7
+      },
+      "preprocess_image": {
+        "default": true,
+        "description": "Preprocess image (remove background and crop)",
+        "title": "Preprocess Image",
+        "type": "boolean",
+        "x-order": 3
+      },
+      "randomize_seed": {
+        "default": false,
+        "description": "Randomize seed",
+        "title": "Randomize Seed",
+        "type": "boolean",
+        "x-order": 2
+      },
+      "return_no_background": {
+        "default": false,
+        "description": "Return the preprocessed image without background",
+        "title": "Return No Background",
+        "type": "boolean",
+        "x-order": 4
+      },
+      "seed": {
+        "default": 42,
+        "description": "Random seed for generation",
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 1
+      },
+      "shape_slat_guidance_rescale": {
+        "default": 0.5,
+        "description": "Shape SLat guidance rescale",
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Shape Slat Guidance Rescale",
+        "type": "number",
+        "x-order": 14
+      },
+      "shape_slat_guidance_strength": {
+        "default": 7.5,
+        "description": "Shape SLat guidance strength",
+        "maximum": 15,
+        "minimum": 0,
+        "title": "Shape Slat Guidance Strength",
+        "type": "number",
+        "x-order": 13
+      },
+      "shape_slat_rescale_t": {
+        "default": 3,
+        "description": "Shape SLat rescale T",
+        "maximum": 6,
+        "minimum": 1,
+        "title": "Shape Slat Rescale T",
+        "type": "number",
+        "x-order": 15
+      },
+      "shape_slat_steps": {
+        "default": 12,
+        "description": "Shape SLat sampling steps",
+        "maximum": 50,
+        "minimum": 1,
+        "title": "Shape Slat Steps",
+        "type": "integer",
+        "x-order": 12
+      },
+      "sparse_structure_guidance_rescale": {
+        "default": 0.7,
+        "description": "Sparse structure guidance rescale",
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Sparse Structure Guidance Rescale",
+        "type": "number",
+        "x-order": 10
+      },
+      "sparse_structure_guidance_strength": {
+        "default": 7.5,
+        "description": "Sparse structure guidance strength",
+        "maximum": 15,
+        "minimum": 0,
+        "title": "Sparse Structure Guidance Strength",
+        "type": "number",
+        "x-order": 9
+      },
+      "sparse_structure_rescale_t": {
+        "default": 5,
+        "description": "Sparse structure rescale T",
+        "maximum": 6,
+        "minimum": 1,
+        "title": "Sparse Structure Rescale T",
+        "type": "number",
+        "x-order": 11
+      },
+      "sparse_structure_steps": {
+        "default": 12,
+        "description": "Sparse structure sampling steps (more steps = better quality, slower)",
+        "maximum": 50,
+        "minimum": 1,
+        "title": "Sparse Structure Steps",
+        "type": "integer",
+        "x-order": 8
+      },
+      "tex_slat_guidance_rescale": {
+        "default": 0,
+        "description": "Texture SLat guidance rescale",
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Tex Slat Guidance Rescale",
+        "type": "number",
+        "x-order": 18
+      },
+      "tex_slat_guidance_strength": {
+        "default": 1,
+        "description": "Texture SLat guidance strength",
+        "maximum": 15,
+        "minimum": 0,
+        "title": "Tex Slat Guidance Strength",
+        "type": "number",
+        "x-order": 17
+      },
+      "tex_slat_rescale_t": {
+        "default": 3,
+        "description": "Texture SLat rescale T",
+        "maximum": 6,
+        "minimum": 1,
+        "title": "Tex Slat Rescale T",
+        "type": "number",
+        "x-order": 19
+      },
+      "tex_slat_steps": {
+        "default": 12,
+        "description": "Texture SLat sampling steps",
+        "maximum": 50,
+        "minimum": 1,
+        "title": "Tex Slat Steps",
+        "type": "integer",
+        "x-order": 16
+      },
+      "texture_size": {
+        "default": 4096,
+        "description": "Texture size for GLB export (only used if generate_model=True)",
+        "maximum": 8192,
+        "minimum": 1024,
+        "title": "Texture Size",
+        "type": "integer",
+        "x-order": 21
+      }
+    },
+    "required": [
+      "image"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "trellis-2",
+  "model_type": "3d",
+  "output_schema": {
+    "description": "Output model for predictions",
+    "properties": {
+      "model_file": {
+        "format": "uri",
+        "nullable": true,
+        "title": "Model File",
+        "type": "string"
+      },
+      "no_background_image": {
+        "format": "uri",
+        "nullable": true,
+        "title": "No Background Image",
+        "type": "string"
+      },
+      "video": {
+        "format": "uri",
+        "nullable": true,
+        "title": "Video",
+        "type": "string"
+      }
+    },
+    "title": "PredictOutput",
+    "type": "object"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versioned",
+  "provider_model_id": "fishwowater/trellis2",
+  "replicate_api_url": "https://replicate.com/fishwowater/trellis2/api",
+  "replicate_page_url": "https://replicate.com/fishwowater/trellis2",
+  "schema_card_version": 1
+}

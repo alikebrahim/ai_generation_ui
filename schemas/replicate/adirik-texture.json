@@ -1,0 +1,86 @@
+{
+  "display_name": "Adirik Texture",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "guidance_scale": {
+        "default": 10,
+        "description": "Factor to scale the guidance image by",
+        "maximum": 20,
+        "minimum": 0,
+        "title": "Guidance Scale",
+        "type": "number",
+        "x-order": 4
+      },
+      "prompt": {
+        "default": "A next gen nascar",
+        "description": "Prompt to generate the texture from",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 1
+      },
+      "seed": {
+        "default": 0,
+        "description": "Seed for the inference",
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 6
+      },
+      "shape_path": {
+        "description": "3D object (shape) file to generate the texture onto",
+        "format": "uri",
+        "title": "Shape Path",
+        "type": "string",
+        "x-order": 0
+      },
+      "shape_scale": {
+        "default": 0.6,
+        "description": "Factor to scale image by",
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Shape Scale",
+        "type": "number",
+        "x-order": 2
+      },
+      "texture_interpolation_mode": {
+        "default": "bilinear",
+        "description": "Texture mapping interpolation mode from texture image, options: 'nearest', 'bilinear', 'bicubic'",
+        "title": "Texture Interpolation Mode",
+        "type": "string",
+        "x-order": 5
+      },
+      "texture_resolution": {
+        "default": 1024,
+        "description": "Resolution of the texture to generate",
+        "maximum": 1024,
+        "minimum": 512,
+        "title": "Texture Resolution",
+        "type": "integer",
+        "x-order": 3
+      }
+    },
+    "required": [
+      "shape_path"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "adirik-texture",
+  "model_type": "3d",
+  "output_schema": {
+    "items": {
+      "format": "uri",
+      "type": "string"
+    },
+    "title": "Output",
+    "type": "array"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versioned",
+  "provider_model_id": "adirik/texture",
+  "replicate_api_url": "https://replicate.com/adirik/texture/api",
+  "replicate_page_url": "https://replicate.com/adirik/texture",
+  "schema_card_version": 1
+}

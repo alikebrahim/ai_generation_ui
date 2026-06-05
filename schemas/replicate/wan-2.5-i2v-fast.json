@@ -1,0 +1,87 @@
+{
+  "display_name": "Wan 2.5 I2V Fast",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "audio": {
+        "description": "Audio file (wav/mp3, 3-30s, ≤15MB) for voice/music synchronization",
+        "format": "uri",
+        "nullable": true,
+        "title": "Audio",
+        "type": "string"
+      },
+      "duration": {
+        "default": 5,
+        "description": "Duration of the generated video in seconds",
+        "enum": [
+          5,
+          10
+        ],
+        "title": "duration",
+        "type": "integer",
+        "x-order": 5
+      },
+      "enable_prompt_expansion": {
+        "default": true,
+        "description": "If set to true, the prompt optimizer will be enabled",
+        "title": "Enable Prompt Expansion",
+        "type": "boolean"
+      },
+      "image": {
+        "description": "Input image for video generation",
+        "format": "uri",
+        "title": "Image",
+        "type": "string"
+      },
+      "negative_prompt": {
+        "default": "",
+        "description": "Negative prompt to avoid certain elements",
+        "title": "Negative Prompt",
+        "type": "string"
+      },
+      "prompt": {
+        "description": "Text prompt for video generation",
+        "title": "Prompt",
+        "type": "string"
+      },
+      "resolution": {
+        "default": "720p",
+        "description": "Video resolution",
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "title": "resolution",
+        "type": "string",
+        "x-order": 4
+      },
+      "seed": {
+        "description": "Random seed for reproducible generation",
+        "nullable": true,
+        "title": "Seed",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "image",
+      "prompt"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "wan-2.5-i2v-fast",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "wan-video/wan-2.5-i2v-fast",
+  "replicate_api_url": "https://replicate.com/wan-video/wan-2.5-i2v-fast/api",
+  "replicate_page_url": "https://replicate.com/wan-video/wan-2.5-i2v-fast",
+  "schema_card_version": 1
+}

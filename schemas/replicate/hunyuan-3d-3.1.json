@@ -1,0 +1,67 @@
+{
+  "display_name": "Hunyuan 3D 3.1",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "enable_pbr": {
+        "default": false,
+        "description": "Enable PBR (Physically Based Rendering) material generation.",
+        "title": "Enable Pbr",
+        "type": "boolean",
+        "x-order": 2
+      },
+      "face_count": {
+        "default": 500000,
+        "description": "Number of faces (polygons) in the generated 3D model.",
+        "maximum": 1500000,
+        "minimum": 40000,
+        "title": "Face Count",
+        "type": "integer",
+        "x-order": 3
+      },
+      "generate_type": {
+        "default": "Normal",
+        "description": "Type of 3D generation. 'Normal' generates textured model, 'Geometry' generates white model without textures (EnablePBR has no effect).",
+        "enum": [
+          "Normal",
+          "Geometry"
+        ],
+        "title": "generate_type",
+        "type": "string",
+        "x-order": 4
+      },
+      "image": {
+        "description": "Input image to convert to 3D. Either prompt OR image must be provided, but not both. Recommendations: simple background, no text, single object, object occupies >50% of frame. Supported formats: jpg, png, jpeg, webp. Resolution: 128-5000px per side, max 6MB.",
+        "format": "uri",
+        "nullable": true,
+        "title": "Image",
+        "type": "string",
+        "x-order": 1
+      },
+      "prompt": {
+        "description": "Text description of the 3D model to generate. Either prompt OR image must be provided, but not both. Supports up to 1024 characters.",
+        "nullable": true,
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      }
+    },
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "hunyuan-3d-3.1",
+  "model_type": "3d",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "tencent/hunyuan-3d-3.1",
+  "replicate_api_url": "https://replicate.com/tencent/hunyuan-3d-3.1/api",
+  "replicate_page_url": "https://replicate.com/tencent/hunyuan-3d-3.1",
+  "schema_card_version": 1
+}

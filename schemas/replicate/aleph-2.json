@@ -1,0 +1,70 @@
+{
+  "display_name": "Runway Aleph 2.0",
+  "fetch_method": "public Replicate API reference page; no prediction created",
+  "fetched_at": "2026-06-05T07:18:49Z",
+  "input_schema": {
+    "properties": {
+      "keyframe_images": {
+        "default": [],
+        "description": "Up to 5 optional keyframe images used as more precise control over edits. The position of each keyframe is given by keyframe_positions.",
+        "items": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "Keyframe Images",
+        "type": "array",
+        "x-order": 2
+      },
+      "keyframe_positions": {
+        "default": [],
+        "description": "Position of each keyframe in keyframe_images. One entry per image. Each value must be 'first', 'last', or a timestamp in seconds (e.g. '1.67').",
+        "items": {
+          "type": "string"
+        },
+        "title": "Keyframe Positions",
+        "type": "array",
+        "x-order": 3
+      },
+      "prompt": {
+        "description": "Text prompt describing the edit to be applied to the input video.",
+        "title": "Prompt",
+        "type": "string",
+        "x-order": 0
+      },
+      "seed": {
+        "description": "Random seed. Set for reproducible generation",
+        "nullable": true,
+        "title": "Seed",
+        "type": "integer",
+        "x-order": 4
+      },
+      "video": {
+        "description": "Input video to edit. Videos must be between 2 and 30 seconds and less than 16MB.",
+        "format": "uri",
+        "title": "Video",
+        "type": "string",
+        "x-order": 1
+      }
+    },
+    "required": [
+      "prompt",
+      "video"
+    ],
+    "title": "Input",
+    "type": "object"
+  },
+  "metadata_verified_date_in_config": "2026-06-04",
+  "model_name": "aleph-2",
+  "model_type": "video",
+  "output_schema": {
+    "format": "uri",
+    "title": "Output",
+    "type": "string"
+  },
+  "provider": "replicate",
+  "provider_endpoint": "versionless",
+  "provider_model_id": "runwayml/aleph-2",
+  "replicate_api_url": "https://replicate.com/runwayml/aleph-2/api",
+  "replicate_page_url": "https://replicate.com/runwayml/aleph-2",
+  "schema_card_version": 1
+}
