@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.audio_payload import AUDIO_PAYLOAD_BUILDERS
 from src.models_config import ModelConfig, get_model_by_name
 from src.utils import image_to_data_uri, uploaded_file_metadata
 from src.validation import ValidationError, validate_params
@@ -541,6 +542,7 @@ PAYLOAD_BUILDERS: dict[str, PayloadBuilder] = {
     "text2tex": build_text2tex_input,
     "adirik-texture": build_adirik_texture_input,
     "rodin": build_rodin_input,
+    **AUDIO_PAYLOAD_BUILDERS,
 }
 
 
@@ -635,6 +637,11 @@ def _validate_video_payload_rules(
 
 def generation_mode_for_payload(model: ModelConfig, payload: dict[str, Any]) -> str:
     """Infer generation_mode from built payload and model type."""
+    if model.model_type == "audio":
+        tags = getattr(model, "workflow_tags", []) or []
+        if "music" in tags:
+            return "text_to_music"
+        return "text_to_speech"
     if model.model_type == "video":
         if model.workflow_archetype == "motion_transfer":
             return "motion_transfer"

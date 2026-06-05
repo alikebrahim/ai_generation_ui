@@ -163,7 +163,12 @@ def _trigger_remix(row: pd.Series) -> None:
         "prompt": prompt_val,
         "params": safe_params,
     }
-    target = "video" if model_type == "video" else "3d"
+    if model_type == "audio":
+        target = "audio"
+    elif model_type == "video":
+        target = "video"
+    else:
+        target = "3d"
     st.query_params["page"] = target
     st.rerun()
 
@@ -213,6 +218,8 @@ def _render_gallery_preview(row: pd.Series) -> None:
         )
         if model_type == "video" and source:
             st.video(source)
+        elif model_type == "audio" and source:
+            st.audio(source)
         elif model_type == "3d" and source:
             safe_url = quote(source, safe=":/?&=#%+-_.,~")
             viewer_html = f"""
@@ -340,7 +347,11 @@ def _render_history_card(row: pd.Series) -> None:
         if thumbnail_path is not None:
             _render_clickable_thumbnail(row, thumbnail_path)
         else:
-            fallback_icon = "🎬" if model_type == "video" else "🧊"
+            fallback_icon = {
+                "video": "🎬",
+                "3d": "🧊",
+                "audio": "🎵",
+            }.get(model_type, "📁")
             st.markdown(
                 f"{fallback_icon} **"
                 f"{model_type.upper() if model_type else 'Generation'}**"
@@ -590,7 +601,9 @@ def render_history_tab() -> None:
         with c3:
             st.metric("Avg Predict Time", format_duration(total_stats[2] or 0))
     else:
-        st.info("No generations yet. Create your first video or 3D model!")
+        st.info(
+            "No generations yet. Create your first video, 3D model, or audio clip!"
+        )
 
     st.subheader("By Model")
     model_stats = get_stats_by_model()

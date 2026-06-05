@@ -43,4 +43,5 @@ Thumbs.db
 outputs/videos/*
 outputs/models_3d/*
 outputs/thumbnails/*
+outputs/audio/*
 !outputs/**/.gitkeep

@@ -40,6 +40,40 @@ MODEL_HARDWARE = {
     "adirik/text2tex": "l40s",
     "adirik/texture": "l40s",
     "hyper3d/rodin": "l40s",
+    "minimax/music-2.5": "cpu",
+    "stability-ai/stable-audio-2.5": "a100-80gb",
+    "google/lyria-2": "cpu",
+    "inworld/realtime-tts-2": "cpu",
+    "inworld/realtime-tts-1.5-max": "cpu",
+    "minimax/speech-2.8-hd": "cpu",
+    "minimax/speech-2.8-turbo": "cpu",
+    "resemble-ai/chatterbox": "cpu",
+    "elevenlabs/v3": "cpu",
+}
+
+# Audio: flat per output file (USD)
+AUDIO_PER_OUTPUT_FILE = {
+    "minimax/music-2.5": 0.15,
+    "stability-ai/stable-audio-2.5": 0.20,
+}
+
+# Audio: per 1000 input characters (USD)
+AUDIO_PER_1K_CHARACTERS = {
+    "inworld/realtime-tts-2": 0.035,
+    "inworld/realtime-tts-1.5-max": 0.035,
+    "resemble-ai/chatterbox": 0.025,
+    "elevenlabs/v3": 0.10,
+}
+
+# Audio: per 1000 input tokens — approximated as characters for estimates
+AUDIO_PER_1K_TOKENS = {
+    "minimax/speech-2.8-hd": 0.10,
+    "minimax/speech-2.8-turbo": 0.06,
+}
+
+# Audio: per second of output (USD)
+AUDIO_PER_OUTPUT_SECOND = {
+    "google/lyria-2": 0.002,
 }
 
 # Per-second video output pricing (where applicable)
@@ -68,13 +102,27 @@ def get_hardware_price(model_id: str) -> float:
 def calculate_cost(
     model_id: str,
     predict_time: float,
-    output_duration: float = None,
+    output_duration: float | None = None,
+    text_length: int = 0,
 ) -> float:
     """Calculate estimated cost for a prediction.
 
     For video models that charge by output duration, uses that rate.
-    Otherwise falls back to compute-time × hardware-rate.
+    Audio models use per-file, per-character, per-token, or per-output-second
+    tables when available. Otherwise falls back to compute-time × hardware-rate.
     """
+    if model_id in AUDIO_PER_OUTPUT_FILE:
+        return AUDIO_PER_OUTPUT_FILE[model_id]
+    if model_id in AUDIO_PER_1K_CHARACTERS and text_length > 0:
+        return (text_length / 1000.0) * AUDIO_PER_1K_CHARACTERS[model_id]
+    if model_id in AUDIO_PER_1K_TOKENS and text_length > 0:
+        return (text_length / 1000.0) * AUDIO_PER_1K_TOKENS[model_id]
+    if (
+        model_id in AUDIO_PER_OUTPUT_SECOND
+        and output_duration is not None
+        and output_duration > 0
+    ):
+        return output_duration * AUDIO_PER_OUTPUT_SECOND[model_id]
     if (
         model_id in PER_SECOND_OUTPUT_PRICING
         and output_duration is not None

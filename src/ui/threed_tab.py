@@ -2,21 +2,14 @@
 
 from __future__ import annotations
 
-from time import monotonic
-
 import streamlit as st
-from streamlit.delta_generator import DeltaGenerator
 
-from src import utils as app_utils
-from src.generation_service import get_generation_service
 from src.models_config import THREED_MODELS
 from src.ui.form_utils import normalize_file_kwargs
 from src.ui.forms import render_generation_form
+from src.ui.generation_panel import build_preview_panel, run_model_generation
 from src.ui.result_views import render_3d_result
 from src.validation import validate_params
-
-format_duration = app_utils.format_duration
-friendly_error_message = app_utils.friendly_error_message
 
 
 def _consume_pending_remix(expected_type: str) -> None:
@@ -95,7 +88,6 @@ def render_3d_tab() -> None:
         st.warning("No models match this filter. Showing all.")
         filtered_models = list(THREED_MODELS)
 
-    # name-based selection for consistency with Video tab
     names = [m.name for m in filtered_models]
     current = st.session_state.get("3d_model_name")
     if current not in names:
@@ -106,40 +98,21 @@ def render_3d_tab() -> None:
     )
     result_key = f"threed_generation_result_{model_3d.name}"
 
-    # show model info similar to Video tab
     model_caption = model_3d.output_notes or model_3d.pricing_notes or ""
     if model_caption:
         st.caption(model_caption)
 
     st.divider()
 
-    preview_handles: dict[str, DeltaGenerator] = {}
-
-    def render_preview_panel() -> None:
-        st.markdown("#### Prediction status / preview")
-        preview_handles["status"] = st.empty()
-        preview_handles["progress"] = st.empty()
-        result_area = st.empty()
-        preview_handles["result"] = result_area
-        latest_result = st.session_state.get(result_key)
-        if latest_result:
-            with result_area.container():
-                render_3d_result(latest_result)
-        else:
-            preview_handles["status"].info(
-                "Run a generation and the live status plus final preview will stay "
-                "open here. 3D generations typically take 1–10 minutes."
-            )
+    preview_handles, render_preview_panel = build_preview_panel(
+        result_key=result_key,
+        model_type="3d",
+        render_result=render_3d_result,
+    )
 
     def render_model_selector() -> None:
         st.markdown("#### Model")
-        # name-based select; the tab re-resolves model_3d from session key on each run
-        current_names = [
-            m.name
-            for m in (
-                filtered_models if "filtered_models" in locals() else THREED_MODELS
-            )
-        ]
+        current_names = [m.name for m in filtered_models]
         cur = st.session_state.get("3d_model_name") or current_names[0]
         if cur not in current_names:
             cur = current_names[0]
@@ -171,50 +144,12 @@ def render_3d_tab() -> None:
             st.error(f"Invalid parameters:\n\n{exc}")
             return
 
-        status_line = preview_handles.get("status") or st.empty()
-        progress_line = preview_handles.get("progress") or st.empty()
-        result_area = preview_handles.get("result") or st.empty()
-        status_line.info(
-            f"Generating with {model_3d.display_name}… preview here. "
-            "Typically 1–10 min (longer for complex). Status below."
+        run_model_generation(
+            model=model_3d,
+            handles=preview_handles,
+            result_key=result_key,
+            kwargs=kwargs_3d,
+            render_result=render_3d_result,
+            use_spinner=True,
+            spinner_message="Waiting for Replicate — see status above for updates.",
         )
-        try:
-            start_time = monotonic()
-
-            def progress_callback(event: str, prediction: object) -> None:
-                elapsed = format_duration(monotonic() - start_time)
-                pred_id = getattr(prediction, "id", "")
-                pred_status = getattr(prediction, "status", event)
-                progress_line.write(
-                    f"Replicate status: `{pred_status}` · elapsed {elapsed}"
-                    + (f" · prediction `{pred_id}`" if pred_id else "")
-                )
-
-            kwargs_3d["progress_callback"] = progress_callback
-            with st.spinner(
-                "Waiting for Replicate… (3D often 1-10+ min; see status above)"
-            ):
-                result = get_generation_service().generate(
-                    model_3d.name,
-                    model_3d.model_type,
-                    **kwargs_3d,
-                )
-            st.session_state[result_key] = result
-
-            if result["success"]:
-                status_line.success("Generation complete — preview ready.")
-            else:
-                status_line.error("Generation failed — details below.")
-            with result_area.container():
-                render_3d_result(result)
-        except Exception as exc:
-            result = {
-                "success": False,
-                "error": friendly_error_message(exc),
-                "predict_time": 0,
-                "estimated_cost": 0,
-            }
-            st.session_state[result_key] = result
-            status_line.error("Generation error — details below.")
-            with result_area.container():
-                st.error(f"Unexpected error: {friendly_error_message(exc)}")

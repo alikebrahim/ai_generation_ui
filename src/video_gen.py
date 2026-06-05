@@ -13,7 +13,6 @@ Each function:
 from __future__ import annotations
 
 import json
-import time
 from collections.abc import Callable
 from typing import Any
 
@@ -67,31 +66,17 @@ def _run_prediction(
     """Create a Replicate prediction, poll it, and return a normalized result."""
     adapter = get_replicate_adapter()
     prediction = adapter.create_prediction(model_id, None, input_params)
-    if progress_callback:
-        progress_callback("created", prediction)
-
-    while prediction.status not in ("succeeded", "failed", "canceled"):
-        time.sleep(poll_interval)
-        prediction = adapter.poll_prediction(prediction)
-        if progress_callback:
-            progress_callback("polled", prediction)
-
+    prediction = adapter.wait_for_prediction(
+        prediction,
+        poll_interval=poll_interval,
+        progress_callback=progress_callback,
+    )
     if prediction.status != "succeeded":
-        return {
-            "success": False,
-            "error": prediction.error or f"Status: {prediction.status}",
-            "prediction_id": getattr(prediction, "id", ""),
-            "prediction_url": getattr(prediction, "urls", {}).get("web", ""),
-        }
-
-    return {
-        "success": True,
-        "url": output_to_url(prediction.output),
-        "predict_time": (prediction.metrics or {}).get("predict_time", 0),
-        "total_time": (prediction.metrics or {}).get("total_time", 0),
-        "prediction_id": getattr(prediction, "id", ""),
-        "prediction_url": getattr(prediction, "urls", {}).get("web", ""),
-    }
+        return adapter.prediction_result_dict(prediction)
+    return adapter.prediction_result_dict(
+        prediction,
+        success_output={"url": output_to_url(prediction.output)},
+    )
 
 
 def generate_wan_2_7_t2v(

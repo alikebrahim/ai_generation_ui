@@ -2,7 +2,7 @@
 
 **Project**: ai-generation-ui
 **Last updated**: 2026-06-04
-**Current version**: v0.6.11
+**Current version**: v0.8.0
 
 ---
 
@@ -19,9 +19,10 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
     ├── IMPLEMENTATION_VER-0.6.0.md ← Safety, dry-run, schema diagnostics
     ├── IMPLEMENTATION_VER-0.6.5.md ← 3D/texture model expansion
     ├── IMPLEMENTATION_VER-0.6.10.md ← Video expansion + workflow UI (complete)
-    ├── IMPLEMENTATION_VER-0.9.0.md ← Audio milestone (research complete)
-    ├── IMPLEMENTATION_VER-0.9.0-replicate-api-snapshot.json ← v0.9.0 OpenAPI fetch
-    ├── IMPLEMENTATION_VER-0.9.0-pricing-scrape.json ← v0.9.0 pricing fetch
+    ├── IMPLEMENTATION_VER-0.8.0.md ← Audio milestone (complete)
+    ├── IMPLEMENTATION_VER-0.9.0.md ← Smoke QA milestone (planned)
+    ├── IMPLEMENTATION_VER-0.9.0-replicate-api-snapshot.json ← audio OpenAPI fetch
+    ├── IMPLEMENTATION_VER-0.9.0-pricing-scrape.json ← audio pricing fetch
     ├── IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md ← v1.0.0+ Replicate + fal.ai plan
     ├── IMPLEMENTATION_VER-0.4.3-TO-0.4.9.md ← Completed architecture refactor
     ├── IMPLEMENTATION_VER-0.5.0-TO-0.5.10.md ← Completed UI/UX + History hardening
@@ -31,13 +32,17 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 
 ---
 
-## Current release (v0.6.11)
+## Current release (v0.8.0)
+
+- **Audio** tab: 9 models (3 music + 6 speech), workflow filter, `st.audio()` preview.
+
+## Previous release (v0.7.0)
 
 | Area | Count | Notes |
 |------|-------|--------|
 | Video | 11 | Workflow filter; motion/edit/multimodal layouts |
 | 3D / texture | 7 | Mesh/multiview uploads |
-| Audio | 0 (planned) | **v0.9.0**: 9 models — 3 music, 6 speech |
+| Audio | 9 | Music + speech; see `IMPLEMENTATION_VER-0.8.0.md` |
 
 **Safety**: Preview request (no charge), `replicate_payload.py`, `schema_diagnostics.py`
 **CLI**: `scripts/model_diagnostics.py` (non-paid), `scripts/paid_smoke.py` (opt-in paid)
@@ -48,9 +53,9 @@ REFERENCE.md   ← YOU ARE HERE (index of everything)
 
 | Milestone | Status |
 |-----------|--------|
-| v0.7.0 — errors, progress, recovery | Planned (next) |
-| v0.9.0 — Replicate audio (music + speech) | Research done; implementation planned |
-| v0.8.0 — smoke QA + browser pass (incl. audio) | Planned after v0.9.0 |
+| v0.7.0 — errors, progress, recovery | Complete |
+| v0.8.0 — audio (music + speech) | Complete |
+| v0.9.0 — smoke QA + browser pass (incl. audio) | Planned (next) |
 | v1.0.0 — stable Replicate-only baseline | Release target |
 
 **Post-1.0**: Aleph keyframes UI and fal.ai — `ROADMAP.md`. Multi-reference uploads are available in v0.6.11 for metadata-marked multi-file params.

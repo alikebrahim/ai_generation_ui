@@ -244,31 +244,136 @@ def estimate_cost_label(model_id: str, duration: float | None, calculator) -> st
     return "Cost shown after generation"
 
 
+def _replicate_error_text(error: Any) -> tuple[str, int | None]:
+    """Extract message and HTTP status from a ReplicateError when present."""
+    detail = getattr(error, "detail", None)
+    status = getattr(error, "status", None)
+    if detail is not None and str(detail).strip():
+        text = str(detail)
+    else:
+        text = str(error)
+    try:
+        status_code = int(status) if status is not None else None
+    except (TypeError, ValueError):
+        status_code = None
+    if status_code is None and "status:" in text.lower():
+        for token in text.replace(":", " ").split():
+            if token.isdigit() and len(token) == 3:
+                status_code = int(token)
+                break
+    return text, status_code
+
+
+def technical_error_detail(error: Exception | str | None) -> str | None:
+    """Return raw technical detail when it differs from the friendly message."""
+    if error is None:
+        return None
+    raw = str(error).strip()
+    if not raw:
+        return None
+    friendly = friendly_error_message(error)
+    if raw == friendly:
+        return None
+    return raw
+
+
 def friendly_error_message(error: Exception | str) -> str:
     """Translate common Replicate/API failures into actionable UI copy."""
-    text = str(error)
-    lower = text.lower()
+    text, status_code = (
+        _replicate_error_text(error)
+        if not isinstance(error, str)
+        else (error, None)
+    )
+    if isinstance(error, str):
+        text = error
+        lower = text.lower()
+        for token in text.replace(":", " ").split():
+            if token.isdigit() and len(token) == 3:
+                status_code = int(token)
+                break
+    else:
+        lower = text.lower()
 
-    if "status: 401" in lower or "unauthorized" in lower:
+    if status_code == 401 or "status: 401" in lower or "unauthorized" in lower:
         return (
             "Replicate could not authenticate this request. Check that your "
             "REPLICATE_API_TOKEN in .env is present and valid."
         )
-    if "status: 404" in lower or "not found" in lower:
+    if (
+        status_code == 402
+        or "insufficient credit" in lower
+        or "payment required" in lower
+    ):
+        return (
+            "Replicate reported insufficient account credit. Add billing credit "
+            "on replicate.com, then try again."
+        )
+    if status_code == 403 or "forbidden" in lower:
+        return (
+            "Replicate denied access to this model or resource. Confirm your "
+            "account can run this model and that the model ID is correct."
+        )
+    if status_code == 404 or "status: 404" in lower or "not found" in lower:
         return (
             "Replicate could not find the requested model endpoint or model "
             "version. This can happen when a model requires a versioned API call "
             "or when the model ID changed."
         )
-    if "status: 422" in lower or "validation" in lower:
+    if status_code == 422 or "status: 422" in lower or "validation" in lower:
         return (
             "Replicate rejected one of the settings for this model. Review the "
             "visible controls and try the recommended/default values."
         )
-    if "timeout" in lower or "connection" in lower or "network" in lower:
+    if status_code == 429 or "rate limit" in lower or "too many requests" in lower:
+        return (
+            "Replicate is rate-limiting requests. Wait a minute and try again."
+        )
+    if status_code in (500, 502, 503) or "internal server" in lower:
+        return (
+            "Replicate had a temporary server problem. Wait a few minutes and "
+            "try again; if it persists, check replicate.com/status."
+        )
+    if "canceled" in lower or "cancelled" in lower:
+        return "This job was canceled before it finished."
+    if any(
+        phrase in lower
+        for phrase in (
+            "content policy",
+            "safety",
+            "nsfw",
+            "moderation",
+            "blocked",
+            "not allowed",
+        )
+    ):
+        return (
+            "Replicate declined this request for content or safety reasons. "
+            "Try a different prompt or image."
+        )
+    if "timeout" in lower or "timed out" in lower:
+        return (
+            "The request timed out before Replicate finished. Try again; "
+            "longer jobs may need a simpler prompt or smaller settings."
+        )
+    if "connection" in lower or "network" in lower or "connectionerror" in lower:
         return (
             "The request could not reach Replicate reliably. Check the network "
             "connection or try again in a few minutes."
+        )
+    if "replicate_api_token" in lower or "api token" in lower and "missing" in lower:
+        return (
+            "No Replicate API token is configured. Add REPLICATE_API_TOKEN to "
+            "your .env file."
+        )
+    if "status: failed" in lower or lower.strip() == "failed":
+        return (
+            "Replicate reported that the job failed. Open the prediction link "
+            "below for more detail, or adjust your inputs and try again."
+        )
+    if len(text) > 280 and ("traceback" in lower or "replicateerror" in lower):
+        return (
+            "Something went wrong talking to Replicate. Check your token, "
+            "network, and inputs — technical details are in the expander below."
         )
     return text
 
@@ -326,6 +431,14 @@ def download_output(
             or "image/jpeg" in content_type
         ):
             ext = ".jpg"
+        elif url.endswith(".mp3") or "audio/mpeg" in content_type:
+            ext = ".mp3"
+        elif url.endswith(".wav") or "audio/wav" in content_type:
+            ext = ".wav"
+        elif url.endswith(".m4a") or "audio/mp4" in content_type:
+            ext = ".m4a"
+        elif url.endswith(".flac") or "audio/flac" in content_type:
+            ext = ".flac"
         else:
             # Guess from the URL path without query-string tokens.
             url_path = urlparse(url).path.rstrip("/").rsplit("/", 1)[-1]

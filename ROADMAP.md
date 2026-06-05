@@ -4,7 +4,7 @@ This roadmap is the source of truth for product direction. It separates what sho
 
 ## Product framing
 
-This is a personal local Streamlit UI for hosted **video**, **3D**, and (planned v0.9.0) **audio** generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
+This is a personal local Streamlit UI for hosted **video**, **3D**, and **audio** generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
 
 - Avoiding invalid or wasteful paid provider calls.
 - A clear, pleasant UI for the project owner and a non-technical household user.
@@ -18,9 +18,9 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v0.6.11 — Creative param exposure (groups, help, ★ high-impact, presets), History remix, multi-ref uploads, 3D parity, loading/“taking longer” messages, History copy actions (prompt/seed/settings), basic prompt starter examples + docs alignment (pre-0.7 UX polish completion)**
+**Current version: v0.8.0 — Replicate audio (music + speech): Audio tab, nine models, local `outputs/audio/`, History + dry-run**
 
-**Catalogue today**: 11 video models, 7 3D/texture models, 0 audio (audio planned v0.9.0).
+**Catalogue today**: 11 video models, 7 3D/texture models, 9 audio models (3 music + 6 speech).
 
 Version history (summary):
 
@@ -35,10 +35,8 @@ Version history (summary):
 - v0.6.0 added dry-run/request preview, shared payload builders, schema diagnostics, metadata audit fields, and opt-in paid smoke scripts.
 - v0.6.5 added Hunyuan3D 2 Multiview, Text2Tex, Adirik Texture, and Rodin Gen-2 with mesh/multiview file upload UI.
 - v0.6.6–0.6.11 completed rich creative param exposure for using model capabilities (advanced_param_groups, param_help + dynamic help, high_impact_params with ★ markers, widget slider support, per-model presets with Apply/Reset on the richest models, “♻️ Load settings” remix from History, safer multi-file reference uploads, 3D tab capability filter + consistent name-based selection for parity with Video, layout tweaks for action prominence); plus pre-0.7 polish items (better loading-stage “taking longer than usual” messaging with time estimates, History copy-only actions for prompt/seed/settings, basic prompt helper examples/starter prompts loadable in the form).
-- **Next planned**: v0.7.0 — better errors, progress messaging, and recovery.
-- **Before v1.0.0**: v0.9.0 — Replicate **music + speech** models (nine models; see v0.9.0 section).
-- Then v0.8.0 — authorized smoke QA and browser pass (video, 3D, **and audio**).
-- This remains pre-1.0 because v0.9.0 audio, v0.8.0 smoke, and plain-English UX for v1.0 are still pending.
+- **Next planned**: v0.9.0 — authorized smoke QA and browser pass (video, 3D, **music**, **speech**).
+- This remains pre-1.0 because v0.9.0 smoke and plain-English UX polish for v1.0 are still pending.
 
 ### Pre-1.0 path at a glance
 
@@ -47,9 +45,9 @@ Version history (summary):
 | Done | **v0.6.11** | creative param exposure (groups/help/★/presets) + remix/multi-ref/3D parity + pre-0.7 polish (loading messages, History copies, prompt starters) |
 | Done | **v0.6.10** | 11 video models + workflow-aware Video tab |
 | Done | **v0.6.5** / **v0.6.0** | 7 3D/texture models, dry-run + diagnostics |
-| Next | **v0.7.0** | Clearer errors, progress, recovery |
-| Then | **v0.9.0** | **Audio** tab: 3 music + 6 speech models (9 total) |
-| Then | **v0.8.0** | Browser QA + authorized smoke (video, 3D, **music**, **speech**) |
+| Done | **v0.7.0** | Clearer errors, progress, recovery |
+| Done | **v0.8.0** | Audio tab: 3 music + 6 speech models |
+| Next | **v0.9.0** | Browser QA + authorized smoke (video, 3D, **music**, **speech**) |
 | Release | **v1.0.0** | Replicate-only personal baseline declared stable |
 
 **Post-1.0** (not v1.0 blockers): Aleph keyframes, fal.ai — see sections below. Multi-reference uploads were completed in v0.6.11 for metadata-marked multi-file params.
@@ -939,37 +937,44 @@ Detailed wireframes and phase breakdown live in `IMPLEMENTATION_VER-0.6.10.md`.
 
 **Priority**: Medium before v1.0
 
-**Status**: Planned
+**Status**: Complete (v0.7.0)
+
+**Source of truth**: `IMPLEMENTATION_VER-0.7.0.md`
 
 **Goal**: Keep failure and long-wait behavior understandable while preserving the minimal UI direction.
 
-### Planned work
+### Delivered
 
-- Translate common provider/API errors in provider adapters.
-- Show provider job URL during generation when available.
-- Improve progress state handling without verbose visible copy.
-- Add “taking longer than usual” messaging after model-specific thresholds only if it proves useful.
-- Investigate cancel support only if provider APIs expose it cleanly and simply.
+- Expanded `friendly_error_message` for common HTTP/provider failures, canceled jobs,
+  content-policy blocks, and long raw traces; `technical_error_detail` for expanders.
+- `ReplicateAdapter.wait_for_prediction` and `prediction_result_dict` for consistent
+  polling and failure payloads across video and 3D.
+- `src/generation_progress.py` and `src/ui/generation_panel.py` — plain-English status
+  labels, long-wait hints (3 min video / 7 min 3D), Replicate job link during polling.
+- Failed previews: link button + “Technical details” expander with raw provider message.
+- Cancel UI deferred (Replicate supports cancel; Streamlit sync run blocks in-tab cancel).
 
 ### Acceptance criteria
 
-- Common errors are understandable without reading Python/HTTP exception details.
-- The generation panel always shows whether a job is waiting, running, done, or failed.
-- Failed jobs preserve useful debugging information.
+- [x] Common errors are understandable without reading Python/HTTP exception details.
+- [x] The generation panel always shows whether a job is waiting, running, done, or failed.
+- [x] Failed jobs preserve useful debugging information.
 
 ---
 
-## v0.9.0 — Replicate Audio Model Expansion (Music + Speech)
+## v0.8.0 — Replicate Audio Model Expansion (Music + Speech)
 
-**Priority**: High before v1.0.0 (after v0.7.0, before v0.8.0 smoke)
+**Priority**: High before v1.0.0 (after v0.7.0)
 
-**Status**: **Research complete** (schema + pricing fetched 2026-06-04) — **not implemented**
+**Status**: Complete (v0.8.0)
 
-**Source of truth**: `IMPLEMENTATION_VER-0.9.0.md`
+**Source of truth**: `IMPLEMENTATION_VER-0.8.0.md`
+
+(Snapshot files: `IMPLEMENTATION_VER-0.9.0-replicate-api-snapshot.json`, `IMPLEMENTATION_VER-0.9.0-pricing-scrape.json` — names kept from original fetch.)
 
 **Goal**: Add dedicated **music** and **speech** generation via Replicate, with an **Audio** section in the app, the same dry-run/validation/history patterns as video and 3D, and plain-English workflow filters (music vs speech).
 
-**Not in scope for v0.9.0**: fal.ai audio; stem editing; replacing video models’ built-in “generate audio” toggles.
+**Not in scope for v0.8.0**: fal.ai audio; stem editing; replacing video models’ built-in “generate audio” toggles.
 
 ### Authoritative data on disk (fetch-first, no paid predictions)
 
@@ -1023,15 +1028,17 @@ Note: `stability-ai/stable-audio-2.5` was listed twice in planning notes — one
 
 ### Milestone order before v1.0
 
-`v0.7.0` → **`v0.9.0` (audio)** → `v0.8.0` (smoke + QA) → `v1.0.0`
+`v0.7.0` → **`v0.8.0` (audio)** → `v0.9.0` (smoke + QA) → `v1.0.0`
 
 ---
 
-## v0.8.0 — v1.0 Readiness and Authorized Smoke QA
+## v0.9.0 — v1.0 Readiness and Authorized Smoke QA
 
 **Priority**: Final pre-v1.0 milestone
 
 **Status**: Planned
+
+**Source of truth**: `IMPLEMENTATION_VER-0.9.0.md`
 
 **Goal**: Verify the Replicate-only personal baseline end to end before declaring v1.0 stable.
 
@@ -1040,7 +1047,7 @@ Note: `stability-ai/stable-audio-2.5` was listed twice in planning notes — one
 - Run visible browser QA for:
   - Video page;
   - 3D page;
-  - Audio page (after v0.9.0);
+  - Audio page;
   - History Gallery view;
   - History Records view;
   - validation errors and empty states.
@@ -1049,8 +1056,8 @@ Note: `stability-ai/stable-audio-2.5` was listed twice in planning notes — one
   - image-to-video;
   - image-to-3D;
   - text-to-3D;
-  - **music generation** (v0.9.0, after audio milestone);
-  - **speech / TTS** (v0.9.0, after audio milestone).
+  - **music generation** (v0.8.0 audio tab);
+  - **speech / TTS** (v0.8.0 audio tab).
 - After each authorized smoke, verify:
   - completed result preview remains visible;
   - local output is saved when possible;
@@ -1327,9 +1334,9 @@ Post-1.0 work should expand creative power only after the core Replicate-only lo
 | v0.6.0 | Safety, metadata audit, dry-run, schema diagnostics | Complete | Done in v0.6.0 |
 | v0.6.5 | Replicate 3D and texture model expansion | Complete | Done in v0.6.5 |
 | v0.6.10 | Video model expansion + workflow-aware UI | Complete | Done in v0.6.10 |
-| v0.7.0 | Better errors, progress, and recovery | Medium | Next planned |
-| v0.9.0 | Replicate audio (music + speech; research in `IMPLEMENTATION_VER-0.9.0-*.json`) | High | Research done; impl before v1.0 |
-| v0.8.0 | v1.0 readiness and authorized smoke QA | Highest | After v0.9.0; final pre-v1.0 gate |
+| v0.7.0 | Better errors, progress, and recovery | Medium | Complete |
+| v0.8.0 | Replicate audio (music + speech) | High | Complete |
+| v0.9.0 | v1.0 readiness and authorized smoke QA | Highest | Next; final pre-v1.0 gate |
 | v1.0.0 | Stable Replicate-only personal local release | Release | Release target |
 | v1.1 | History reuse and creative iteration | High | Post-1.0 quality-of-life |
 | v1.2 | fal.ai provider expansion and Meshy exploration | High | Post-1.0 provider expansion |

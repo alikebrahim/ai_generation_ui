@@ -18,13 +18,13 @@ This document defines conventions, defaults, and constraints for this project. F
 **IN SCOPE:**
 - Video generation: Text-to-Video (T2V), Image-to-Video (I2V)
 - 3D generation: Image-to-3D (I23D), Text-to-3D (T23D), multiview-to-3D, and mesh texturing via Replicate (`hunyuan3d-2`, `hunyuan3d-2mv`, `hunyuan-3d-3.1`, `trellis2`, `text2tex`, `texture`, `rodin`).
-- **Audio generation (planned v0.9.0, before v1.0.0)**: music and speech/TTS via Replicate — see `IMPLEMENTATION_VER-0.9.0.md` and `ROADMAP.md` v0.9.0 (nine models: MiniMax, Stability, Lyria, Inworld, Resemble, ElevenLabs).
+- **Audio generation (v0.8.0)**: music and speech/TTS via Replicate — nine models; see `IMPLEMENTATION_VER-0.8.0.md` and `ROADMAP.md`.
 - Replicate API integration today; fal.ai provider integration, including Meshy exploration, is post-v1.0.0 work
 - Streamlit-based web interface
 - Cost tracking and generation history
 
-**OUT OF SCOPE (until v0.9.0 ships):**
-- Standalone music/speech tabs and audio-only model catalogue (tracked as v0.9.0; not implemented at v0.6.10)
+**OUT OF SCOPE (unchanged):**
+- fal.ai audio (post-v1.0)
 
 **OUT OF SCOPE (unchanged):**
 - Image generation (handled by ComfyUI workflows separately)
@@ -219,12 +219,13 @@ black = ">=24.0.0"           # Code formatter
   - `outputs/videos/` for video files and TRELLIS preview videos
   - `outputs/models_3d/` for 3D model assets
   - `outputs/thumbnails/` reserved for future thumbnail/preview derivatives
+  - `outputs/audio/` for music and speech outputs (v0.8.0)
 - SQLite History persists provider URL plus local file metadata: `local_file_path`, `thumbnail_path`, and `file_size_bytes`.
 - Failed local downloads must not lose the original provider URL or history metadata.
 - Generated output files are local artifacts and should stay gitignored.
 
 ### Streamlit App Structure
-- Single-page app with query-param-backed segmented navigation: Video | 3D | History (v0.9.0 adds **Audio**)
+- Single-page app with query-param-backed segmented navigation: Video | 3D | Audio | History
 - **Video Tab**:
   - Model selector dropdown
   - Input form (text prompt, image upload if applicable)
@@ -285,7 +286,7 @@ black = ">=24.0.0"           # Code formatter
 - Never create a paid provider prediction just to discover schema or pricing. Use provider docs/API metadata, dry-run payload inspection, and local validation probes unless the user explicitly authorizes a paid smoke test with expected cost/scope.
 - v0.6.5 added `tencent/hunyuan3d-2mv`, `adirik/text2tex`, `adirik/texture`, and `hyper3d/rodin` (schemas verified 2026-06-04; see `IMPLEMENTATION_VER-0.6.5.md`).
 - v0.6.10 added eight Replicate video models and workflow-aware Video tab UI (`IMPLEMENTATION_VER-0.6.10.md`).
-- v0.9.0 (planned, before v1.0.0) adds nine Replicate audio models and an Audio tab; see `IMPLEMENTATION_VER-0.9.0.md`. Fetch schemas before implementing.
+- v0.8.0 added nine Replicate audio models and an Audio tab; see `IMPLEMENTATION_VER-0.8.0.md`.
 - Meshy is planned as post-v1.0 fal.ai/provider-expansion work; treat its params/pricing/output shapes as unknown until verified from fal.ai at implementation time.
 - **Live smoke QA** (v0.8.0): optional real paid Replicate runs, one per workflow, with explicit user authorization — not part of routine dev. Use `ALLOW_PAID_REPLICATE_SMOKE=1` and `scripts/paid_smoke.py` only when authorized.
 

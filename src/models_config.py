@@ -12,7 +12,7 @@ Each ModelConfig captures:
 from dataclasses import dataclass, field
 from typing import Any, Literal, TypedDict
 
-ModelType = Literal["video", "3d"]
+ModelType = Literal["video", "3d", "audio"]
 ProviderName = Literal["replicate", "fal"]
 ProviderEndpointMode = Literal["versionless", "versioned"]
 WorkflowArchetype = Literal[
@@ -1458,7 +1458,10 @@ THREED_MODELS: list[ModelConfig] = [
     ADIRIK_TEXTURE,
     RODIN,
 ]
-ALL_MODELS: list[ModelConfig] = VIDEO_MODELS + THREED_MODELS
+
+from src.audio_models_config import AUDIO_MODELS  # noqa: E402
+
+ALL_MODELS: list[ModelConfig] = VIDEO_MODELS + THREED_MODELS + AUDIO_MODELS
 
 _MODEL_BY_NAME: dict[str, ModelConfig] = {m.name: m for m in ALL_MODELS}
 _MODEL_BY_ID: dict[str, ModelConfig] = {m.replicate_id: m for m in ALL_MODELS}

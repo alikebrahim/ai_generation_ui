@@ -6,13 +6,30 @@ hard-coded dispatch logic.
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any, Callable
 
-from src import threed_gen, video_gen
+from src import audio_gen, threed_gen, video_gen
+from src.audio_models_config import AUDIO_MODELS
 from src.models_config import THREED_MODELS, VIDEO_MODELS
 
 # Type for a generation handler function
 GenerationHandler = Callable[..., dict | None]
+
+
+def _audio_handlers() -> dict[str, GenerationHandler]:
+    handlers: dict[str, GenerationHandler] = {}
+
+    def _make(slug: str) -> GenerationHandler:
+        def _run(progress_callback: Any = None, **kw: Any) -> dict:
+            return audio_gen.generate_audio_model(
+                slug, progress_callback=progress_callback, **kw
+            )
+
+        return _run
+
+    for model in AUDIO_MODELS:
+        handlers[model.name] = _make(model.name)
+    return handlers
 
 
 # Map each model name to its generation function
@@ -30,6 +47,7 @@ GENERATION_HANDLERS: dict[str, GenerationHandler] = {
     "text2tex": threed_gen.generate_text2tex,
     "adirik-texture": threed_gen.generate_adirik_texture,
     "rodin": threed_gen.generate_rodin,
+    **_audio_handlers(),
 }
 
 
@@ -59,7 +77,7 @@ def verify_all_models_have_handlers() -> bool:
     Returns:
         True if all models are registered, False otherwise.
     """
-    all_models = [m.name for m in VIDEO_MODELS + THREED_MODELS]
+    all_models = [m.name for m in VIDEO_MODELS + THREED_MODELS + AUDIO_MODELS]
     unregistered = [m for m in all_models if m not in GENERATION_HANDLERS]
 
     if unregistered:

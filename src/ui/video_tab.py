@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from time import monotonic
-
 import streamlit as st
-from streamlit.delta_generator import DeltaGenerator
 
-from src import utils as app_utils
-from src.generation_service import get_generation_service
 from src.models_config import VIDEO_MODELS
 from src.ui.forms import render_generation_form
+from src.ui.generation_panel import build_preview_panel, run_model_generation
 from src.ui.result_views import render_video_result
 from src.ui.video_workflow import (
     filter_models_for_workflow,
@@ -19,9 +15,6 @@ from src.ui.video_workflow import (
     resolve_video_model_selection,
 )
 from src.validation import validate_params
-
-format_duration = app_utils.format_duration
-friendly_error_message = app_utils.friendly_error_message
 
 
 def _consume_pending_remix(expected_type: str) -> None:
@@ -78,24 +71,11 @@ def render_video_tab() -> None:
             st.caption(caption)
 
     result_key = f"video_generation_result_{model.name}"
-
-    preview_handles: dict[str, DeltaGenerator] = {}
-
-    def render_preview_panel() -> None:
-        st.markdown("#### Prediction status / preview")
-        preview_handles["status"] = st.empty()
-        preview_handles["progress"] = st.empty()
-        result_area = st.empty()
-        preview_handles["result"] = result_area
-        latest_result = st.session_state.get(result_key)
-        if latest_result:
-            with result_area.container():
-                render_video_result(latest_result)
-        else:
-            preview_handles["status"].info(
-                "Run a generation and the live status plus final preview will stay "
-                "open here. Video gens typically 30s to a few minutes."
-            )
+    preview_handles, render_preview_panel = build_preview_panel(
+        result_key=result_key,
+        model_type="video",
+        render_result=render_video_result,
+    )
 
     kwargs = render_generation_form(
         model,
@@ -124,40 +104,10 @@ def render_video_tab() -> None:
             st.error(f"Invalid parameters:\n\n{exc}")
             return
 
-        status_line = preview_handles.get("status") or st.empty()
-        progress_line = preview_handles.get("progress") or st.empty()
-        result_area = preview_handles.get("result") or st.empty()
-        status_line.info(
-            f"Generating with {model.display_name}… preview here. "
-            "Typically 30s–few min (model/duration/load dependent). Status below."
+        run_model_generation(
+            model=model,
+            handles=preview_handles,
+            result_key=result_key,
+            kwargs=kwargs,
+            render_result=render_video_result,
         )
-        try:
-            start_time = monotonic()
-
-            def progress_callback(event: str, prediction: object) -> None:
-                elapsed = format_duration(monotonic() - start_time)
-                pred_id = getattr(prediction, "id", "")
-                pred_status = getattr(prediction, "status", event)
-                progress_line.write(
-                    f"Status: **{pred_status}** · {elapsed} elapsed · id `{pred_id}`"
-                )
-
-            result = get_generation_service().generate(
-                model.name,
-                "video",
-                progress_callback=progress_callback,
-                **kwargs,
-            )
-            st.session_state[result_key] = result
-            progress_line.empty()
-            if result.get("success"):
-                status_line.success("Generation complete.")
-                with result_area.container():
-                    render_video_result(result)
-            else:
-                status_line.error(
-                    friendly_error_message(result.get("error", "Generation failed"))
-                )
-        except Exception as exc:
-            progress_line.empty()
-            status_line.error(friendly_error_message(exc))

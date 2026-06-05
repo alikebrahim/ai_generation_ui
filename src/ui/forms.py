@@ -305,6 +305,15 @@ def render_generation_form(
     model_selector_renderer: Callable[[], None] | None = None,
 ) -> dict | None:
     """Render the generation workspace for a model."""
+    if model.model_type == "audio":
+        from src.ui.audio_forms import render_audio_generation_form
+
+        return render_audio_generation_form(
+            model,
+            preview_renderer=preview_renderer,
+            model_selector_renderer=model_selector_renderer,
+        )
+
     st.subheader(f"Generate with {model.display_name}")
 
     if model.model_type == "3d":

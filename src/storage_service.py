@@ -11,6 +11,7 @@ from typing import Any
 import requests
 
 from src.config import (
+    OUTPUTS_AUDIO_DIR,
     OUTPUTS_MODELS_3D_DIR,
     OUTPUTS_THUMBNAILS_DIR,
     OUTPUTS_VIDEOS_DIR,
@@ -29,14 +30,17 @@ class StorageService:
         video_dir: Path = OUTPUTS_VIDEOS_DIR,
         models_3d_dir: Path = OUTPUTS_MODELS_3D_DIR,
         thumbnails_dir: Path = OUTPUTS_THUMBNAILS_DIR,
+        audio_dir: Path = OUTPUTS_AUDIO_DIR,
     ):
         """Initialize storage service with output directories."""
         self.video_dir = Path(video_dir)
         self.models_3d_dir = Path(models_3d_dir)
         self.thumbnails_dir = Path(thumbnails_dir)
+        self.audio_dir = Path(audio_dir)
         self.video_dir.mkdir(parents=True, exist_ok=True)
         self.models_3d_dir.mkdir(parents=True, exist_ok=True)
         self.thumbnails_dir.mkdir(parents=True, exist_ok=True)
+        self.audio_dir.mkdir(parents=True, exist_ok=True)
 
     def download_file(
         self,
@@ -121,9 +125,25 @@ class StorageService:
         timeout: int = 120,
     ) -> dict:
         """Download a provider output URL into the configured media directory."""
-        dest_dir = self.video_dir if media_type == "video" else self.models_3d_dir
+        if media_type == "video":
+            dest_dir = self.video_dir
+        elif media_type == "audio":
+            dest_dir = self.audio_dir
+        else:
+            dest_dir = self.models_3d_dir
         result = _download_output(url, dest_dir, prefix=prefix, timeout=timeout)
         local_path = result.get("local_path")
+        if local_path and media_type == "audio":
+            path = Path(local_path)
+            suffix = path.suffix.lower()
+            mime = {
+                ".mp3": "audio/mpeg",
+                ".wav": "audio/wav",
+                ".m4a": "audio/mp4",
+                ".aac": "audio/aac",
+                ".flac": "audio/flac",
+            }.get(suffix, "audio/mpeg")
+            result["mime_type"] = mime
         if local_path and media_type == "video":
             thumbnail_path = self.ensure_video_thumbnail(local_path)
             if thumbnail_path:

@@ -7,7 +7,6 @@ Pattern identical to video_gen.py:
 from __future__ import annotations
 
 import json
-import time
 from collections.abc import Callable
 from functools import lru_cache
 from typing import Any
@@ -86,22 +85,13 @@ def _run_prediction(
     adapter = get_replicate_adapter()
     version_id = None if use_versionless else _latest_version_id(model_id)
     prediction = adapter.create_prediction(model_id, version_id, input_params)
-    if progress_callback:
-        progress_callback("created", prediction)
-
-    while prediction.status not in ("succeeded", "failed", "canceled"):
-        time.sleep(poll_interval)
-        prediction = adapter.poll_prediction(prediction)
-        if progress_callback:
-            progress_callback("polled", prediction)
-
+    prediction = adapter.wait_for_prediction(
+        prediction,
+        poll_interval=poll_interval,
+        progress_callback=progress_callback,
+    )
     if prediction.status != "succeeded":
-        return {
-            "success": False,
-            "error": prediction.error or f"Status: {prediction.status}",
-            "prediction_id": getattr(prediction, "id", ""),
-            "prediction_url": getattr(prediction, "urls", {}).get("web", ""),
-        }
+        return adapter.prediction_result_dict(prediction)
 
     output = prediction.output
     if isinstance(output, list):
@@ -109,14 +99,10 @@ def _run_prediction(
     elif isinstance(output, str) or hasattr(output, "url"):
         output = {"mesh": output}
 
-    return {
-        "success": True,
-        "output": output,
-        "predict_time": (prediction.metrics or {}).get("predict_time", 0),
-        "total_time": (prediction.metrics or {}).get("total_time", 0),
-        "prediction_id": getattr(prediction, "id", ""),
-        "prediction_url": getattr(prediction, "urls", {}).get("web", ""),
-    }
+    return adapter.prediction_result_dict(
+        prediction,
+        success_output={"output": output},
+    )
 
 
 def _primary_output_url(output: Any) -> str:

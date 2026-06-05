@@ -25,7 +25,7 @@ from src.replicate_payload import (
 )
 from src.schema_diagnostics import compare_model_config, fetch_remote_input_schema
 from src.storage_service import StorageService
-from src.utils import format_cost, sanitize_parameters
+from src.utils import format_cost, friendly_error_message, sanitize_parameters
 from src.validation import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -66,13 +66,28 @@ class UnifiedGenerationService:
 
         generation_mode = generation_mode_for_payload(model, payload)
         duration = payload.get("duration")
-        if isinstance(duration, int) and duration > 0:
+        text_len = sum(
+            len(payload[k])
+            for k in ("lyrics", "text", "prompt")
+            if isinstance(payload.get(k), str)
+        )
+        if isinstance(duration, (int, float)) and duration > 0:
             pre_cost = calculate_cost(
                 model.replicate_id,
                 predict_time=0.0,
                 output_duration=float(duration),
+                text_length=text_len,
             )
             cost_label = format_cost(pre_cost)
+        elif text_len > 0 or model.model_type == "audio":
+            pre_cost = calculate_cost(
+                model.replicate_id,
+                predict_time=0.0,
+                text_length=text_len,
+            )
+            cost_label = format_cost(pre_cost) if pre_cost > 0 else (
+                model.pricing_notes or "Cost unknown until generation completes"
+            )
         else:
             cost_label = "Cost unknown until generation completes"
 
@@ -191,7 +206,11 @@ class UnifiedGenerationService:
             return result or {"success": False, "error": "No result returned"}
         except Exception as exc:
             logger.exception("Generation workflow error for %s: %s", model_name, exc)
-            return {"success": False, "error": str(exc)}
+            return {
+                "success": False,
+                "error": friendly_error_message(exc),
+                "error_detail": str(exc),
+            }
 
 
 _generation_service: UnifiedGenerationService | None = None
@@ -276,6 +295,25 @@ def run_local_safety_checks() -> dict[str, Any]:
                 prepare_payload_for_model(model, prompt="a wooden chair")
             elif model.name == "hunyuan3d-2mv":
                 prepare_payload_for_model(model, front_image=probe_file)
+            elif model.name == "music-2.5":
+                prepare_payload_for_model(model, lyrics="verse one\nchorus")
+            elif model.name == "stable-audio-2.5":
+                prepare_payload_for_model(
+                    model, prompt="ambient pad", duration=5
+                )
+            elif model.name == "lyria-2":
+                prepare_payload_for_model(model, prompt="calm piano")
+            elif model.name in (
+                "realtime-tts-2",
+                "realtime-tts-1.5-max",
+                "speech-2.8-hd",
+                "speech-2.8-turbo",
+            ):
+                prepare_payload_for_model(model, text="Hello, this is a test.")
+            elif model.name == "chatterbox":
+                prepare_payload_for_model(model, prompt="Hello world")
+            elif model.name == "elevenlabs-v3":
+                prepare_payload_for_model(model, prompt="Hello world")
             else:
                 prepare_payload_for_model(model, image=probe_file)
         except Exception as exc:

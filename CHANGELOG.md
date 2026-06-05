@@ -8,19 +8,83 @@ These are documented in `ROADMAP.md` and implementation notes; **no code yet** u
 
 | Version | Scope | Doc |
 |---------|--------|-----|
-| **v0.7.0** | Better errors, progress, recovery | `ROADMAP.md` |
-| **v0.9.0** | Audio tab: 3 music + 6 speech Replicate models (9 total; **research fetched** — see `IMPLEMENTATION_VER-0.9.0-*.json`) | `IMPLEMENTATION_VER-0.9.0.md` |
-| **v0.8.0** | Browser QA + authorized smoke (video, 3D, music, speech) | `ROADMAP.md` |
+| **v0.9.0** | Browser QA + authorized smoke (video, 3D, music, speech) | `IMPLEMENTATION_VER-0.9.0.md` |
 | **v1.0.0** | Stable Replicate-only personal baseline | `ROADMAP.md` |
 | **Post-1.0** | Aleph keyframes, fal.ai | `ROADMAP.md` |
 
-**v0.9.0 audio models (planned)** — music: `minimax/music-2.5`, `stability-ai/stable-audio-2.5`, `google/lyria-2`; speech: `inworld/realtime-tts-2`, `inworld/realtime-tts-1.5-max`, `minimax/speech-2.8-hd`, `minimax/speech-2.8-turbo`, `resemble-ai/chatterbox`, `elevenlabs/v3`.
+
+
+---
+
+## v0.8.0 — Replicate audio (music + speech)
+
+**Status**: Current
+
+Milestone numbering: **v0.8.0 = Audio** (this release). **v0.9.0 = smoke QA** (next). Research JSON files retain the `IMPLEMENTATION_VER-0.9.0-*.json` filenames from the original fetch.
+
+### Added
+
+- **Audio** tab with workflow filter (music / speech / all) and nine Replicate models.
+- `src/audio_models_config.py`, `src/audio_payload.py`, `src/audio_gen.py`.
+- Music: MiniMax Music 2.5, Stable Audio 2.5, Google Lyria 2.
+- Speech: Inworld TTS 2 & 1.5 Max, MiniMax Speech HD/Turbo, Chatterbox, ElevenLabs v3.
+- `outputs/audio/` storage, `st.audio()` preview, History support and remix to Audio.
+- Audio-specific pricing estimates (per file, characters, tokens, output seconds).
+
+### Changed
+
+- Pre-1.0 path: v0.8.0 audio → v0.9.0 smoke → v1.0.0 (swapped from earlier 0.9/0.8 order).
+- `ModelConfig.model_type` includes `"audio"`; catalogue is 11 video + 7 3D + 9 audio.
+
+### Verification
+
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- `uv run python scripts/model_diagnostics.py --no-remote`
+- No paid Replicate calls.
+
+---
+
+## v0.7.0 — Better errors, progress, and recovery
+
+**Status**: Superseded
+
+### Added
+
+- **`src/generation_progress.py`**: plain-English Replicate status labels, model-type
+  long-wait thresholds (3 min video / 7 min 3D), and shared progress line formatting
+  with optional “taking longer than usual” hints.
+- **`src/ui/generation_panel.py`**: shared Video/3D preview panel, progress updater,
+  and outcome handling (success, failed result dict, or exception).
+- **Expanded `friendly_error_message`**: maps common HTTP/provider cases (401, 402,
+  403, 404, 422, 429, 5xx), canceled jobs, content-policy blocks, timeouts, and
+  long raw traces to actionable copy.
+- **`technical_error_detail`** and a **Technical details** expander on failed
+  previews with Replicate job link + raw provider message when useful.
+- **`ReplicateAdapter.wait_for_prediction`** and **`prediction_result_dict`** for
+  consistent polling and failure normalization across video and 3D paths.
+
+### Changed
+
+- Video and 3D tabs use the shared generation panel; live status shows queue/run
+  labels, elapsed time, prediction id, and a **Open job on Replicate** link during
+  polling.
+- Failed generations show a Replicate link button plus optional technical expander.
+- `UnifiedGenerationService.generate` returns friendly errors with `error_detail`
+  for debugging.
+
+### Verification
+
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- Non-paid probes for error translation and progress thresholds.
+- No paid Replicate calls.
 
 ---
 
 ## v0.6.11 — Creative param exposure, presets, History remix, and UX polish (pre-0.7 completion)
 
-**Status**: Current
+**Status**: Superseded
 
 This release finishes all planned work before v0.7.0 (better errors/progress/recovery). It consolidates the major UX improvements for exposing model parameters and enabling creative freedom (originally scoped across 0.6.6/0.6.7 plans) on top of the v0.6.10 video expansion, plus final pre-0.7 polish items.
 

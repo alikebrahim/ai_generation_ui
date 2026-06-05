@@ -19,6 +19,7 @@ import streamlit as st
 from src import utils as app_utils
 from src.config import check_token
 from src.cost_tracker import init_db
+from src.ui.audio_tab import render_audio_tab
 from src.ui.history_tab import render_history_tab
 from src.ui.style import inject_app_style
 from src.ui.threed_tab import render_3d_tab
@@ -48,7 +49,9 @@ except RuntimeError as err:
 init_db()
 
 st.title("🎬 AI Generation Studio")
-st.caption("A personal Streamlit workspace for videos, 3D models, and history.")
+st.caption(
+    "A personal Streamlit workspace for videos, 3D models, audio, and history."
+)
 
 if hasattr(st, "divider"):
     st.divider()
@@ -60,6 +63,7 @@ if hasattr(st, "divider"):
 PAGE_LABELS = {
     "video": "🎥 Video",
     "3d": "🧊 3D",
+    "audio": "🎵 Audio",
     "history": "📊 History",
 }
 LABEL_TO_PAGE = {label: page for page, label in PAGE_LABELS.items()}
@@ -86,5 +90,7 @@ if selected_page == "video":
     render_video_tab()
 elif selected_page == "3d":
     render_3d_tab()
+elif selected_page == "audio":
+    render_audio_tab()
 else:
     render_history_tab()
