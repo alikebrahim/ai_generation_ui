@@ -68,7 +68,12 @@ def run_generation(model_name: str, **kwargs) -> dict | None:
         raise ValueError(f"Unknown model: {model_name}")
 
     handler = GENERATION_HANDLERS[model_name]
-    return handler(**kwargs)
+
+    # Strip internal kwargs (prefixed with _) that are consumed upstream in
+    # replicate_payload.py / forms plumbing but are never meant for the handler.
+    clean_kwargs = {k: v for k, v in kwargs.items() if not k.startswith("_")}
+
+    return handler(**clean_kwargs)
 
 
 def verify_all_models_have_handlers() -> bool:
