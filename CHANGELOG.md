@@ -2,9 +2,76 @@
 
 All notable project changes are tracked here using SemVer-style versions.
 
-## v1.0.0 — Stable Replicate-only personal baseline
+## v1.1.0 — Image generation + model catalogue modularization
 
 **Status**: Current
+
+Adds a full Image tab with twelve Replicate image models (Flux 2 Max/Pro/Flex, Flux Schnell, Nano Banana 2, Seedream 4.5/5 Lite, Imagen 4 Ultra/Fast, Ideogram V3 Turbo, Recraft V4/SVG) and modularizes the monolithic model catalogue into per-type config files for maintainability.
+
+### Added
+- **Image tab** with 12 models, 8 workflow filters (text-to-image, image edit, fast draft, max quality, typography, vector/SVG, design-first, all images).
+- `src/image_models_config.py` — 12 ModelConfig entries with provider metadata (category, summary, strength tags).
+- `src/image_payload.py` — payload builders (`build_flux_2_max_input`, etc.) merged into `PAYLOAD_BUILDERS`.
+- `src/generation_pipeline.py` — `generate_image_model` and `finalize_image_result` with multi-output download, history recording, and cost tracking.
+- `src/ui/image_tab.py`, `src/ui/image_workflow.py` — Image tab with workflow filter, model picker, generation, and result display.
+- `render_image_result` in `src/ui/result_views.py` — inline image preview, multi-output display, metrics, and download.
+- `src/ui/model_caption.py` — shared model-picker caption from provider metadata.
+- `src/ui/media_summary.py` — attached-media summary before Generate.
+- Schema JSON snapshots in `schemas/replicate/` for all 12 image models.
+- `OUTPUTS_IMAGES_DIR` in `src/config.py`; image storage path in `src/storage_service.py`.
+- Image pricing in `src/pricing.py` (`IMAGE_PER_OUTPUT` table).
+
+### Changed
+- **Model catalogue modularized**: `src/models_config.py` (formerly ~1400 lines) split into:
+  - `src/video_models_config.py` (730 lines, 11 models)
+  - `src/threed_models_config.py` (683 lines, 7 models)
+  - `src/image_models_config.py` (384 lines, 12 models)
+  - `src/audio_models_config.py` (430 lines, 9 models)
+  - `src/models_config.py` now just aggregates (88 lines) and re-exports for backward compatibility.
+- `src/probe_fixtures.py` extracted from inline logic; declarative `PROBE_KWARGS_BY_MODEL`.
+- `ModelConfig.model_type` now includes `"image"` in the `ModelType` literal.
+- `app.py` — Image tab in page navigation (segmented control: Video | Image | 3D | Audio | History).
+- History tab — image preview, remix target, and filter support.
+- AGENTS.md, README.md scope updated: image generation is now in scope.
+
+### Verification (non-paid)
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- `uv run python scripts/model_diagnostics.py`
+
+---
+
+## v1.0.1 — Model capability & frame-upload remediation
+
+**Status**: Superseded by v1.1.0
+
+Fixes a critical bug where Kling and Seedance multimodal models silently dropped start/end frame uploads when files were added in **Frames and references** but duplicate empty uploaders existed in **More settings**. Also improves honesty of frame/reference UI and extends validation.
+
+### Fixed
+- **Silent frame upload wipe** (Kling Omni/O1, Seedance 2.0/Fast): preview-column uploads are no longer overwritten by empty advanced uploaders (`set_upload_kwarg` only sets when a file is present).
+- **Duplicate media uploaders** removed from `advanced_params` for multimodal video models; each file param has a single UI site in the preview column.
+- **End frame gating**: end-frame control appears only after a start frame is uploaded, with plain-English copy.
+
+### Added
+- **Attached media summary** above Generate (labels + likely workflow mode).
+- **Capability UI audit** in `schema_diagnostics.py` (`duplicate_upload_advanced` → error).
+- **Multimodal frame upload probes** in `scripts/model_diagnostics.py` and `run_local_safety_checks`.
+- Helpers: `src/ui/form_utils.py` (`set_upload_kwarg`, `preview_owned_file_params`), `src/ui/media_summary.py`.
+
+### Changed
+- Extra cross-field validation: Seedance `last_frame_image` / `reference_audios` rules; Kling Omni 4K + reference video block.
+- Seedance 2.0: `image` moved out of `balanced_params` (preview column only).
+
+### Verification (non-paid)
+- `python -m compileall -q app.py src`
+- `uv run ruff check .`
+- `uv run python scripts/model_diagnostics.py`
+
+---
+
+## v1.0.0 — Stable Replicate-only personal baseline
+
+**Status**: Superseded by v1.0.1
 
 v1.0.0 completes the Replicate-only personal baseline: a comfortable, consistent local tool for video/3D/audio generation. The primary work was the UI element & component readjustment pass (per `UI_ASSESSMENT_PRE_V1.md`) plus critical reliability fixes so the app loads and runs cleanly for day-to-day personal use. fal.ai work remains post-1.0.
 

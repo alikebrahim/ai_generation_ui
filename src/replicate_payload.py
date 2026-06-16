@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.audio_payload import AUDIO_PAYLOAD_BUILDERS
+from src.image_payload import IMAGE_PAYLOAD_BUILDERS
 from src.models_config import ModelConfig, get_model_by_name
 from src.utils import image_to_data_uri, uploaded_file_metadata
 from src.validation import ValidationError, validate_params
@@ -543,6 +544,7 @@ PAYLOAD_BUILDERS: dict[str, PayloadBuilder] = {
     "adirik-texture": build_adirik_texture_input,
     "rodin": build_rodin_input,
     **AUDIO_PAYLOAD_BUILDERS,
+    **IMAGE_PAYLOAD_BUILDERS,
 }
 
 
@@ -615,9 +617,24 @@ def prepare_payload_for_model(
             )
 
     payload = build_replicate_input(model.name, **kwargs)
+    validate_payload_for_model(model, payload)
+    return payload
+
+
+def validate_payload_for_model(model: ModelConfig, payload: dict[str, Any]) -> None:
+    """Run cross-field and schema validation on a built Replicate input dict."""
     _validate_video_payload_rules(model, payload)
     validate_params(model, payload)
-    return payload
+
+
+def _has_media_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, list):
+        return len(value) > 0
+    if isinstance(value, str):
+        return bool(value.strip())
+    return True
 
 
 def _validate_video_payload_rules(
@@ -629,10 +646,34 @@ def _validate_video_payload_rules(
             raise ValidationError(
                 "Kling Omni cannot use native audio together with a reference video."
             )
+        if payload.get("mode") == "4k" and payload.get("reference_video"):
+            raise ValidationError(
+                "Kling Omni 4K mode does not support reference video."
+            )
     if payload.get("end_image") and not (
         payload.get("start_image") or payload.get("image")
     ):
         raise ValidationError("End frame requires a start frame image first.")
+    if payload.get("last_frame_image") and not payload.get("image"):
+        raise ValidationError(
+            "End frame requires a start frame image first."
+        )
+    if model.name in ("seedance-2.0", "seedance-2.0-fast"):
+        if _has_media_value(payload.get("reference_audios")):
+            has_anchor = any(
+                _has_media_value(payload.get(key))
+                for key in (
+                    "reference_images",
+                    "reference_videos",
+                    "image",
+                    "last_frame_image",
+                )
+            )
+            if not has_anchor:
+                raise ValidationError(
+                    "Reference audio requires at least one reference image, "
+                    "reference video, or start frame image."
+                )
 
 
 def generation_mode_for_payload(model: ModelConfig, payload: dict[str, Any]) -> str:
@@ -642,6 +683,21 @@ def generation_mode_for_payload(model: ModelConfig, payload: dict[str, Any]) -> 
         if "music" in tags:
             return "text_to_music"
         return "text_to_speech"
+    if model.model_type == "image":
+        has_refs = any(
+            _has_media_value(payload.get(key))
+            for key in (
+                "image_input",
+                "input_images",
+                "image",
+                "style_reference_images",
+            )
+        )
+        if "vector_svg" in (model.workflow_tags or []):
+            return "text_to_vector"
+        if has_refs or payload.get("mask"):
+            return "image_edit"
+        return "text_to_image"
     if model.model_type == "video":
         if model.workflow_archetype == "motion_transfer":
             return "motion_transfer"

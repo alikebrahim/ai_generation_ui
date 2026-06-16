@@ -1,5 +1,7 @@
 """Replicate audio model catalogue (music + speech) — v0.8.0."""
 
+# ruff: noqa: E501
+
 from __future__ import annotations
 
 from src.domain import ModelConfig
@@ -18,6 +20,9 @@ MUSIC_2_5 = ModelConfig(
     provider="replicate",
     provider_model_id="minimax/music-2.5",
     provider_endpoint="versionless",
+    provider_category="Lyrics-driven songs",
+    provider_summary="MiniMax Music 2.5 — full songs from lyrics plus optional style prompt. Use section tags like [Verse] and [Chorus].",
+    strength_tags=["music", "lyrics", "full_songs"],
     workflow_tags=["music"],
     media_roles={
         "lyrics": "Song lyrics",
@@ -56,6 +61,9 @@ STABLE_AUDIO_2_5 = ModelConfig(
     provider="replicate",
     provider_model_id="stability-ai/stable-audio-2.5",
     provider_endpoint="versionless",
+    provider_category="Prompt-driven music (long)",
+    provider_summary="Stability Stable Audio 2.5 — instrumental or ambient music from text up to ~190 seconds. Tunable steps and guidance.",
+    strength_tags=["music", "long_form", "instrumental", "tunable"],
     workflow_tags=["music"],
     media_roles={"prompt": "Music description"},
     balanced_params=["prompt", "duration"],
@@ -89,6 +97,9 @@ LYRIA_2 = ModelConfig(
     provider="replicate",
     provider_model_id="google/lyria-2",
     provider_endpoint="versionless",
+    provider_category="Google music generation",
+    provider_summary="Google Lyria 2 — high-quality music from a text description with optional negative prompt. Fixed output length per run.",
+    strength_tags=["music", "high_quality", "negative_prompt"],
     workflow_tags=["music"],
     media_roles={
         "prompt": "Music description",
@@ -118,6 +129,9 @@ REALTIME_TTS_2 = ModelConfig(
     provider="replicate",
     provider_model_id="inworld/realtime-tts-2",
     provider_endpoint="versionless",
+    provider_category="Realtime TTS (multilingual)",
+    provider_summary="Inworld Realtime TTS 2 — natural speech with preset or cloned voices, bracket delivery tags, and auto language detection.",
+    strength_tags=["speech", "multilingual", "voice_cloning", "delivery_tags"],
     workflow_tags=["speech"],
     media_roles={
         "text": "Words to speak",
@@ -168,6 +182,9 @@ REALTIME_TTS_15_MAX = ModelConfig(
     provider="replicate",
     provider_model_id="inworld/realtime-tts-1.5-max",
     provider_endpoint="versionless",
+    provider_category="Max-quality realtime TTS",
+    provider_summary="Inworld TTS 1.5 Max — higher-fidelity voice rendering than Realtime 2; same character-billed pricing model.",
+    strength_tags=["speech", "max_quality", "preset_voices"],
     workflow_tags=["speech"],
     media_roles={"text": "Words to speak", "voice_id": "Voice"},
     balanced_params=["text", "voice_id"],
@@ -208,6 +225,9 @@ SPEECH_28_HD = ModelConfig(
     provider="replicate",
     provider_model_id="minimax/speech-2.8-hd",
     provider_endpoint="versionless",
+    provider_category="Expressive HD speech",
+    provider_summary="MiniMax Speech 2.8 HD — long-form narration (up to 10k chars) with emotion, speed, pitch, and many voice presets.",
+    strength_tags=["speech", "hd", "emotion", "long_form"],
     workflow_tags=["speech"],
     media_roles={
         "text": "Words to speak",
@@ -266,6 +286,9 @@ SPEECH_28_TURBO = ModelConfig(
     provider="replicate",
     provider_model_id="minimax/speech-2.8-turbo",
     provider_endpoint="versionless",
+    provider_category="Fast expressive speech",
+    provider_summary="MiniMax Speech 2.8 Turbo — same controls as HD but faster and cheaper for drafts and high-volume TTS.",
+    strength_tags=["speech", "fast", "emotion", "cost_efficient"],
     workflow_tags=["speech"],
     media_roles={
         "text": "Words to speak",
@@ -323,6 +346,9 @@ CHATTERBOX = ModelConfig(
     provider="replicate",
     provider_model_id="resemble-ai/chatterbox",
     provider_endpoint="versionless",
+    provider_category="Expressive short TTS",
+    provider_summary="Resemble Chatterbox — characterful speech from a short prompt with temperature and exaggeration sliders.",
+    strength_tags=["speech", "expressive", "character", "cost_efficient"],
     workflow_tags=["speech"],
     media_roles={"prompt": "Words to speak"},
     balanced_params=["prompt"],
@@ -352,6 +378,9 @@ ELEVENLABS_V3 = ModelConfig(
     provider="replicate",
     provider_model_id="elevenlabs/v3",
     provider_endpoint="versionless",
+    provider_category="Premium voice (ElevenLabs)",
+    provider_summary="ElevenLabs v3 on Replicate — polished voices with stability, style, and continuity hints via previous/next text.",
+    strength_tags=["speech", "premium", "voice_control", "continuity"],
     workflow_tags=["speech"],
     media_roles={
         "prompt": "Words to speak",

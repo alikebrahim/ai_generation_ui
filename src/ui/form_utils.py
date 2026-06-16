@@ -2,7 +2,52 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from src.models_config import ModelConfig
+
+
+def has_upload_value(value: Any) -> bool:
+    """Return True when a file uploader holds one or more files."""
+    if value is None:
+        return False
+    if isinstance(value, list):
+        return len(value) > 0
+    return True
+
+
+def set_upload_kwarg(kwargs: dict, param: str, uploaded: Any) -> None:
+    """Set ``_uploaded_{param}`` only when the user provided a file.
+
+    Empty advanced uploaders must not overwrite values set in the preview column.
+    """
+    if not has_upload_value(uploaded):
+        return
+    kwargs[f"_uploaded_{param}"] = uploaded
+
+
+def preview_owned_file_params(model: ModelConfig) -> frozenset[str]:
+    """File params rendered in the multimodal preview column (single site each)."""
+    if model.workflow_archetype != "multimodal_video":
+        return frozenset()
+    owned: set[str] = set()
+    if "start_image" in model.file_input_params:
+        owned.add("start_image")
+    elif "image" in model.file_input_params:
+        owned.add("image")
+    if "end_image" in model.file_input_params:
+        owned.add("end_image")
+    if "last_frame_image" in model.file_input_params:
+        owned.add("last_frame_image")
+    for param in (
+        "reference_images",
+        "reference_video",
+        "reference_videos",
+        "reference_audios",
+    ):
+        if param in model.file_input_params:
+            owned.add(param)
+    return frozenset(owned)
 
 
 def normalize_file_kwargs(model: ModelConfig, kwargs: dict) -> dict:

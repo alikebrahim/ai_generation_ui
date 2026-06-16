@@ -13,37 +13,17 @@ from src.models_config import (
     get_range_for_param,
 )
 from src.pricing import calculate_cost
-from src.ui.form_utils import normalize_file_kwargs
+from src.ui.form_utils import (
+    normalize_file_kwargs,
+    preview_owned_file_params,
+    set_upload_kwarg,
+)
+from src.ui.media_summary import render_media_attachment_summary
 from src.ui.request_preview import render_request_preview
 from src.ui.video_workflow import (
     render_archetype_media_wide,
     render_multimodal_media_sections,
 )
-
-
-def _threed_model_caption(model: ModelConfig) -> str:
-    """Short plain-English description for the selected 3D model."""
-    captions = {
-        "hunyuan-3d-3.1": (
-            "Create a 3D model from a text description or one subject image."
-        ),
-        "hunyuan3d-2mv": (
-            "Upload a front view (required). Side/back views can improve consistency."
-        ),
-        "text2tex": (
-            "Upload an .obj mesh, then describe the texture you want applied."
-        ),
-        "adirik-texture": (
-            "Upload an untextured mesh, then describe how the surface should look."
-        ),
-        "rodin": (
-            "Describe the 3D model. Optionally add a reference image for likeness."
-        ),
-    }
-    if model.name in captions:
-        return captions[model.name]
-    return "Upload one clear subject image for image-to-3D generation."
-
 
 
 def friendly_label(param_name: str, model: ModelConfig | None = None) -> str:
@@ -321,9 +301,7 @@ def render_generation_form(
 
     st.subheader(f"Generate with {model.display_name}")
 
-    if model.model_type == "3d":
-        st.caption(_threed_model_caption(model))
-    elif model.supports_image and not model.requires_image:
+    if model.supports_image and not model.requires_image and model.model_type != "3d":
         st.caption("Use text only, or optionally add an image to guide the result.")
 
     kwargs: dict = {}
@@ -501,6 +479,8 @@ def render_generation_form(
             st.caption("★ = high-impact (affects quality, time, or cost)")
         st.markdown("#### Main settings")
         skip_balanced = {"prompt", "image", "images", "video"}
+        if model.model_type == "image":
+            skip_balanced |= set(model.file_input_params.keys())
         if archetype == "multimodal_video":
             skip_balanced |= {
                 "start_image",
@@ -516,11 +496,19 @@ def render_generation_form(
             for p in model.balanced_params
             if p not in skip_balanced
         ]
+        preview_owned = preview_owned_file_params(model)
         for param_name in visible_params:
             if param_name in model.file_input_params:
+                if param_name in preview_owned:
+                    continue
                 extensions = model.file_input_params[param_name]
                 required = param_name in model.required_file_params
-                is_multi = "reference" in param_name or param_name == "images"
+                is_multi = (
+                    "reference" in param_name
+                    or param_name == "images"
+                    or param_name
+                    in ("image_input", "input_images", "style_reference_images")
+                )
                 uploaded = st.file_uploader(
                     friendly_label(param_name, model)
                     + ("" if required else " (optional)"),
@@ -528,14 +516,11 @@ def render_generation_form(
                     key=f"file_bal_{model.name}_{param_name}",
                     accept_multiple_files=is_multi,
                 )
-                if is_multi:
-                    kwargs[f"_uploaded_{param_name}"] = uploaded if uploaded else None
-                    if uploaded:
-                        st.caption(f"{len(uploaded)} file(s)")
-                else:
-                    kwargs[f"_uploaded_{param_name}"] = uploaded
-                    if uploaded is not None and param_name.endswith("_image"):
-                        st.image(uploaded, caption="Preview", width="stretch")
+                set_upload_kwarg(kwargs, param_name, uploaded)
+                if is_multi and uploaded:
+                    st.caption(f"{len(uploaded)} file(s)")
+                elif uploaded is not None and param_name.endswith("_image"):
+                    st.image(uploaded, caption="Preview", width="stretch")
                 continue
             value = render_param_widget(model, param_name)
             if value is not None or param_name == "seed":
@@ -582,9 +567,18 @@ def render_generation_form(
                         for param_name in g_to_render:
                             rendered.add(param_name)
                             if param_name in model.file_input_params:
+                                if param_name in preview_owned:
+                                    continue
                                 extensions = model.file_input_params[param_name]
                                 is_multi = (
-                                    "reference" in param_name or param_name == "images"
+                                    "reference" in param_name
+                                    or param_name == "images"
+                                    or param_name
+                                    in (
+                                        "image_input",
+                                        "input_images",
+                                        "style_reference_images",
+                                    )
                                 )
                                 uploaded = st.file_uploader(
                                     friendly_label(param_name, model) + " (optional)",
@@ -592,20 +586,15 @@ def render_generation_form(
                                     key=f"file_adv_{model.name}_{param_name}",
                                     accept_multiple_files=is_multi,
                                 )
-                                if is_multi:
-                                    kwargs[f"_uploaded_{param_name}"] = (
-                                        uploaded if uploaded else None
+                                set_upload_kwarg(kwargs, param_name, uploaded)
+                                if is_multi and uploaded:
+                                    st.caption(f"{len(uploaded)} file(s)")
+                                elif uploaded is not None and param_name.endswith(
+                                    "_image"
+                                ):
+                                    st.image(
+                                        uploaded, caption="Preview", width="stretch"
                                     )
-                                    if uploaded:
-                                        st.caption(f"{len(uploaded)} file(s)")
-                                else:
-                                    kwargs[f"_uploaded_{param_name}"] = uploaded
-                                    if uploaded is not None and param_name.endswith(
-                                        "_image"
-                                    ):
-                                        st.image(
-                                            uploaded, caption="Preview", width="stretch"
-                                        )
                                 continue
                             value = render_param_widget(
                                 model, param_name, advanced=True
@@ -618,9 +607,18 @@ def render_generation_form(
                         st.markdown("**Other**")
                         for param_name in leftover:
                             if param_name in model.file_input_params:
+                                if param_name in preview_owned:
+                                    continue
                                 extensions = model.file_input_params[param_name]
                                 is_multi = (
-                                    "reference" in param_name or param_name == "images"
+                                    "reference" in param_name
+                                    or param_name == "images"
+                                    or param_name
+                                    in (
+                                        "image_input",
+                                        "input_images",
+                                        "style_reference_images",
+                                    )
                                 )
                                 uploaded = st.file_uploader(
                                     friendly_label(param_name, model) + " (optional)",
@@ -628,20 +626,15 @@ def render_generation_form(
                                     key=f"file_adv_{model.name}_{param_name}",
                                     accept_multiple_files=is_multi,
                                 )
-                                if is_multi:
-                                    kwargs[f"_uploaded_{param_name}"] = (
-                                        uploaded if uploaded else None
+                                set_upload_kwarg(kwargs, param_name, uploaded)
+                                if is_multi and uploaded:
+                                    st.caption(f"{len(uploaded)} file(s)")
+                                elif uploaded is not None and param_name.endswith(
+                                    "_image"
+                                ):
+                                    st.image(
+                                        uploaded, caption="Preview", width="stretch"
                                     )
-                                    if uploaded:
-                                        st.caption(f"{len(uploaded)} file(s)")
-                                else:
-                                    kwargs[f"_uploaded_{param_name}"] = uploaded
-                                    if uploaded is not None and param_name.endswith(
-                                        "_image"
-                                    ):
-                                        st.image(
-                                            uploaded, caption="Preview", width="stretch"
-                                        )
                                 continue
                             value = render_param_widget(
                                 model, param_name, advanced=True
@@ -652,13 +645,15 @@ def render_generation_form(
                     # flat list (original behavior for models without groups)
                     for param_name in advanced_params:
                         if param_name in model.file_input_params:
+                            if param_name in preview_owned:
+                                continue
                             extensions = model.file_input_params[param_name]
                             uploaded = st.file_uploader(
                                 friendly_label(param_name, model) + " (optional)",
                                 type=extensions,
                                 key=f"file_adv_{model.name}_{param_name}",
                             )
-                            kwargs[f"_uploaded_{param_name}"] = uploaded
+                            set_upload_kwarg(kwargs, param_name, uploaded)
                             if uploaded is not None and param_name.endswith("_image"):
                                 st.image(uploaded, caption="Preview", width="stretch")
                             continue
@@ -667,6 +662,7 @@ def render_generation_form(
                             kwargs[param_name] = value
 
         render_request_preview(model, kwargs)
+        render_media_attachment_summary(model, kwargs)
 
         st.markdown("<div style='height: 0.35rem'></div>", unsafe_allow_html=True)
         generate_label = (

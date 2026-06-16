@@ -12,6 +12,7 @@ import requests
 
 from src.config import (
     OUTPUTS_AUDIO_DIR,
+    OUTPUTS_IMAGES_DIR,
     OUTPUTS_MODELS_3D_DIR,
     OUTPUTS_THUMBNAILS_DIR,
     OUTPUTS_VIDEOS_DIR,
@@ -31,16 +32,19 @@ class StorageService:
         models_3d_dir: Path = OUTPUTS_MODELS_3D_DIR,
         thumbnails_dir: Path = OUTPUTS_THUMBNAILS_DIR,
         audio_dir: Path = OUTPUTS_AUDIO_DIR,
+        images_dir: Path = OUTPUTS_IMAGES_DIR,
     ):
         """Initialize storage service with output directories."""
         self.video_dir = Path(video_dir)
         self.models_3d_dir = Path(models_3d_dir)
         self.thumbnails_dir = Path(thumbnails_dir)
         self.audio_dir = Path(audio_dir)
+        self.images_dir = Path(images_dir)
         self.video_dir.mkdir(parents=True, exist_ok=True)
         self.models_3d_dir.mkdir(parents=True, exist_ok=True)
         self.thumbnails_dir.mkdir(parents=True, exist_ok=True)
         self.audio_dir.mkdir(parents=True, exist_ok=True)
+        self.images_dir.mkdir(parents=True, exist_ok=True)
 
     def download_file(
         self,
@@ -129,10 +133,23 @@ class StorageService:
             dest_dir = self.video_dir
         elif media_type == "audio":
             dest_dir = self.audio_dir
+        elif media_type == "image":
+            dest_dir = self.images_dir
         else:
             dest_dir = self.models_3d_dir
         result = _download_output(url, dest_dir, prefix=prefix, timeout=timeout)
         local_path = result.get("local_path")
+        if local_path and media_type == "image":
+            path = Path(local_path)
+            suffix = path.suffix.lower()
+            mime = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".webp": "image/webp",
+                ".svg": "image/svg+xml",
+            }.get(suffix, "image/png")
+            result["mime_type"] = mime
         if local_path and media_type == "audio":
             path = Path(local_path)
             suffix = path.suffix.lower()

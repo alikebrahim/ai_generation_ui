@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import streamlit as st
 
-from src.audio_models_config import AUDIO_MODELS, MUSIC_MODELS
+from src.audio_models_config import AUDIO_MODELS
 from src.models_config import ModelConfig
 from src.ui.audio_forms import render_audio_generation_form
 from src.ui.generation_panel import build_preview_panel, run_model_generation
+from src.ui.model_caption import model_caption
 from src.ui.result_views import render_audio_result
 from src.validation import validate_params
 
@@ -112,10 +113,9 @@ def render_audio_tab() -> None:
             key="audio_model_name",
         )
         model = next((m for m in filtered if m.name == chosen), model)
-        category = (
-            "Music" if model in MUSIC_MODELS else "Speech"
-        )
-        st.caption(f"{category} · {model.output_notes or model.pricing_notes or ''}")
+        caption = model_caption(model)
+        if caption:
+            st.caption(caption)
 
     result_key = f"audio_generation_result_{model.name}"
     preview_handles, render_preview_panel = build_preview_panel(

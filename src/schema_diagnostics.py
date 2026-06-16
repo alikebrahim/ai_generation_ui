@@ -92,6 +92,116 @@ def _configured_param_names(model: ModelConfig) -> set[str]:
     return names
 
 
+def audit_capability_ui_config(model: ModelConfig) -> list[DiagnosticIssue]:
+    """Detect multimodal media params registered in multiple UI surfaces."""
+    from src.ui.form_utils import preview_owned_file_params
+
+    issues: list[DiagnosticIssue] = []
+    if model.workflow_archetype != "multimodal_video":
+        return issues
+
+    owned = preview_owned_file_params(model)
+    overlap_adv = owned & set(model.advanced_params)
+    if overlap_adv:
+        issues.append(
+            DiagnosticIssue(
+                "error",
+                "duplicate_upload_advanced",
+                "Preview-owned file params also listed in advanced_params: "
+                f"{sorted(overlap_adv)}.",
+            )
+        )
+    overlap_bal = owned & set(model.balanced_params)
+    if overlap_bal:
+        issues.append(
+            DiagnosticIssue(
+                "warning",
+                "duplicate_upload_balanced",
+                "Preview-owned file params also in balanced_params (must be "
+                f"skipped in controls): {sorted(overlap_bal)}.",
+            )
+        )
+    return issues
+
+
+def probe_multimodal_frame_uploads() -> list[str]:
+    """Verify preview-column frame uploads survive kwargs normalization."""
+    from io import BytesIO
+
+    from src.models_config import get_model_by_name
+    from src.replicate_payload import build_replicate_input, generation_mode_for_payload
+    from src.ui.form_utils import normalize_file_kwargs, set_upload_kwarg
+
+    class _FakeUpload:
+        def __init__(self, name: str) -> None:
+            self.name = name
+            self.type = "image/png"
+            self.size = 100
+
+        def getbuffer(self) -> BytesIO:
+            return BytesIO(b"\x89PNG\r\n\x1a\n" + b"x" * 50)
+
+    errors: list[str] = []
+    scenarios: list[tuple[str, dict[str, Any], dict[str, _FakeUpload]]] = [
+        (
+            "kling-v3-omni",
+            {
+                "prompt": "probe",
+                "mode": "pro",
+                "duration": 5,
+                "aspect_ratio": "16:9",
+            },
+            {
+                "start_image": _FakeUpload("start.png"),
+                "end_image": _FakeUpload("end.png"),
+            },
+        ),
+        (
+            "kling-o1",
+            {
+                "prompt": "probe",
+                "mode": "pro",
+                "duration": 5,
+                "aspect_ratio": "16:9",
+            },
+            {"start_image": _FakeUpload("start.png")},
+        ),
+        (
+            "seedance-2.0-fast",
+            {
+                "prompt": "probe",
+                "duration": 5,
+                "resolution": "720p",
+                "aspect_ratio": "16:9",
+            },
+            {
+                "image": _FakeUpload("start.png"),
+                "last_frame_image": _FakeUpload("end.png"),
+            },
+        ),
+    ]
+
+    for model_name, base_kwargs, uploads in scenarios:
+        model = get_model_by_name(model_name)
+        kwargs = dict(base_kwargs)
+        for param, upload in uploads.items():
+            set_upload_kwarg(kwargs, param, upload)
+
+        normalized = normalize_file_kwargs(model, kwargs)
+        payload = build_replicate_input(model_name, **normalized)
+        mode = generation_mode_for_payload(model, payload)
+        if model_name.startswith("kling"):
+            if "start_image" not in payload:
+                errors.append(f"{model_name}: start_image missing from payload")
+        else:
+            if "image" not in payload:
+                errors.append(f"{model_name}: image missing from payload")
+        if mode == "text_to_video":
+            errors.append(f"{model_name}: expected image_to_video, got {mode}")
+
+    return errors
+
+
 def compare_model_config(
     model: ModelConfig,
     remote: dict[str, Any] | None = None,
@@ -262,6 +372,8 @@ def compare_model_config(
                 "metadata_verified_date is empty.",
             )
         )
+
+    report.issues.extend(audit_capability_ui_config(model))
 
     return report
 

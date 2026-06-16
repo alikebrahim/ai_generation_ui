@@ -21,7 +21,7 @@ def render_idle_preview_message(model_type: str) -> str:
     """Copy shown before the first generation in the preview panel."""
     hint = typical_duration_hint(model_type)
     key = model_type.lower()
-    label = {"3d": "3D", "audio": "Audio"}.get(key, "Video")
+    label = {"3d": "3D", "audio": "Audio", "image": "Image"}.get(key, "Video")
     return (
         "Run a generation and live status plus the final preview will stay open "
         f"here. {label} jobs take {hint}."

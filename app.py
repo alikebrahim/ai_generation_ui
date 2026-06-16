@@ -18,9 +18,10 @@ import streamlit as st
 
 from src import utils as app_utils
 from src.config import check_token
-from src.cost_tracker import init_db
+from src.history_service import get_history_service
 from src.ui.audio_tab import render_audio_tab
 from src.ui.history_tab import render_history_tab
+from src.ui.image_tab import render_image_tab
 from src.ui.style import inject_app_style
 from src.ui.threed_tab import render_3d_tab
 from src.ui.video_tab import render_video_tab
@@ -46,7 +47,7 @@ except RuntimeError as err:
     st.error(str(err))
     st.stop()
 
-init_db()
+get_history_service().init_db()
 
 st.title("🎬 AI Generation Studio")
 
@@ -59,6 +60,7 @@ if hasattr(st, "divider"):
 
 PAGE_LABELS = {
     "video": "🎥 Video",
+    "image": "🖼️ Image",
     "3d": "🧊 3D",
     "audio": "🎵 Audio",
     "history": "📊 History",
@@ -85,6 +87,8 @@ if selected_page != active_page:
 
 if selected_page == "video":
     render_video_tab()
+elif selected_page == "image":
+    render_image_tab()
 elif selected_page == "3d":
     render_3d_tab()
 elif selected_page == "audio":

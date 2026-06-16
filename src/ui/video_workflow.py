@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import streamlit as st
 
 from src.models_config import VIDEO_MODELS, ModelConfig
+from src.ui.form_utils import set_upload_kwarg
 
 VIDEO_WORKFLOW_FILTERS: list[tuple[str, str]] = [
     ("all", "All models"),
@@ -51,16 +54,17 @@ def _file_uploader(
     required: bool = False,
     key_suffix: str = "",
     multiple: bool = False,
-) -> None:
-    """Render one (or multi) file uploader into session kwargs via caller's dict."""
+    label_override: str | None = None,
+) -> Any:
+    """Render one (or multi) file uploader."""
     extensions = model.file_input_params.get(param_name, ["png", "jpg", "jpeg"])
-    label = model.media_roles.get(
+    label = label_override or model.media_roles.get(
         param_name, param_name.replace("_", " ").title()
     )
     is_ref_list = "reference" in param_name
     use_multi = multiple or is_ref_list
     uploaded = st.file_uploader(
-        label + (" *" if required else " (optional)"),
+        label + (" *" if required else ""),
         type=extensions,
         key=f"wf_{model.name}_{param_name}{key_suffix}",
         accept_multiple_files=use_multi,
@@ -78,12 +82,12 @@ def render_archetype_media_wide(
         col_a, col_b = st.columns(2)
         with col_a:
             img = _file_uploader(model, "image", required=True)
-            kwargs["_uploaded_image"] = img
+            set_upload_kwarg(kwargs, "image", img)
             if img is not None:
                 st.image(img, caption="Character preview", width="stretch")
         with col_b:
             vid = _file_uploader(model, "video", required=True)
-            kwargs["_uploaded_video"] = vid
+            set_upload_kwarg(kwargs, "video", vid)
             if vid is not None:
                 st.video(vid)
         if model.name == "kling-v3-motion":
@@ -96,7 +100,7 @@ def render_archetype_media_wide(
     if model.workflow_archetype == "video_edit":
         st.markdown("#### Source video and edit instructions")
         vid = _file_uploader(model, "video", required=True)
-        kwargs["_uploaded_video"] = vid
+        set_upload_kwarg(kwargs, "video", vid)
         if vid is not None:
             st.video(vid)
         st.caption("Describe what to change — keep the rest of the clip as-is.")
@@ -120,33 +124,57 @@ def _first_frame_param(model: ModelConfig) -> str | None:
     return None
 
 
-def render_multimodal_media_sections(model: ModelConfig, kwargs: dict) -> None:
-    """Start/end frame and optional single reference uploads."""
-    with st.container(border=True):
-        st.markdown("#### Frames and references")
-        first_param = _first_frame_param(model)
-        if first_param is not None:
-            start = _file_uploader(model, first_param)
-            if start is not None:
-                kwargs[f"_uploaded_{first_param}"] = start
-                st.image(start, caption="Start frame", width="stretch")
+def _end_frame_param(model: ModelConfig) -> str | None:
+    if "end_image" in model.file_input_params:
+        return "end_image"
+    if "last_frame_image" in model.file_input_params:
+        return "last_frame_image"
+    return None
 
-        if "end_image" in model.file_input_params or "last_frame_image" in (
-            model.file_input_params
-        ):
-            add_end = st.checkbox(
-                "Add an end frame (optional)",
-                key=f"end_chk_{model.name}",
+
+def render_multimodal_media_sections(model: ModelConfig, kwargs: dict) -> None:
+    """Start/end frame and optional reference uploads (single site per param)."""
+    with st.container(border=True):
+        st.markdown("#### Frames and references (optional)")
+        st.caption(
+            "Leave frames empty for text-to-video. Add a start frame to animate "
+            "your image. References need matching tags in your prompt."
+        )
+        first_param = _first_frame_param(model)
+        start_uploaded = None
+        if first_param is not None:
+            start_label = (
+                "Start frame — optional; turns this into image-to-video"
             )
-            if add_end:
-                end_param = (
-                    "end_image"
-                    if "end_image" in model.file_input_params
-                    else "last_frame_image"
+            start_uploaded = _file_uploader(
+                model,
+                first_param,
+                label_override=start_label,
+            )
+            set_upload_kwarg(kwargs, first_param, start_uploaded)
+            if start_uploaded is not None:
+                st.image(start_uploaded, caption="Start frame", width="stretch")
+
+        end_param = _end_frame_param(model)
+        if end_param is not None:
+            if start_uploaded is not None:
+                add_end = st.checkbox(
+                    "Add an end frame (requires start frame above)",
+                    key=f"end_chk_{model.name}",
                 )
-                end = _file_uploader(model, end_param)
-                if end is not None:
-                    kwargs[f"_uploaded_{end_param}"] = end
+                if add_end:
+                    end = _file_uploader(
+                        model,
+                        end_param,
+                        label_override="End frame",
+                    )
+                    set_upload_kwarg(kwargs, end_param, end)
+                    if end is not None:
+                        st.image(end, caption="End frame", width="stretch")
+            else:
+                st.caption(
+                    "End frame is available after you upload a start frame."
+                )
 
         with st.expander("Reference image or video (optional)", expanded=False):
             st.caption(
@@ -155,33 +183,20 @@ def render_multimodal_media_sections(model: ModelConfig, kwargs: dict) -> None:
             )
             if "reference_images" in model.file_input_params:
                 ref_img = _file_uploader(model, "reference_images")
-                if ref_img is not None:
-                    kwargs["_uploaded_reference_images"] = ref_img
+                set_upload_kwarg(kwargs, "reference_images", ref_img)
             if "reference_video" in model.file_input_params:
                 ref_vid = _file_uploader(model, "reference_video")
-                if ref_vid is not None:
-                    kwargs["_uploaded_reference_video"] = ref_vid
+                set_upload_kwarg(kwargs, "reference_video", ref_vid)
             if "reference_videos" in model.file_input_params:
                 ref_vid = _file_uploader(
                     model, "reference_videos", key_suffix="_rv"
                 )
-                if ref_vid is not None:
-                    kwargs["_uploaded_reference_videos"] = ref_vid
+                set_upload_kwarg(kwargs, "reference_videos", ref_vid)
             if "reference_audios" in model.file_input_params:
                 ref_audio = _file_uploader(
                     model, "reference_audios", key_suffix="_ra"
                 )
-                if ref_audio is not None:
-                    kwargs["_uploaded_reference_audios"] = ref_audio
-
-
-def model_caption(model: ModelConfig) -> str:
-    """One-line helper under the model selector."""
-    if model.output_notes:
-        return model.output_notes
-    if model.pricing_notes:
-        return model.pricing_notes
-    return ""
+                set_upload_kwarg(kwargs, "reference_audios", ref_audio)
 
 
 def resolve_video_model_selection(

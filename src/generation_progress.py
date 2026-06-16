@@ -12,6 +12,7 @@ LONG_WAIT_THRESHOLDS: dict[str, float] = {
     "video": 180.0,
     "3d": 420.0,
     "audio": 90.0,
+    "image": 120.0,
 }
 
 REPLICATE_STATUS_LABELS: dict[str, str] = {
@@ -54,6 +55,8 @@ def typical_duration_hint(model_type: str) -> str:
         return "typically 1–10 minutes"
     if key == "audio":
         return "typically under a minute"
+    if key == "image":
+        return "typically 10–90 seconds"
     return "typically 30 seconds to a few minutes"
 
 

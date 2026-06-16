@@ -17,6 +17,7 @@ This document defines conventions, defaults, and constraints for this project. F
 
 **IN SCOPE:**
 - Video generation: Text-to-Video (T2V), Image-to-Video (I2V)
+- Image generation: Text-to-Image (T2I), image editing, typography, and vector/SVG via Replicate — twelve models; see `src/image_models_config.py`.
 - 3D generation: Image-to-3D (I23D), Text-to-3D (T23D), multiview-to-3D, and mesh texturing via Replicate (`hunyuan3d-2`, `hunyuan3d-2mv`, `hunyuan-3d-3.1`, `trellis2`, `text2tex`, `texture`, `rodin`).
 - **Audio generation (v0.8.0)**: music and speech/TTS via Replicate — nine models; see `IMPLEMENTATION_VER-0.8.0.md` and `ROADMAP.md`.
 - Replicate API integration today; fal.ai provider integration, including Meshy exploration, is post-v1.0.0 work
@@ -27,13 +28,12 @@ This document defines conventions, defaults, and constraints for this project. F
 - fal.ai audio (post-v1.0)
 
 **OUT OF SCOPE (unchanged):**
-- Image generation (handled by ComfyUI workflows separately)
 - Video-to-video transformations (future consideration)
 - Local model inference (all generation via hosted providers such as Replicate/fal.ai)
 
 ## Project Nature and Quality Bar
 
-This is a personal local web UI for hosted video/3D inference, currently Replicate-powered with fal.ai deferred until v1.0.0 or later, not a production SaaS
+This is a personal local web UI for hosted video/image/3D inference, currently Replicate-powered with fal.ai deferred until v1.0.0 or later, not a production SaaS
 product. Optimize for a robust, pleasant local experience rather than enterprise
 process.
 

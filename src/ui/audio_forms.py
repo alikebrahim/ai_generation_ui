@@ -55,8 +55,6 @@ def render_audio_generation_form(
     Right column is secondary settings + generate only.
     """
     st.subheader(f"Generate with {model.display_name}")
-    if model.pricing_notes:
-        st.caption(model.pricing_notes)
 
     kwargs: dict = {}
     preview_col, controls_col = st.columns([1.9, 1.6], vertical_alignment="top")

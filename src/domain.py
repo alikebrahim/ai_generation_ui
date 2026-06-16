@@ -19,7 +19,7 @@ from src.output_asset import OutputAsset
 
 # ── Model catalogue types (moved here from models_config.py for cycle breaking) ──
 
-ModelType = Literal["video", "3d", "audio"]
+ModelType = Literal["video", "3d", "audio", "image"]
 ProviderName = Literal["replicate", "fal"]
 ProviderEndpointMode = Literal["versionless", "versioned"]
 WorkflowArchetype = Literal[
@@ -97,6 +97,12 @@ class ModelConfig:
     # Per-model presets for quick creative starting points (e.g. "Fast preview").
     # Value = partial {param: value} applied to session keys for the widgets.
     presets: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # Optional non-paid validation probe kwargs (see src/probe_fixtures.py).
+    probe_kwargs: dict[str, Any] = field(default_factory=dict)
+    # Distilled provider positioning for model-picker UX (image + future tabs).
+    provider_summary: str = ""
+    provider_category: str = ""
+    strength_tags: list[str] = field(default_factory=list)
 
 
 # ── Other domain types ──

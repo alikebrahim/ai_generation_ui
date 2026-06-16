@@ -1,8 +1,8 @@
 # AI Generation UI
 
-A Streamlit-based interface for **video**, **3D**, and **audio** generation using the Replicate API today. fal.ai development is intentionally deferred until after the v1.0.0 Replicate-only baseline.
+A Streamlit-based interface for **video**, **image**, **3D**, and **audio** generation using the Replicate API today. fal.ai development is intentionally deferred until after the v1.0.0 Replicate-only baseline.
 
-**Current version**: v1.0.0 — **Stable Replicate-only personal baseline** (11 video + 7 3D + 9 audio models). Unified "sane UI" (consistent model cards, creative inputs grouped with preview in left workspace column, History filters-first, plain-English section names, segmented workflow controls, etc.). Critical import stability fix for reliable loading. Next: post-1.0 work (see ROADMAP).
+**Current version**: v1.1.0 — **Image generation + model catalogue modularization** (12 image models, per-type config files). Next: see `ROADMAP.md`.
 
 ## Purpose
 
@@ -11,21 +11,23 @@ This project provides a clean, simple web interface for:
 - **Video** (11 models): Wan 2.7 T2V, Wan 2.5 I2V Fast, Seedance 2.0, Seedance 2.0 Fast,
   Happy Horse 1.0, Runway Gen-4.5, Kling 3 Omni, Dreamactor M2.0, Runway Aleph 2.0,
   Kling 3 Motion Control, Kling O1
+- **Image** (12 models): Flux 2 Max, Flux 2 Pro, Flux 2 Flex, Flux Schnell,
+  Nano Banana 2, Seedream 4.5, Seedream 5 Lite, Imagen 4 Ultra, Imagen 4 Fast,
+  Ideogram V3 Turbo, Recraft V4, Recraft V4 SVG
 - **3D / texture** (7 models): Hunyuan3D 2.0, Hunyuan3D 2 Multiview, TRELLIS 2,
   Hunyuan 3D 3.1, Text2Tex, Adirik Texture, Rodin Gen-2
 - **Audio** (9 models): MiniMax Music 2.5, Stable Audio 2.5, Lyria 2; Inworld TTS 2 & 1.5 Max, MiniMax Speech HD/Turbo, Chatterbox, ElevenLabs v3 (part of the v1.0.0 stable baseline)
 
 Workflows today include text-to-video, image-to-video, motion transfer, video edit,
+text-to-image, image editing, vector/SVG,
 image-to-3D, text-to-3D, multiview-to-3D, mesh texturing, **music generation**,
 and **speech / TTS**.
-
-Image generation is handled separately via ComfyUI workflows (not in this project).
 
 ## Provider Direction
 
 Current implemented provider support is Replicate (the v1.0.0 stable baseline). fal.ai development begins post-v1.0.0;
 it begins after the Replicate-only personal workflow is stable.
-The intended user flow remains workflow-first: choose **Video**, **3D**, or
+The intended user flow remains workflow-first: choose **Video**, **Image**, **3D**, or
 **Audio**, pick a model by practical outcome, then use the provider only
 for setup, pricing, status, and troubleshooting.
 
@@ -35,6 +37,7 @@ diagnostics. v0.6.5 expanded the 3D catalogue with multiview and mesh-texturing
 models plus mesh/multiview file uploads. v0.6.6–0.6.11 focused on exposing creative parameters, presets, remix,
 multi-reference uploads, and UX parity. **v0.7.0** improved errors/progress.
 **v0.8.0** added the Audio tab (music + speech). **v1.0.0** delivered the final UI element/component readjustment pass for a single polished product feel (unified layouts, prompt-in-workspace ordering, History hierarchy fix, renames, segmented controls, etc.) plus the circular import stability fix so the app loads reliably.
+**v1.1.0** adds the Image tab (12 models) and modularizes the model catalogue into per-type config files.
 
 Future fal.ai/provider-aware design details are documented in
 `IMPLEMENTATION_PLAN_PROVIDER_EXPANSION.md` and scheduled after v1.0.0 in
@@ -43,7 +46,7 @@ Future fal.ai/provider-aware design details are documented in
 
 ## Why This Project?
 
-The `comfyui-replicate` custom node doesn't support video, 3D, or standalone audio
+The `comfyui-replicate` custom node doesn't support video, image, 3D, or standalone audio
 outputs well because these models return complex file types rather than simple
 images or text. This project fills that gap by:
 
@@ -202,14 +205,9 @@ The app loads this automatically using python-dotenv.
 
 ## Status
 
-**v0.8.0** adds the **Audio** tab (nine Replicate music + speech models). **v0.7.0**
-improved errors and progress; **v0.6.11** completed creative param exposure and
-pre-0.7 polish. The app supports eleven video, seven 3D/texture, and nine audio
-workflows on Replicate, with gallery-first History, durable local outputs, and
-generation safety (preview request, payload builders, schema diagnostics).
+**v1.1.0** adds the **Image** tab (twelve Replicate image models — Flux 2, Seedream, Imagen 4, Ideogram, Recraft, Nano Banana 2) plus modularizes the model catalogue into per-type config files. **v1.0.0** delivered the comfortable Replicate-only personal baseline (UI consistency pass complete, app loads and runs reliably for daily use, docs agree). The app supports eleven video, twelve image, seven 3D/texture, and nine audio workflows on Replicate, with gallery-first History, durable local outputs, and generation safety (preview request, payload builders, schema diagnostics).
 
-This is intentionally a personal-use app rather than a production product.
-**v1.0.0** is the comfortable Replicate-only personal baseline (UI consistency pass complete, app loads and runs reliably for daily use, docs agree). fal.ai provider expansion is post-1.0.
+This is intentionally a personal-use app rather than a production product. fal.ai provider expansion is post-1.0.
 
 Non-paid local checks:
 

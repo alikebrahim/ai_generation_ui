@@ -21,6 +21,7 @@ from src.generation_registry import verify_all_models_have_handlers  # noqa: E40
 from src.generation_service import run_local_safety_checks  # noqa: E402
 from src.schema_diagnostics import (  # noqa: E402
     format_report_text,
+    probe_multimodal_frame_uploads,
     run_all_diagnostics,
     validate_presets,
 )
@@ -54,7 +55,17 @@ def main() -> int:
         if not report.ok:
             exit_code = 1
 
-    print("Payload preparation probes…")
+    print("Multimodal frame upload probes…")
+    upload_errors = probe_multimodal_frame_uploads()
+    if upload_errors:
+        print("FAIL: frame upload preservation")
+        for err in upload_errors:
+            print(f"  {err}")
+        exit_code = 1
+    else:
+        print("OK")
+
+    print("\nPayload preparation probes…")
     safety = run_local_safety_checks()
     if not safety["validation_ok"]:
         print("FAIL: validation probes")

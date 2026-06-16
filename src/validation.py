@@ -37,6 +37,10 @@ _VALIDATION_SKIP = frozenset(
         "last_frame_image",
         "reference_video",
         "keyframe_images",
+        "image_input",
+        "input_images",
+        "mask",
+        "style_reference_images",
     }
 )
 

@@ -17,6 +17,7 @@ from typing import Any
 from src.generation_registry import run_generation, verify_all_models_have_handlers
 from src.models_config import ALL_MODELS, ModelConfig, get_model_by_name
 from src.pricing import calculate_cost
+from src.probe_fixtures import get_probe_kwargs
 from src.providers import get_replicate_adapter
 from src.replicate_payload import (
     generation_mode_for_payload,
@@ -230,100 +231,27 @@ def run_local_safety_checks() -> dict[str, Any]:
     validation_ok = True
     validation_errors: list[str] = []
 
-    probe_file = {"name": "probe.png", "type": "image/png", "size": 100}
-    probe_obj = {"name": "probe.obj", "type": "model/obj", "size": 100}
     for model in ALL_MODELS:
         model_name = model.name
         try:
-            if model.name == "wan-2.7-t2v":
-                prepare_payload_for_model(
-                    model, prompt="probe", duration=5, resolution="1080p"
-                )
-            elif model.name == "wan-2.5-i2v-fast":
-                prepare_payload_for_model(
-                    model,
-                    prompt="probe",
-                    image=probe_file,
-                    duration=5,
-                )
-            elif model.name == "seedance-2.0":
-                prepare_payload_for_model(model, prompt="probe", duration=5)
-            elif model.name == "happyhorse-1.0":
-                prepare_payload_for_model(
-                    model,
-                    prompt="probe",
-                    duration=5,
-                    resolution="720p",
-                    _generation_mode="text",
-                )
-            elif model.name == "gen-4.5":
-                prepare_payload_for_model(model, prompt="probe", duration=5)
-            elif model.name == "seedance-2.0-fast":
-                prepare_payload_for_model(model, prompt="probe", duration=5)
-            elif model.name == "kling-v3-omni":
-                prepare_payload_for_model(
-                    model, prompt="probe", duration=5, mode="standard"
-                )
-            elif model.name == "dreamactor-m2.0":
-                prepare_payload_for_model(
-                    model, image=probe_file, video=probe_file
-                )
-            elif model.name == "aleph-2":
-                prepare_payload_for_model(
-                    model, prompt="probe edit", video=probe_file
-                )
-            elif model.name == "kling-v3-motion":
-                prepare_payload_for_model(
-                    model,
-                    image=probe_file,
-                    video=probe_file,
-                    mode="std",
-                )
-            elif model.name == "kling-o1":
-                prepare_payload_for_model(model, prompt="probe", duration=5)
-            elif model.name == "hunyuan-3d-3.1":
-                prepare_payload_for_model(model, prompt="probe chair")
-            elif model.name == "text2tex":
-                prepare_payload_for_model(
-                    model, prompt="red fabric", obj_file=probe_obj
-                )
-            elif model.name == "adirik-texture":
-                prepare_payload_for_model(
-                    model, prompt="wood grain", shape_path=probe_obj
-                )
-            elif model.name == "rodin":
-                prepare_payload_for_model(model, prompt="a wooden chair")
-            elif model.name == "hunyuan3d-2mv":
-                prepare_payload_for_model(model, front_image=probe_file)
-            elif model.name == "music-2.5":
-                prepare_payload_for_model(model, lyrics="verse one\nchorus")
-            elif model.name == "stable-audio-2.5":
-                prepare_payload_for_model(
-                    model, prompt="ambient pad", duration=5
-                )
-            elif model.name == "lyria-2":
-                prepare_payload_for_model(model, prompt="calm piano")
-            elif model.name in (
-                "realtime-tts-2",
-                "realtime-tts-1.5-max",
-                "speech-2.8-hd",
-                "speech-2.8-turbo",
-            ):
-                prepare_payload_for_model(model, text="Hello, this is a test.")
-            elif model.name == "chatterbox":
-                prepare_payload_for_model(model, prompt="Hello world")
-            elif model.name == "elevenlabs-v3":
-                prepare_payload_for_model(model, prompt="Hello world")
-            else:
-                prepare_payload_for_model(model, image=probe_file)
+            prepare_payload_for_model(model, **get_probe_kwargs(model))
         except Exception as exc:
             validation_ok = False
             validation_errors.append(f"{model_name}: {exc}")
 
-    from src.schema_diagnostics import all_reports_ok, run_all_diagnostics
+    from src.schema_diagnostics import (
+        all_reports_ok,
+        probe_multimodal_frame_uploads,
+        run_all_diagnostics,
+    )
 
     reports = run_all_diagnostics(fetch_remote=True)
     schema_ok = all_reports_ok(reports)
+
+    upload_probe_errors = probe_multimodal_frame_uploads()
+    if upload_probe_errors:
+        validation_ok = False
+        validation_errors.extend(upload_probe_errors)
 
     return {
         "registry_ok": registry_ok,

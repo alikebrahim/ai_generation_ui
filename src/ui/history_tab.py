@@ -165,6 +165,8 @@ def _trigger_remix(row: pd.Series) -> None:
     }
     if model_type == "audio":
         target = "audio"
+    elif model_type == "image":
+        target = "image"
     elif model_type == "video":
         target = "video"
     else:
@@ -219,6 +221,8 @@ def _render_gallery_preview(row: pd.Series) -> None:
             st.video(source)
         elif model_type == "audio" and source:
             st.audio(source)
+        elif model_type == "image" and source:
+            st.image(source, use_container_width=True)
         elif model_type == "3d" and source:
             safe_url = quote(source, safe=":/?&=#%+-_.,~")
             viewer_html = f"""

@@ -202,7 +202,7 @@ class HistoryService:
                 """
                 SELECT * FROM generations
                 WHERE provider = ?
-                ORDER BY timestamp DESC
+                ORDER BY timestamp DESC, id DESC
                 LIMIT ?
                 """,
                 (provider, limit),
@@ -211,7 +211,7 @@ class HistoryService:
             cursor.execute(
                 """
                 SELECT * FROM generations
-                ORDER BY timestamp DESC
+                ORDER BY timestamp DESC, id DESC
                 LIMIT ?
                 """,
                 (limit,),
@@ -281,6 +281,110 @@ class HistoryService:
         result = cursor.fetchone()
         conn.close()
         return result[0] or 0.0
+
+    def get_total_stats(self, provider: str | None = None) -> tuple | None:
+        """Return overall stats: (total_count, total_cost, avg_time)."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        if provider:
+            cursor.execute(
+                """
+                SELECT
+                    COUNT(*)                    AS total_count,
+                    SUM(estimated_cost_usd)     AS total_cost,
+                    AVG(predict_time_s)         AS avg_time
+                FROM generations
+                WHERE status = 'success' AND provider = ?
+                """,
+                (provider,),
+            )
+        else:
+            cursor.execute("""
+                SELECT
+                    COUNT(*)                    AS total_count,
+                    SUM(estimated_cost_usd)     AS total_cost,
+                    AVG(predict_time_s)         AS avg_time
+                FROM generations
+                WHERE status = 'success'
+                """)
+        row = cursor.fetchone()
+        conn.close()
+        return row
+
+    def get_stats_by_model_rows(
+        self, provider: str | None = None
+    ) -> list[tuple[str, int, float | None, float | None]]:
+        """Return per-model stats rows for legacy tuple-based consumers."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        if provider:
+            cursor.execute(
+                """
+                SELECT
+                    model_name,
+                    COUNT(*)                    AS count,
+                    SUM(estimated_cost_usd)     AS total_cost,
+                    AVG(predict_time_s)         AS avg_time
+                FROM generations
+                WHERE status = 'success' AND provider = ?
+                GROUP BY model_name
+                """,
+                (provider,),
+            )
+        else:
+            cursor.execute("""
+                SELECT
+                    model_name,
+                    COUNT(*)                    AS count,
+                    SUM(estimated_cost_usd)     AS total_cost,
+                    AVG(predict_time_s)         AS avg_time
+                FROM generations
+                WHERE status = 'success'
+                GROUP BY model_name
+                """)
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+
+    def update_generation_thumbnail(
+        self, generation_id: int, thumbnail_path: str
+    ) -> None:
+        """Persist a generated thumbnail path for an existing History row."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute(
+            "UPDATE generations SET thumbnail_path = ? WHERE id = ?",
+            (thumbnail_path, generation_id),
+        )
+        conn.commit()
+        conn.close()
+
+
+def record_to_tuple(record: GenerationRecord) -> tuple:
+    """Convert a typed history record into the legacy History tab row tuple."""
+    return (
+        record.id,
+        record.model_name,
+        record.model_type,
+        record.timestamp,
+        record.prompt,
+        record.input_image_path,
+        record.parameters_json,
+        record.replicate_url,
+        record.predict_time_s,
+        record.total_time_s,
+        record.estimated_cost_usd,
+        record.output_duration_s,
+        record.generation_mode,
+        record.status,
+        record.local_file_path,
+        record.thumbnail_path,
+        record.file_size_bytes,
+        record.provider,
+        record.provider_model_id,
+        record.provider_job_id,
+        record.provider_job_url,
+        record.output_assets_json,
+    )
 
 
 # Global singleton instance

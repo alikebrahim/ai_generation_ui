@@ -8,6 +8,7 @@ from src.models_config import THREED_MODELS
 from src.ui.form_utils import normalize_file_kwargs
 from src.ui.forms import render_generation_form
 from src.ui.generation_panel import build_preview_panel, run_model_generation
+from src.ui.model_caption import model_caption
 from src.ui.result_views import render_3d_result
 from src.validation import validate_params
 
@@ -113,9 +114,9 @@ def render_3d_tab() -> None:
         model_3d = next(
             (m for m in filtered_models if m.name == current), filtered_models[0]
         )
-        cap = model_3d.output_notes or model_3d.pricing_notes or ""
-        if cap:
-            st.caption(cap)
+        caption = model_caption(model_3d)
+        if caption:
+            st.caption(caption)
 
     result_key = f"threed_generation_result_{model_3d.name}"
 

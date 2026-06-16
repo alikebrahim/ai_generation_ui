@@ -5,16 +5,17 @@ from __future__ import annotations
 import streamlit as st
 
 from src.models_config import VIDEO_MODELS
+from src.replicate_payload import prepare_payload_for_model
 from src.ui.forms import render_generation_form
 from src.ui.generation_panel import build_preview_panel, run_model_generation
+from src.ui.model_caption import model_caption
 from src.ui.result_views import render_video_result
 from src.ui.video_workflow import (
     filter_models_for_workflow,
-    model_caption,
     render_workflow_filter,
     resolve_video_model_selection,
 )
-from src.validation import validate_params
+from src.validation import ValidationError
 
 
 def _consume_pending_remix(expected_type: str) -> None:
@@ -83,24 +84,9 @@ def render_video_tab() -> None:
     )
 
     if kwargs is not None:
-        validation_kwargs = dict(kwargs)
-        for upload_key, param in (
-            ("_uploaded_image", "image"),
-            ("_uploaded_video", "video"),
-            ("_uploaded_start_image", "start_image"),
-        ):
-            uploaded = validation_kwargs.pop(upload_key, None)
-            if uploaded is not None:
-                validation_kwargs[param] = uploaded
-        for key in list(validation_kwargs.keys()):
-            if key.startswith("_uploaded_"):
-                param = key.removeprefix("_uploaded_")
-                if validation_kwargs[key] is not None:
-                    validation_kwargs[param] = validation_kwargs[key]
-
         try:
-            validate_params(model, validation_kwargs)
-        except Exception as exc:
+            prepare_payload_for_model(model, **kwargs)
+        except ValidationError as exc:
             st.error(f"Invalid parameters:\n\n{exc}")
             return
 

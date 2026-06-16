@@ -83,6 +83,43 @@ def render_video_result(result: dict) -> None:
         st.caption("Output URLs are hosted by Replicate and expire after about 1 hour.")
 
 
+def render_image_result(result: dict) -> None:
+    """Render an image generation result or failure message."""
+    if not result.get("success", False):
+        _render_common_failure(result, "image")
+        return
+
+    url = result.get("url") or ""
+    local_path = _safe_caption_path(result.get("local_file_path"))
+    display_src = local_path or url
+    extra_urls = result.get("urls") or []
+
+    st.caption(f"Completed in {format_duration(result.get('predict_time', 0))}")
+    if display_src:
+        st.image(display_src, use_container_width=True)
+    for idx, extra in enumerate(extra_urls[1:], start=2):
+        st.caption(f"Output {idx}")
+        st.image(extra, use_container_width=True)
+
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        if url:
+            st.link_button("Open / download image", url, use_container_width=True)
+        elif local_path:
+            st.caption(f"Local file: `{local_path}`")
+    with col_b:
+        st.metric("Predict time", format_duration(result.get("predict_time", 0)))
+    with col_c:
+        st.metric("Estimated cost", format_cost(result.get("estimated_cost", 0)))
+
+    if result.get("prediction_url"):
+        st.caption(f"Replicate prediction: {result['prediction_url']}")
+    if local_path:
+        st.caption(f"Saved locally — `{local_path}`")
+    else:
+        st.caption("Output URLs are hosted by Replicate and may expire after ~1 hour.")
+
+
 def render_audio_result(result: dict) -> None:
     """Render an audio generation result or failure message."""
     if not result.get("success", False):

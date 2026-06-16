@@ -49,6 +49,18 @@ MODEL_HARDWARE = {
     "minimax/speech-2.8-turbo": "cpu",
     "resemble-ai/chatterbox": "cpu",
     "elevenlabs/v3": "cpu",
+    "google/nano-banana-2": "cpu",
+    "black-forest-labs/flux-2-max": "cpu",
+    "black-forest-labs/flux-2-pro": "cpu",
+    "bytedance/seedream-4.5": "cpu",
+    "google/imagen-4-ultra": "cpu",
+    "bytedance/seedream-5-lite": "cpu",
+    "black-forest-labs/flux-2-flex": "cpu",
+    "ideogram-ai/ideogram-v3-turbo": "cpu",
+    "recraft-ai/recraft-v4": "cpu",
+    "recraft-ai/recraft-v4-svg": "cpu",
+    "google/imagen-4-fast": "cpu",
+    "black-forest-labs/flux-schnell": "cpu",
 }
 
 # Audio: flat per output file (USD)
@@ -99,11 +111,29 @@ def get_hardware_price(model_id: str) -> float:
     return HARDWARE_PRICING.get(hardware, 0.001400)
 
 
+# Image: flat per output image (USD) when Replicate bills per image count
+IMAGE_PER_OUTPUT = {
+    "google/nano-banana-2": 0.01,
+    "black-forest-labs/flux-2-max": 0.04,
+    "black-forest-labs/flux-2-pro": 0.03,
+    "bytedance/seedream-4.5": 0.02,
+    "google/imagen-4-ultra": 0.04,
+    "bytedance/seedream-5-lite": 0.02,
+    "black-forest-labs/flux-2-flex": 0.05,
+    "ideogram-ai/ideogram-v3-turbo": 0.006,
+    "recraft-ai/recraft-v4": 0.013,
+    "recraft-ai/recraft-v4-svg": 0.013,
+    "google/imagen-4-fast": 0.01,
+    "black-forest-labs/flux-schnell": 0.0015,
+}
+
+
 def calculate_cost(
     model_id: str,
     predict_time: float,
     output_duration: float | None = None,
     text_length: int = 0,
+    output_count: int = 1,
 ) -> float:
     """Calculate estimated cost for a prediction.
 
@@ -111,6 +141,8 @@ def calculate_cost(
     Audio models use per-file, per-character, per-token, or per-output-second
     tables when available. Otherwise falls back to compute-time × hardware-rate.
     """
+    if model_id in IMAGE_PER_OUTPUT:
+        return IMAGE_PER_OUTPUT[model_id] * max(output_count, 1)
     if model_id in AUDIO_PER_OUTPUT_FILE:
         return AUDIO_PER_OUTPUT_FILE[model_id]
     if model_id in AUDIO_PER_1K_CHARACTERS and text_length > 0:

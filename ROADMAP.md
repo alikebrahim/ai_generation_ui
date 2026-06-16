@@ -4,7 +4,7 @@ This roadmap is the source of truth for product direction. It separates what sho
 
 ## Product framing
 
-This is a personal local Streamlit UI for hosted **video**, **3D**, and **audio** generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
+This is a personal local Streamlit UI for hosted **video**, **image**, **3D**, and **audio** generation, currently Replicate-powered, with fal.ai development intentionally deferred until after the v1.0.0 Replicate-only baseline, not a production SaaS. The roadmap should prioritize:
 
 - Avoiding invalid or wasteful paid provider calls.
 - A clear, pleasant UI for the project owner and a non-technical household user.
@@ -18,9 +18,9 @@ Do not add enterprise release process, CI/CD, auth, Docker, or heavy local infer
 
 ## Current version estimate
 
-**Current version: v1.0.0 — Stable Replicate-only personal baseline (UI readjusted for consistency, critical import stability fix). Post-1.0 work begins (Aleph, fal.ai, etc.).**
+**Current version: v1.1.0 — Image generation + model catalogue modularization (12 image models, per-type config files). Post-1.0 structural work: Aleph keyframes, fal.ai, etc.**
 
-**Catalogue today**: 11 video models, 7 3D/texture models, 9 audio models (3 music + 6 speech).
+**Catalogue today**: 11 video models, 12 image models, 7 3D/texture models, 9 audio models (3 music + 6 speech).
 
 Version history (summary):
 
@@ -35,7 +35,9 @@ Version history (summary):
 - v0.6.0 added dry-run/request preview, shared payload builders, schema diagnostics, and metadata audit fields.
 - v0.6.5 added Hunyuan3D 2 Multiview, Text2Tex, Adirik Texture, and Rodin Gen-2 with mesh/multiview file upload UI.
 - v0.6.6–0.6.11 completed rich creative param exposure for using model capabilities (advanced_param_groups, param_help + dynamic help, high_impact_params with ★ markers, widget slider support, per-model presets with Apply/Reset on the richest models, “♻️ Load settings” remix from History, safer multi-file reference uploads, 3D tab capability filter + consistent name-based selection for parity with Video, layout tweaks for action prominence); plus pre-0.7 polish items (better loading-stage “taking longer than usual” messaging with time estimates, History copy-only actions for prompt/seed/settings, basic prompt helper examples/starter prompts loadable in the form).
-- **v1.0.0 complete**. Post-1.0: Aleph keyframes, fal.ai provider expansion, etc. (see below).
+- **v1.0.0 complete**.
+- **v1.1.0** adds the Image tab (12 models) and modularizes the model catalogue into per-type config files.
+  Post-1.0: Aleph keyframes, fal.ai provider expansion, etc. (see below).
 
 ### Pre-1.0 path at a glance
 
@@ -47,6 +49,7 @@ Version history (summary):
 | Done | **v0.7.0** | Clearer errors, progress, recovery |
 | Done | **v0.8.0** | Audio tab: 3 music + 6 speech models |
 | Release | **v1.0.0** | Replicate-only personal baseline |
+| Done | **v1.1.0** | Image tab (12 models) + catalogue modularization |
 
 **Post-1.0** (not v1.0 blockers): Aleph keyframes, fal.ai — see sections below. Multi-reference uploads were completed in v0.6.11 for metadata-marked multi-file params.
 
